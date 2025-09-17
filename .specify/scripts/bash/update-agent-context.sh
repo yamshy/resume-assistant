@@ -12,15 +12,65 @@ NEW_LANG=$(grep "Language/Version" "$NEW_PLAN" 2>/dev/null | head -1 | sed 's/.*
 NEW_FRAMEWORK=$(grep "Primary Dependencies" "$NEW_PLAN" 2>/dev/null | head -1 | sed 's/.*Primary Dependencies\*\*: //' | grep -v "NEEDS CLARIFICATION" || echo "")
 NEW_DB=$(grep "Storage" "$NEW_PLAN" 2>/dev/null | head -1 | sed 's/.*Storage\*\*: //' | grep -v "N/A" | grep -v "NEEDS CLARIFICATION" || echo "")
 NEW_PROJECT_TYPE=$(grep "Project Type" "$NEW_PLAN" 2>/dev/null | head -1 | sed 's/.*Project Type\*\*: //' || echo "")
-update_agent_file() { local target_file="$1" agent_name="$2"; echo "Updating $agent_name context file: $target_file"; local temp_file=$(mktemp); if [ ! -f "$target_file" ]; then
-  echo "Creating new $agent_name context file..."; if [ -f "$REPO_ROOT/.specify/templates/agent-file-template.md" ]; then cp "$REPO_ROOT/templates/agent-file-template.md" "$temp_file"; else echo "ERROR: Template not found"; return 1; fi;
-  sed -i.bak "s/\[PROJECT NAME\]/$(basename $REPO_ROOT)/" "$temp_file"; sed -i.bak "s/\[DATE\]/$(date +%Y-%m-%d)/" "$temp_file"; sed -i.bak "s/\[EXTRACTED FROM ALL PLAN.MD FILES\]/- $NEW_LANG + $NEW_FRAMEWORK ($CURRENT_BRANCH)/" "$temp_file";
-  if [[ "$NEW_PROJECT_TYPE" == *"web"* ]]; then sed -i.bak "s|\[ACTUAL STRUCTURE FROM PLANS\]|backend/\nfrontend/\ntests/|" "$temp_file"; else sed -i.bak "s|\[ACTUAL STRUCTURE FROM PLANS\]|src/\ntests/|" "$temp_file"; fi;
-  if [[ "$NEW_LANG" == *"Python"* ]]; then COMMANDS="cd src && pytest && ruff check ."; elif [[ "$NEW_LANG" == *"Rust"* ]]; then COMMANDS="cargo test && cargo clippy"; elif [[ "$NEW_LANG" == *"JavaScript"* ]] || [[ "$NEW_LANG" == *"TypeScript"* ]]; then COMMANDS="npm test && npm run lint"; else COMMANDS="# Add commands for $NEW_LANG"; fi; sed -i.bak "s|\[ONLY COMMANDS FOR ACTIVE TECHNOLOGIES\]|$COMMANDS|" "$temp_file";
-  sed -i.bak "s|\[LANGUAGE-SPECIFIC, ONLY FOR LANGUAGES IN USE\]|$NEW_LANG: Follow standard conventions|" "$temp_file"; sed -i.bak "s|\[LAST 3 FEATURES AND WHAT THEY ADDED\]|- $CURRENT_BRANCH: Added $NEW_LANG + $NEW_FRAMEWORK|" "$temp_file"; rm "$temp_file.bak";
-else
-  echo "Updating existing $agent_name context file..."; manual_start=$(grep -n "<!-- MANUAL ADDITIONS START -->" "$target_file" | cut -d: -f1); manual_end=$(grep -n "<!-- MANUAL ADDITIONS END -->" "$target_file" | cut -d: -f1); if [ -n "$manual_start" ] && [ -n "$manual_end" ]; then sed -n "${manual_start},${manual_end}p" "$target_file" > /tmp/manual_additions.txt; fi;
-  python3 - "$target_file" "$NEW_LANG" "$NEW_FRAMEWORK" "$CURRENT_BRANCH" "$NEW_DB" "$NEW_PROJECT_TYPE" <<'EOF'
+update_agent_file() {
+  local target_file="$1"
+  local agent_name="$2"
+  echo "Updating $agent_name context file: $target_file"
+
+  if [ ! -f "$target_file" ]; then
+    # Create new file from template
+    echo "Creating new $agent_name context file..."
+    local temp_file=$(mktemp)
+
+    if [ -f "$REPO_ROOT/.specify/templates/agent-file-template.md" ]; then
+      cp "$REPO_ROOT/.specify/templates/agent-file-template.md" "$temp_file"
+    else
+      echo "ERROR: Template not found at $REPO_ROOT/.specify/templates/agent-file-template.md"
+      return 1
+    fi
+
+    # Replace template placeholders
+    sed -i.bak "s/\[PROJECT NAME\]/$(basename $REPO_ROOT)/" "$temp_file"
+    sed -i.bak "s/\[DATE\]/$(date +%Y-%m-%d)/" "$temp_file"
+    sed -i.bak "s/\[EXTRACTED FROM ALL PLAN.MD FILES\]/- $NEW_LANG + $NEW_FRAMEWORK ($CURRENT_BRANCH)/" "$temp_file"
+
+    if [[ "$NEW_PROJECT_TYPE" == *"web"* ]]; then
+      sed -i.bak "s|\[ACTUAL STRUCTURE FROM PLANS\]|backend/\nfrontend/\ntests/|" "$temp_file"
+    else
+      sed -i.bak "s|\[ACTUAL STRUCTURE FROM PLANS\]|src/\ntests/|" "$temp_file"
+    fi
+
+    if [[ "$NEW_LANG" == *"Python"* ]]; then
+      COMMANDS="cd src && pytest && ruff check ."
+    elif [[ "$NEW_LANG" == *"Rust"* ]]; then
+      COMMANDS="cargo test && cargo clippy"
+    elif [[ "$NEW_LANG" == *"JavaScript"* ]] || [[ "$NEW_LANG" == *"TypeScript"* ]]; then
+      COMMANDS="npm test && npm run lint"
+    else
+      COMMANDS="# Add commands for $NEW_LANG"
+    fi
+    sed -i.bak "s|\[ONLY COMMANDS FOR ACTIVE TECHNOLOGIES\]|$COMMANDS|" "$temp_file"
+
+    sed -i.bak "s|\[LANGUAGE-SPECIFIC, ONLY FOR LANGUAGES IN USE\]|$NEW_LANG: Follow standard conventions|" "$temp_file"
+    sed -i.bak "s|\[LAST 3 FEATURES AND WHAT THEY ADDED\]|- $CURRENT_BRANCH: Added $NEW_LANG + $NEW_FRAMEWORK|" "$temp_file"
+
+    # Clean up backup files and move to target
+    rm "$temp_file.bak" 2>/dev/null || true
+    mv "$temp_file" "$target_file"
+
+  else
+    # Update existing file
+    echo "Updating existing $agent_name context file..."
+
+    # Preserve manual additions if they exist
+    manual_start=$(grep -n "<!-- MANUAL ADDITIONS START -->" "$target_file" | cut -d: -f1)
+    manual_end=$(grep -n "<!-- MANUAL ADDITIONS END -->" "$target_file" | cut -d: -f1)
+    if [ -n "$manual_start" ] && [ -n "$manual_end" ]; then
+      sed -n "${manual_start},${manual_end}p" "$target_file" > /tmp/manual_additions.txt
+    fi
+
+    # Update the file using Python script
+    python3 - "$target_file" "$NEW_LANG" "$NEW_FRAMEWORK" "$CURRENT_BRANCH" "$NEW_DB" "$NEW_PROJECT_TYPE" <<'EOF'
 import re,sys,datetime
 target=sys.argv[1]
 NEW_LANG=sys.argv[2] if len(sys.argv)>2 else ""
@@ -53,8 +103,17 @@ if m2:
 content=re.sub(r'Last updated: \d{4}-\d{2}-\d{2}', 'Last updated: '+datetime.datetime.now().strftime('%Y-%m-%d'), content)
 open(target+'.tmp','w').write(content)
 EOF
-  mv "$target_file.tmp" "$target_file"; if [ -f /tmp/manual_additions.txt ]; then sed -i.bak '/<!-- MANUAL ADDITIONS START -->/,/<!-- MANUAL ADDITIONS END -->/d' "$target_file"; cat /tmp/manual_additions.txt >> "$target_file"; rm /tmp/manual_additions.txt "$target_file.bak"; fi;
-fi; mv "$temp_file" "$target_file" 2>/dev/null || true; echo "✅ $agent_name context file updated successfully"; }
+    # Move the updated file and restore manual additions
+    mv "$target_file.tmp" "$target_file"
+    if [ -f /tmp/manual_additions.txt ]; then
+      sed -i.bak '/<!-- MANUAL ADDITIONS START -->/,/<!-- MANUAL ADDITIONS END -->/d' "$target_file"
+      cat /tmp/manual_additions.txt >> "$target_file"
+      rm /tmp/manual_additions.txt "$target_file.bak"
+    fi
+  fi
+
+  echo "✅ $agent_name context file updated successfully"
+}
 case "$AGENT_TYPE" in
   claude) update_agent_file "$CLAUDE_FILE" "Claude Code" ;;
   gemini) update_agent_file "$GEMINI_FILE" "Gemini CLI" ;;
