@@ -47,10 +47,11 @@
 ## Constitution Check
 *GATE: Must pass before Phase 0 research. Re-check after Phase 1 design.*
 
-**I. Agent-First Architecture**: ✓/✗
-- [ ] Feature implemented as independent agent(s)
-- [ ] Each agent has single, clear responsibility
-- [ ] Agents are self-contained and testable
+**I. Agent-Chain Architecture**: ✓/✗
+- [ ] Feature implemented as agent chain for complex logic
+- [ ] Agent steps: input → structured output → feeds next agent
+- [ ] Small Python scripts (<30 lines) allowed for trivial operations
+- [ ] Any "understanding" or "reasoning" delegated to agents
 
 **II. FastAPI + pydanticAI Stack**: ✓/✗
 - [ ] FastAPI used for HTTP services
@@ -244,4 +245,4 @@ ios/ or android/
 - [ ] Complexity deviations documented
 
 ---
-*Based on Constitution v1.0.0 - See `.specify/memory/constitution.md`*
+*Based on Constitution v1.1.0 - See `.specify/memory/constitution.md`*

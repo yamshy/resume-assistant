@@ -32,7 +32,8 @@
 - ❌ Avoid HOW to implement (no tech stack, APIs, code structure)
 - 👥 Written for business stakeholders, not developers
 - 🎯 **Simplicity First**: Feature should be explainable in 2 sentences
-- ⚠️ **Agent-Focused**: Each feature = one or more AI agents with single responsibilities
+- 🤖 **Agent-Chain Focused**: Every feature = chain of focused agents, no traditional parsing/processing
+- 🚫 **No Traditional Code**: If it involves "parsing" or "analyzing" → use agents, not scripts
 
 ### Section Requirements
 - **Mandatory sections**: Must be completed for every feature

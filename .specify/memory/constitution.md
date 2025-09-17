@@ -2,8 +2,8 @@
 
 ## Core Principles
 
-### I. Agent-First Architecture
-Every feature starts as an independent AI agent or service component. Agents must be self-contained, independently testable, and have clearly defined responsibilities. No monolithic agents - each agent serves a specific purpose in the resume generation workflow.
+### I. Agent-Chain Architecture (NON-NEGOTIABLE)
+**ALL features are agent chains, not traditional code.** Every task = agent takes input → produces structured output → feeds next agent. No complex parsing scripts, regex systems, or traditional data processing. When you think "I need to parse this" → use an agent. When you think "I need to analyze this" → use an agent. Agents chain together to solve complex problems through simple, focused steps.
 
 ### II. FastAPI + pydanticAI Stack
 All services built using FastAPI with pydantic for data validation and pydanticAI for agent implementations. Microservice architecture with clear API contracts. Text I/O protocol: JSON in/out via REST APIs, structured logging to stderr.
@@ -34,6 +34,25 @@ Start with the simplest solution that works. YAGNI principles strictly enforced.
 
 ### Data Flow
 Job Posting → Job Analysis → Resume Generation → Validation → Human Review → Final Output
+
+### Allowed Non-Agent Code
+**Small, focused Python scripts are allowed to avoid wasting tokens on trivial operations:**
+- **Simple data models** (pydantic schemas for API contracts)
+- **Thin FastAPI route handlers** (just invoke agents, no business logic)
+- **Basic utility functions** (file I/O, simple transformations < 20 lines)
+- **Test fixtures and mocks** (for agent testing)
+- **Configuration loading** (environment variables, settings)
+- **Small cleanup scripts** (format data between agent calls, < 30 lines)
+- **Trivial data transformations** (string formatting, list operations, dict merging)
+- **Simple file operations** (read/write JSON, basic validation)
+
+**Rules:**
+- **Must be tightly scoped** (single purpose, < 30 lines)
+- **No complex logic** (no nested conditionals, loops over complex data)
+- **No "intelligence"** (if it requires decision-making → use an agent)
+- **Token efficiency** (don't use agents for trivial string formatting)
+
+**Rule of thumb**: If it involves "understanding", "analyzing", or "reasoning" → use an agent. If it's mechanical data manipulation → script is fine.
 
 ## Technology Standards
 
@@ -70,6 +89,14 @@ Job Posting → Job Analysis → Resume Generation → Validation → Human Revi
 
 ## Anti-Patterns (Forbidden)
 
+### Traditional Code Red Flags
+- ❌ **Complex parsing scripts** (>30 lines, use parsing agents instead)
+- ❌ **Regex systems for content analysis** (use analysis agents for understanding)
+- ❌ **Large data transformation pipelines** (use agent chains for complex logic)
+- ❌ **BeautifulSoup/lxml for content extraction** (use extraction agents for understanding)
+- ❌ **Complex rule-based systems** (use reasoning agents for decisions)
+- ❌ **Large validation logic** (>20 lines, use validation agents)
+
 ### Overengineering Red Flags
 - ❌ Abstract factories for simple data creation
 - ❌ Repository patterns for single data source
@@ -79,13 +106,14 @@ Job Posting → Job Analysis → Resume Generation → Validation → Human Revi
 - ❌ Event systems for direct function calls
 - ❌ Generic interfaces with only one implementation
 
-### Simplicity Enforcement
-- ✅ Direct function calls over event systems
-- ✅ Simple classes over complex patterns
-- ✅ Inline logic over premature abstractions
-- ✅ Copy-paste acceptable until 3rd repetition
-- ✅ Single file per agent until it exceeds 200 lines
-- ✅ Environment variables over configuration frameworks
+### Agent-First Enforcement
+- ✅ **Agent chains over traditional processing**
+- ✅ **Structured output agents over parsing scripts**
+- ✅ **Small focused agents over monolithic functions**
+- ✅ **AI reasoning over rule-based logic**
+- ✅ **Natural language understanding over regex patterns**
+- ✅ **Agent orchestration over pipeline frameworks**
+- ✅ **Single file per agent until it exceeds 200 lines**
 
 ## Governance
 
@@ -95,4 +123,8 @@ Constitution supersedes all other practices. Amendments require documentation, a
 
 Use `/CLAUDE.md` for runtime development guidance and agent implementation patterns.
 
-**Version**: 1.0.0 | **Ratified**: 2025-09-17 | **Last Amended**: 2025-09-17
+**Version**: 1.1.0 | **Ratified**: 2025-09-17 | **Last Amended**: 2025-09-17
+
+## Amendment History
+- **v1.1.0** (2025-09-17): Clarified agent-chain architecture with balanced approach allowing small focused scripts
+- **v1.0.0** (2025-09-17): Initial constitution for resume assistant project
