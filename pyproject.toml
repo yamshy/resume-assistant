@@ -29,6 +29,16 @@ resume-assistant = "app.main:cli"
 [tool.ruff]
 line-length = 100
 target-version = "py313"
+exclude = [
+    ".git",
+    "__pycache__",
+    ".venv",
+    "venv",
+    "build",
+    "dist",
+]
+
+[tool.ruff.lint]
 select = [
     "E",  # pycodestyle errors
     "W",  # pycodestyle warnings
@@ -42,22 +52,14 @@ ignore = [
     "E501",  # line too long (handled by formatter)
     "B008",  # do not perform function calls in argument defaults
 ]
-exclude = [
-    ".git",
-    "__pycache__",
-    ".venv",
-    "venv",
-    "build",
-    "dist",
-]
+
+[tool.ruff.lint.isort]
+known-first-party = ["resume_core", "app"]
 
 [tool.ruff.format]
 quote-style = "double"
 indent-style = "space"
 docstring-code-format = true
-
-[tool.ruff.isort]
-known-first-party = ["resume_core", "app"]
 
 [tool.pytest.ini_options]
 addopts = "-q"
