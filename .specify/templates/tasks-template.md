@@ -95,7 +95,9 @@ Task: "Integration test auth in tests/integration/test_auth.py"
 - [P] tasks = different files, no dependencies
 - Verify tests fail before implementing
 - Commit after each task
-- Avoid: vague tasks, same file conflicts
+- Avoid: vague tasks, same file conflicts, overengineering
+- **Simplicity**: Single-file agents preferred, no abstractions until 3rd repetition
+- **Agent Focus**: Each agent = single responsibility, mockable for tests
 
 ## Task Generation Rules
 *Applied during main() execution*

@@ -47,7 +47,43 @@
 ## Constitution Check
 *GATE: Must pass before Phase 0 research. Re-check after Phase 1 design.*
 
-[Gates determined based on constitution file]
+**I. Agent-First Architecture**: ✓/✗
+- [ ] Feature implemented as independent agent(s)
+- [ ] Each agent has single, clear responsibility
+- [ ] Agents are self-contained and testable
+
+**II. FastAPI + pydanticAI Stack**: ✓/✗
+- [ ] FastAPI used for HTTP services
+- [ ] pydanticAI used for agent implementations
+- [ ] pydantic used for data validation
+- [ ] JSON in/out via REST APIs
+
+**III. Test-Driven Development**: ✓/✗
+- [ ] Tests written before implementation
+- [ ] All agents mockable without external APIs
+- [ ] Red-Green-Refactor cycle planned
+
+**IV. Data Integrity & Validation**: ✓/✗
+- [ ] Validation agent included if data accuracy critical
+- [ ] Inter-agent contracts defined
+- [ ] Data store integrity maintained
+
+**V. Human-in-the-Loop Design**: ✓/✗
+- [ ] Clarification mechanisms defined if needed
+- [ ] User approval gates identified
+- [ ] Structured logging for observability
+
+**VI. Latest Technology**: ✓/✗
+- [ ] Python 3.13+ and uv package management
+- [ ] Latest versions of FastAPI, pydantic, pydanticAI
+- [ ] Official documentation referenced
+
+**VII. Radical Simplicity**: ✓/✗
+- [ ] Simplest solution that works chosen
+- [ ] No abstractions until 3rd repetition
+- [ ] Single-file agents preferred (< 200 lines)
+- [ ] No overengineering patterns (see anti-patterns list)
+- [ ] Can explain entire feature in 2 sentences
 
 ## Project Structure
 
@@ -208,4 +244,4 @@ ios/ or android/
 - [ ] Complexity deviations documented
 
 ---
-*Based on Constitution v2.1.1 - See `/memory/constitution.md`*
+*Based on Constitution v1.0.0 - See `.specify/memory/constitution.md`*

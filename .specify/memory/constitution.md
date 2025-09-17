@@ -1,50 +1,98 @@
-# [PROJECT_NAME] Constitution
-<!-- Example: Spec Constitution, TaskFlow Constitution, etc. -->
+# Resume Assistant Constitution
 
 ## Core Principles
 
-### [PRINCIPLE_1_NAME]
-<!-- Example: I. Library-First -->
-[PRINCIPLE_1_DESCRIPTION]
-<!-- Example: Every feature starts as a standalone library; Libraries must be self-contained, independently testable, documented; Clear purpose required - no organizational-only libraries -->
+### I. Agent-First Architecture
+Every feature starts as an independent AI agent or service component. Agents must be self-contained, independently testable, and have clearly defined responsibilities. No monolithic agents - each agent serves a specific purpose in the resume generation workflow.
 
-### [PRINCIPLE_2_NAME]
-<!-- Example: II. CLI Interface -->
-[PRINCIPLE_2_DESCRIPTION]
-<!-- Example: Every library exposes functionality via CLI; Text in/out protocol: stdin/args → stdout, errors → stderr; Support JSON + human-readable formats -->
+### II. FastAPI + pydanticAI Stack
+All services built using FastAPI with pydantic for data validation and pydanticAI for agent implementations. Microservice architecture with clear API contracts. Text I/O protocol: JSON in/out via REST APIs, structured logging to stderr.
 
-### [PRINCIPLE_3_NAME]
-<!-- Example: III. Test-First (NON-NEGOTIABLE) -->
-[PRINCIPLE_3_DESCRIPTION]
-<!-- Example: TDD mandatory: Tests written → User approved → Tests fail → Then implement; Red-Green-Refactor cycle strictly enforced -->
+### III. Test-Driven Development (NON-NEGOTIABLE)
+TDD mandatory: Specs written → User approved → Tests fail → Then implement. Red-Green-Refactor cycle strictly enforced. All agents must be mockable for testing without external API dependencies.
 
-### [PRINCIPLE_4_NAME]
-<!-- Example: IV. Integration Testing -->
-[PRINCIPLE_4_DESCRIPTION]
-<!-- Example: Focus areas requiring integration tests: New library contract tests, Contract changes, Inter-service communication, Shared schemas -->
+### IV. Data Integrity & Validation
+Focus areas requiring validation: User data store integrity, Resume content accuracy against source data, Job posting analysis correctness, Inter-agent communication contracts. A dedicated validator agent prevents hallucinations.
 
-### [PRINCIPLE_5_NAME]
-<!-- Example: V. Observability, VI. Versioning & Breaking Changes, VII. Simplicity -->
-[PRINCIPLE_5_DESCRIPTION]
-<!-- Example: Text I/O ensures debuggability; Structured logging required; Or: MAJOR.MINOR.BUILD format; Or: Start simple, YAGNI principles -->
+### V. Human-in-the-Loop Design
+AI agents can request clarification from users when needed. Clear escalation paths defined. Observability through structured logging and agent decision tracking. User approval gates for final resume output.
 
-## [SECTION_2_NAME]
-<!-- Example: Additional Constraints, Security Requirements, Performance Standards, etc. -->
+### VI. Latest Technology & Documentation
+Always use latest versions of FastAPI, pydantic, pydanticAI, and Python. Reference official documentation via web or context. UV for Python package management. No legacy compatibility requirements.
 
-[SECTION_2_CONTENT]
-<!-- Example: Technology stack requirements, compliance standards, deployment policies, etc. -->
+### VII. Radical Simplicity (NON-NEGOTIABLE)
+Start with the simplest solution that works. YAGNI principles strictly enforced. No abstractions until you need them 3+ times. Single-file agents preferred over complex hierarchies. Flat is better than nested. If you can't explain it in 2 sentences, it's too complex.
 
-## [SECTION_3_NAME]
-<!-- Example: Development Workflow, Review Process, Quality Gates, etc. -->
+## Agent Architecture
 
-[SECTION_3_CONTENT]
-<!-- Example: Code review requirements, testing gates, deployment approval process, etc. -->
+### Core Agents Required
+- **Job Analysis Agent**: Parses and extracts requirements from job postings
+- **Resume Generation Agent**: Creates tailored resume content
+- **Validation Agent**: Ensures accuracy against user data store
+- **Data Store Agent**: Manages structured user profile data
+- **Human Interface Agent**: Handles clarification requests and approvals
+
+### Data Flow
+Job Posting → Job Analysis → Resume Generation → Validation → Human Review → Final Output
+
+## Technology Standards
+
+### Required Stack
+- **Runtime**: Python 3.13+ with UV package management
+- **Web Framework**: FastAPI for all HTTP services
+- **AI Framework**: pydanticAI for all agent implementations
+- **Data Validation**: pydantic v2+ for all schemas
+- **Testing**: pytest with async support, full mocking of external APIs
+- **Code Quality**: ruff for formatting and linting
+- **CI/CD**: GitHub Actions with uv integration
+
+### Deployment
+- Containerized microservices
+- Environment-based configuration
+- Health check endpoints required
+- Structured JSON logging
+
+## Development Workflow
+
+### Specification-Driven Development
+1. Write detailed specs for each agent and API
+2. Create tests based on specs (must fail initially)
+3. Implement minimum viable functionality
+4. Refactor while maintaining green tests
+5. Document API contracts and agent behaviors
+
+### Quality Gates
+- All tests must pass
+- No external API dependencies in tests
+- Ruff formatting and linting clean
+- Type hints required for all public interfaces
+- Integration tests for agent workflows
+
+## Anti-Patterns (Forbidden)
+
+### Overengineering Red Flags
+- ❌ Abstract factories for simple data creation
+- ❌ Repository patterns for single data source
+- ❌ Complex inheritance hierarchies for agents
+- ❌ Middleware layers without clear necessity
+- ❌ Configuration frameworks for simple settings
+- ❌ Event systems for direct function calls
+- ❌ Generic interfaces with only one implementation
+
+### Simplicity Enforcement
+- ✅ Direct function calls over event systems
+- ✅ Simple classes over complex patterns
+- ✅ Inline logic over premature abstractions
+- ✅ Copy-paste acceptable until 3rd repetition
+- ✅ Single file per agent until it exceeds 200 lines
+- ✅ Environment variables over configuration frameworks
 
 ## Governance
-<!-- Example: Constitution supersedes all other practices; Amendments require documentation, approval, migration plan -->
 
-[GOVERNANCE_RULES]
-<!-- Example: All PRs/reviews must verify compliance; Complexity must be justified; Use [GUIDANCE_FILE] for runtime development guidance -->
+Constitution supersedes all other practices. Amendments require documentation, approval, and migration plan. All development must verify compliance with these principles.
 
-**Version**: [CONSTITUTION_VERSION] | **Ratified**: [RATIFICATION_DATE] | **Last Amended**: [LAST_AMENDED_DATE]
-<!-- Example: Version: 2.1.1 | Ratified: 2025-06-13 | Last Amended: 2025-07-16 -->
+**Complexity Justification Required**: Any deviation from simplicity must include a written justification explaining why simpler alternatives are insufficient.
+
+Use `/CLAUDE.md` for runtime development guidance and agent implementation patterns.
+
+**Version**: 1.0.0 | **Ratified**: 2025-09-17 | **Last Amended**: 2025-09-17
