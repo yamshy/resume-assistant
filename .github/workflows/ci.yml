@@ -25,7 +25,7 @@ jobs:
         run: uv python install ${{ env.PYTHON_VERSION }}
 
       - name: Install dependencies
-        run: uv sync --all-extras --dev
+        run: uv sync --dev
 
       - name: Run ruff format check
         run: uv run ruff format --check .
@@ -52,7 +52,7 @@ jobs:
         run: uv python install ${{ matrix.python-version }}
 
       - name: Install dependencies
-        run: uv sync --all-extras --dev
+        run: uv sync --dev
 
       - name: Run tests
         run: uv run pytest -v --tb=short
