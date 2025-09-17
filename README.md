@@ -6,7 +6,7 @@ Minimal FastAPI + pydanticAI template with TDD workflow and src layout.
 
 ### Prerequisites
 
-- Python 3.12+
+- Python 3.13+
 - uv (Python package manager)
 
 ### Setup
@@ -19,7 +19,7 @@ cd resume-assistant-template
 
 2. Install dependencies:
 ```bash
-uv pip install -e .[dev]
+uv sync --dev
 ```
 
 3. Copy environment variables:
@@ -33,7 +33,7 @@ cp .env.example .env
 
 ```bash
 # Install development dependencies
-uv pip install -e .[dev]
+uv sync --dev
 
 # Run tests
 uv run pytest -q

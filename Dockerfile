@@ -6,14 +6,14 @@ WORKDIR /app
 RUN pip install --no-cache-dir uv
 
 # Copy project files
-COPY pyproject.toml .
+COPY pyproject.toml uv.lock .
 COPY src/ ./src/
 COPY app/ ./app/
 COPY tests/ ./tests/
 COPY pytest.ini .
 
 # Install dependencies
-RUN uv pip install --system -e .[dev]
+RUN uv sync --dev --system
 
 # Expose port
 EXPOSE 8080
