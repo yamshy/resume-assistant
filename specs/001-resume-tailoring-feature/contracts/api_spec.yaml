@@ -1,0 +1,756 @@
+openapi: 3.0.3
+info:
+  title: Resume Tailoring API
+  description: |
+    API for AI-powered resume tailoring system that analyzes job postings and generates
+    customized resumes using a 5-agent chain architecture.
+  version: 1.0.0
+  contact:
+    name: Resume Assistant
+servers:
+  - url: http://localhost:8000
+    description: Development server
+
+paths:
+  /health:
+    get:
+      summary: Health check endpoint
+      operationId: health_check
+      responses:
+        '200':
+          description: Service is healthy
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: "healthy"
+                  timestamp:
+                    type: string
+                    format: date-time
+
+  /profile:
+    get:
+      summary: Get user profile
+      operationId: get_profile
+      responses:
+        '200':
+          description: User profile data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserProfile'
+        '404':
+          description: Profile not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+    put:
+      summary: Update user profile
+      operationId: update_profile
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserProfile'
+      responses:
+        '200':
+          description: Profile updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserProfile'
+        '400':
+          description: Invalid profile data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /jobs/analyze:
+    post:
+      summary: Analyze job posting
+      description: Extract requirements and structure from job posting text using Job Analysis Agent
+      operationId: analyze_job
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                job_description:
+                  type: string
+                  description: Raw job posting text
+                  example: "Software Engineer position at TechCorp..."
+              required:
+                - job_description
+      responses:
+        '200':
+          description: Job analysis completed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/JobAnalysis'
+        '400':
+          description: Invalid job description
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Analysis failed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /resumes/tailor:
+    post:
+      summary: Generate tailored resume
+      description: |
+        Execute full agent chain to generate customized resume:
+        1. Analyze job posting (if not already done)
+        2. Match profile against requirements
+        3. Generate optimized resume content
+        4. Validate against source data
+        5. Create approval workflow
+      operationId: tailor_resume
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                job_description:
+                  type: string
+                  description: Raw job posting text
+                job_analysis_id:
+                  type: string
+                  description: ID of existing job analysis (optional)
+                  format: uuid
+                preferences:
+                  type: object
+                  description: User preferences for tailoring
+                  properties:
+                    emphasis_areas:
+                      type: array
+                      items:
+                        type: string
+                      description: Skills/areas to emphasize
+                    excluded_sections:
+                      type: array
+                      items:
+                        type: string
+                      description: Sections to exclude from optimization
+              required:
+                - job_description
+      responses:
+        '200':
+          description: Resume tailoring completed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TailoringResult'
+        '400':
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Tailoring failed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /resumes/{resume_id}/approve:
+    post:
+      summary: Approve or reject tailored resume
+      description: Submit human approval decision for generated resume
+      operationId: approve_resume
+      parameters:
+        - name: resume_id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ReviewDecision'
+      responses:
+        '200':
+          description: Approval processed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApprovalResult'
+        '404':
+          description: Resume not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /resumes/{resume_id}/download:
+    get:
+      summary: Download final approved resume
+      operationId: download_resume
+      parameters:
+        - name: resume_id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: format
+          in: query
+          schema:
+            type: string
+            enum: [markdown, pdf, docx]
+            default: markdown
+      responses:
+        '200':
+          description: Resume file
+          content:
+            text/markdown:
+              schema:
+                type: string
+            application/pdf:
+              schema:
+                type: string
+                format: binary
+            application/vnd.openxmlformats-officedocument.wordprocessingml.document:
+              schema:
+                type: string
+                format: binary
+        '404':
+          description: Resume not found
+
+  /resumes/history:
+    get:
+      summary: Get resume generation history
+      operationId: get_resume_history
+      parameters:
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 10
+            minimum: 1
+            maximum: 100
+        - name: offset
+          in: query
+          schema:
+            type: integer
+            default: 0
+            minimum: 0
+      responses:
+        '200':
+          description: Resume history
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  resumes:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/ResumeHistoryItem'
+                  total:
+                    type: integer
+                  limit:
+                    type: integer
+                  offset:
+                    type: integer
+
+components:
+  schemas:
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: string
+          description: Error message
+        details:
+          type: string
+          description: Additional error details
+        timestamp:
+          type: string
+          format: date-time
+      required:
+        - error
+        - timestamp
+
+    ContactInfo:
+      type: object
+      properties:
+        name:
+          type: string
+        email:
+          type: string
+          format: email
+        phone:
+          type: string
+          nullable: true
+        location:
+          type: string
+        linkedin:
+          type: string
+          format: uri
+          nullable: true
+        portfolio:
+          type: string
+          format: uri
+          nullable: true
+      required:
+        - name
+        - email
+        - location
+
+    WorkExperience:
+      type: object
+      properties:
+        position:
+          type: string
+        company:
+          type: string
+        location:
+          type: string
+        start_date:
+          type: string
+          format: date
+        end_date:
+          type: string
+          format: date
+          nullable: true
+        description:
+          type: string
+        achievements:
+          type: array
+          items:
+            type: string
+        technologies:
+          type: array
+          items:
+            type: string
+      required:
+        - position
+        - company
+        - location
+        - start_date
+        - description
+        - achievements
+
+    Education:
+      type: object
+      properties:
+        degree:
+          type: string
+        institution:
+          type: string
+        location:
+          type: string
+        graduation_date:
+          type: string
+          format: date
+        gpa:
+          type: number
+          nullable: true
+        honors:
+          type: array
+          items:
+            type: string
+        relevant_coursework:
+          type: array
+          items:
+            type: string
+      required:
+        - degree
+        - institution
+        - location
+        - graduation_date
+
+    Skill:
+      type: object
+      properties:
+        name:
+          type: string
+        category:
+          type: string
+          enum: [technical, soft, language, certification]
+        proficiency:
+          type: integer
+          minimum: 1
+          maximum: 5
+        years_experience:
+          type: integer
+          nullable: true
+      required:
+        - name
+        - category
+        - proficiency
+
+    UserProfile:
+      type: object
+      properties:
+        version:
+          type: string
+          default: "1.0"
+        metadata:
+          type: object
+          additionalProperties:
+            type: string
+        contact:
+          $ref: '#/components/schemas/ContactInfo'
+        professional_summary:
+          type: string
+        experience:
+          type: array
+          items:
+            $ref: '#/components/schemas/WorkExperience'
+        education:
+          type: array
+          items:
+            $ref: '#/components/schemas/Education'
+        skills:
+          type: array
+          items:
+            $ref: '#/components/schemas/Skill'
+        projects:
+          type: array
+          items:
+            type: object  # Simplified for brevity
+        publications:
+          type: array
+          items:
+            type: object  # Simplified for brevity
+        awards:
+          type: array
+          items:
+            type: object  # Simplified for brevity
+        volunteer:
+          type: array
+          items:
+            type: object  # Simplified for brevity
+        languages:
+          type: array
+          items:
+            type: object  # Simplified for brevity
+      required:
+        - contact
+        - professional_summary
+        - experience
+        - education
+        - skills
+
+    JobRequirement:
+      type: object
+      properties:
+        skill:
+          type: string
+        importance:
+          type: integer
+          minimum: 1
+          maximum: 5
+        category:
+          type: string
+          enum: [technical, soft, language, certification]
+        is_required:
+          type: boolean
+        context:
+          type: string
+      required:
+        - skill
+        - importance
+        - category
+        - is_required
+        - context
+
+    JobAnalysis:
+      type: object
+      properties:
+        company_name:
+          type: string
+        job_title:
+          type: string
+        department:
+          type: string
+          nullable: true
+        location:
+          type: string
+        remote_policy:
+          type: string
+          nullable: true
+        requirements:
+          type: array
+          items:
+            $ref: '#/components/schemas/JobRequirement'
+        key_responsibilities:
+          type: array
+          items:
+            type: string
+        company_culture:
+          type: string
+        role_level:
+          type: string
+          enum: [junior, mid, senior, lead, executive]
+        industry:
+          type: string
+        salary_range:
+          type: string
+          nullable: true
+        benefits:
+          type: array
+          items:
+            type: string
+        preferred_qualifications:
+          type: array
+          items:
+            type: string
+      required:
+        - company_name
+        - job_title
+        - location
+        - requirements
+        - key_responsibilities
+        - company_culture
+        - role_level
+        - industry
+
+    ContentOptimization:
+      type: object
+      properties:
+        section:
+          type: string
+          enum: [summary, experience, skills, education, projects, achievements]
+        original_content:
+          type: string
+        optimized_content:
+          type: string
+        optimization_reason:
+          type: string
+        keywords_added:
+          type: array
+          items:
+            type: string
+        match_improvement:
+          type: number
+          minimum: 0
+          maximum: 1
+      required:
+        - section
+        - original_content
+        - optimized_content
+        - optimization_reason
+        - keywords_added
+        - match_improvement
+
+    TailoredResume:
+      type: object
+      properties:
+        job_title:
+          type: string
+        company_name:
+          type: string
+        optimizations:
+          type: array
+          items:
+            $ref: '#/components/schemas/ContentOptimization'
+        full_resume_markdown:
+          type: string
+        summary_of_changes:
+          type: string
+        estimated_match_score:
+          type: number
+          minimum: 0
+          maximum: 1
+        generation_timestamp:
+          type: string
+          format: date-time
+      required:
+        - job_title
+        - company_name
+        - optimizations
+        - full_resume_markdown
+        - summary_of_changes
+        - estimated_match_score
+        - generation_timestamp
+
+    ValidationResult:
+      type: object
+      properties:
+        is_valid:
+          type: boolean
+        accuracy_score:
+          type: number
+          minimum: 0
+          maximum: 1
+        readability_score:
+          type: number
+          minimum: 0
+          maximum: 1
+        keyword_optimization_score:
+          type: number
+          minimum: 0
+          maximum: 1
+        issues:
+          type: array
+          items:
+            type: object
+            properties:
+              severity:
+                type: string
+                enum: [low, medium, high, critical]
+              category:
+                type: string
+                enum: [accuracy, consistency, formatting, content]
+              description:
+                type: string
+              location:
+                type: string
+              suggestion:
+                type: string
+        strengths:
+          type: array
+          items:
+            type: string
+        overall_quality_score:
+          type: number
+          minimum: 0
+          maximum: 1
+        validation_timestamp:
+          type: string
+          format: date-time
+      required:
+        - is_valid
+        - accuracy_score
+        - readability_score
+        - keyword_optimization_score
+        - issues
+        - strengths
+        - overall_quality_score
+        - validation_timestamp
+
+    ReviewDecision:
+      type: object
+      properties:
+        decision:
+          type: string
+          enum: [pending, approved, rejected, needs_revision]
+        feedback:
+          type: string
+          nullable: true
+        requested_modifications:
+          type: array
+          items:
+            type: string
+        approved_sections:
+          type: array
+          items:
+            type: string
+            enum: [summary, experience, skills, education, projects, achievements]
+        rejected_sections:
+          type: array
+          items:
+            type: string
+            enum: [summary, experience, skills, education, projects, achievements]
+      required:
+        - decision
+
+    TailoringResult:
+      type: object
+      properties:
+        resume_id:
+          type: string
+          format: uuid
+        job_analysis:
+          $ref: '#/components/schemas/JobAnalysis'
+        matching_result:
+          type: object  # MatchingResult schema simplified
+        tailored_resume:
+          $ref: '#/components/schemas/TailoredResume'
+        validation_result:
+          $ref: '#/components/schemas/ValidationResult'
+        approval_workflow:
+          type: object
+          properties:
+            requires_human_review:
+              type: boolean
+            review_reasons:
+              type: array
+              items:
+                type: string
+            confidence_score:
+              type: number
+              minimum: 0
+              maximum: 1
+            auto_approve_eligible:
+              type: boolean
+      required:
+        - resume_id
+        - job_analysis
+        - matching_result
+        - tailored_resume
+        - validation_result
+        - approval_workflow
+
+    ApprovalResult:
+      type: object
+      properties:
+        status:
+          type: string
+          enum: [approved, rejected, needs_revision]
+        final_resume_url:
+          type: string
+          format: uri
+          nullable: true
+        revision_needed:
+          type: boolean
+        next_steps:
+          type: array
+          items:
+            type: string
+      required:
+        - status
+        - revision_needed
+        - next_steps
+
+    ResumeHistoryItem:
+      type: object
+      properties:
+        resume_id:
+          type: string
+          format: uuid
+        job_title:
+          type: string
+        company_name:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+        status:
+          type: string
+          enum: [pending, approved, rejected, needs_revision]
+        match_score:
+          type: number
+          minimum: 0
+          maximum: 1
+      required:
+        - resume_id
+        - job_title
+        - company_name
+        - created_at
+        - status
+        - match_score
