@@ -5,7 +5,7 @@ Handles temporary session data, final resume exports, and file operations
 according to constitutional file storage patterns.
 
 Constitutional compliance:
-- File-based storage in ~/.resume-assistant/
+- File-based storage in data/ directory (local development, gitignored)
 - Simple directory structure for sessions and exports
 - JSON serialization for structured data
 - Atomic file operations with error handling
@@ -35,9 +35,9 @@ class StorageService:
         if base_path:
             self.base_dir = Path(base_path)
         else:
-            # Use constitutional default: ~/.resume-assistant/
-            home_dir = Path.home()
-            self.base_dir = home_dir / ".resume-assistant"
+            # Use local development storage: data/ (gitignored)
+            current_dir = Path.cwd()
+            self.base_dir = current_dir / "data"
 
         # Storage directories
         self.sessions_dir = self.base_dir / "sessions"

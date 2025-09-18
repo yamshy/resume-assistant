@@ -65,3 +65,8 @@ dmypy.json
 
 # Ruff
 .ruff_cache/
+
+# Local development data
+data/
+tmp/
+.resume-assistant/

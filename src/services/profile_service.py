@@ -24,7 +24,7 @@ class ProfileService:
     Service for managing user profile data with JSON file storage.
 
     Handles loading, saving, and validating profile data stored in
-    ~/.resume-assistant/profile.json as per constitutional requirement.
+    data/profile.json for local development (gitignored).
     """
 
     def __init__(self, profile_path: Optional[str] = None):
@@ -32,9 +32,9 @@ class ProfileService:
         if profile_path:
             self.profile_path = Path(profile_path)
         else:
-            # Use constitutional default: ~/.resume-assistant/profile.json
-            home_dir = Path.home()
-            self.profile_dir = home_dir / ".resume-assistant"
+            # Use local development storage: data/profile.json (gitignored)
+            current_dir = Path.cwd()
+            self.profile_dir = current_dir / "data"
             self.profile_path = self.profile_dir / "profile.json"
 
         # Ensure directory exists
