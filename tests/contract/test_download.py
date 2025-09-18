@@ -24,3 +24,10 @@ async def test_resume_download_contract(async_client: AsyncClient) -> None:
     assert payload["resume_id"] == resume_id
     assert payload["content_type"] == "text/markdown"
     assert payload["content"].startswith("# ")
+
+
+@pytest.mark.asyncio
+async def test_download_invalid_identifier_rejected(async_client: AsyncClient) -> None:
+    response = await async_client.get("/api/v1/resumes/not-a-valid-uuid/download")
+
+    assert response.status_code == 422

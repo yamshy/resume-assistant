@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from typing import Any
+from uuid import UUID
 
 from fastapi import APIRouter, HTTPException, status
 from pydantic import BaseModel, Field
@@ -36,9 +37,9 @@ async def tailor_resume(request: ResumeTailorRequest) -> dict[str, Any]:
 
 
 @router.get("/resumes/{resume_id}")
-def get_resume(resume_id: str) -> dict[str, Any]:
+def get_resume(resume_id: UUID) -> dict[str, Any]:
     try:
-        result = _resume_service.load_resume(resume_id)
+        result = _resume_service.load_resume(str(resume_id))
     except FileNotFoundError as exc:  # pragma: no cover - error mapping
         raise HTTPException(status_code=404, detail=str(exc)) from exc
     return {

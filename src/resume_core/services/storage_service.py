@@ -5,6 +5,7 @@ import os
 from datetime import datetime
 from pathlib import Path
 from typing import Any
+from uuid import UUID
 
 
 class StorageService:
@@ -16,6 +17,8 @@ class StorageService:
         self.resumes_path = self.base_path / "resumes"
         self.base_path.mkdir(parents=True, exist_ok=True)
         self.resumes_path.mkdir(parents=True, exist_ok=True)
+        self.base_path = self.base_path.resolve()
+        self.resumes_path = self.resumes_path.resolve()
 
     @property
     def profile_path(self) -> Path:
@@ -37,10 +40,14 @@ class StorageService:
         return payload
 
     def has_resume(self, resume_id: str) -> bool:
-        return (self.resumes_path / f"{resume_id}.json").exists()
+        try:
+            path = self._resolve_resume_path(resume_id)
+        except ValueError:
+            return False
+        return path.exists()
 
     def load_resume(self, resume_id: str) -> dict[str, Any]:
-        path = self.resumes_path / f"{resume_id}.json"
+        path = self._resolve_resume_path(resume_id)
         if not path.exists():
             raise FileNotFoundError(f"Resume {resume_id} not found")
         return json.loads(path.read_text())
@@ -68,7 +75,7 @@ class StorageService:
 
     def _write_resume(self, resume_id: str, payload: dict[str, Any]) -> None:
         self.resumes_path.mkdir(parents=True, exist_ok=True)
-        path = self.resumes_path / f"{resume_id}.json"
+        path = self._resolve_resume_path(resume_id)
         path.write_text(json.dumps(payload, indent=2, sort_keys=True, default=self._json_default))
 
     @staticmethod
@@ -76,3 +83,17 @@ class StorageService:
         if isinstance(value, datetime):
             return value.isoformat()
         return value
+
+    def _resolve_resume_path(self, resume_id: str) -> Path:
+        normalized_id = self._normalize_resume_id(resume_id)
+        path = (self.resumes_path / f"{normalized_id}.json").resolve()
+        if not path.is_relative_to(self.resumes_path):
+            raise ValueError("Invalid resume identifier")
+        return path
+
+    @staticmethod
+    def _normalize_resume_id(resume_id: str) -> str:
+        try:
+            return str(UUID(resume_id))
+        except ValueError as exc:  # pragma: no cover - validation path
+            raise ValueError("Invalid resume identifier") from exc

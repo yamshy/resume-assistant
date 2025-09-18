@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from uuid import UUID
+
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 
@@ -17,10 +19,10 @@ class ApprovalRequest(BaseModel):
 
 
 @router.post("/resumes/{resume_id}/approve")
-async def approve_resume(resume_id: str, request: ApprovalRequest) -> dict[str, object]:
+async def approve_resume(resume_id: UUID, request: ApprovalRequest) -> dict[str, object]:
     try:
         workflow: ApprovalWorkflow = await _resume_service.approve_resume(
-            resume_id=resume_id,
+            resume_id=str(resume_id),
             decision=request.decision,
             comments=request.comments,
         )

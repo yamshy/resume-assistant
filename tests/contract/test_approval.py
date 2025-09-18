@@ -24,3 +24,13 @@ async def test_resume_approval_contract(async_client: AsyncClient) -> None:
     assert result["status"] == "approved"
     assert result["resume_id"] == resume_id
     assert result["decision"]["decision"] == "approved"
+
+
+@pytest.mark.asyncio
+async def test_resume_approval_invalid_identifier_rejected(async_client: AsyncClient) -> None:
+    response = await async_client.post(
+        "/api/v1/resumes/not-a-valid-uuid/approve",
+        json={"decision": "approve"},
+    )
+
+    assert response.status_code == 422

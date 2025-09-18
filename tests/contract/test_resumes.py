@@ -1,3 +1,5 @@
+from uuid import uuid4
+
 import pytest
 from httpx import AsyncClient
 
@@ -40,7 +42,14 @@ async def test_get_resume_returns_saved_resume(async_client: AsyncClient) -> Non
 
 @pytest.mark.asyncio
 async def test_get_resume_missing_returns_404(async_client: AsyncClient) -> None:
-    response = await async_client.get("/api/v1/resumes/does-not-exist")
+    response = await async_client.get(f"/api/v1/resumes/{uuid4()}")
 
     assert response.status_code == 404
     assert "not found" in response.json()["detail"].lower()
+
+
+@pytest.mark.asyncio
+async def test_get_resume_invalid_identifier_rejected(async_client: AsyncClient) -> None:
+    response = await async_client.get("/api/v1/resumes/not-a-valid-uuid")
+
+    assert response.status_code == 422
