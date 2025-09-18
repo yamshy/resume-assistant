@@ -255,11 +255,11 @@ class TestAgentChainIntegration:
 
         # This import will FAIL because agents don't exist yet - this is expected TDD behavior
         with pytest.raises(ModuleNotFoundError, match="No module named 'src.resume_core.agents.job_analysis_agent'"):
-            from src.resume_core.agents.job_analysis_agent import JobAnalysisAgent
-            from src.resume_core.agents.profile_matching_agent import ProfileMatchingAgent
-            from src.resume_core.agents.resume_generation_agent import ResumeGenerationAgent
-            from src.resume_core.agents.validation_agent import ValidationAgent
-            from src.resume_core.agents.human_interface_agent import HumanInterfaceAgent
+            from src.agents.job_analysis_agent import JobAnalysisAgent
+            from src.agents.profile_matching import ProfileMatchingAgent
+            from src.agents.resume_generation_agent import ResumeGenerationAgent
+            from src.agents.validation_agent import ValidationAgent
+            from src.agents.human_interface_agent import HumanInterfaceAgent
 
             # Configure agents with TestModel for mocking
             job_analysis_agent = JobAnalysisAgent().override(model=mock_test_models["job_analysis"])
@@ -349,7 +349,7 @@ class TestAgentChainIntegration:
         """
         # This will FAIL because agents don't exist yet
         with pytest.raises(ModuleNotFoundError):
-            from src.resume_core.agents.job_analysis_agent import JobAnalysisAgent
+            from src.agents.job_analysis_agent import JobAnalysisAgent
             from pydantic_ai.exceptions import ModelRetry
 
             # Test retry logic
@@ -383,8 +383,8 @@ class TestAgentChainIntegration:
         """
         # This will FAIL because agents don't exist yet
         with pytest.raises(ModuleNotFoundError):
-            from src.resume_core.agents.job_analysis_agent import JobAnalysisAgent
-            from src.resume_core.services.profile_service import ProfileService
+            from src.agents.job_analysis_agent import JobAnalysisAgent
+            from src.services.profile_service import ProfileService
 
             start_time = time.time()
 
@@ -418,7 +418,7 @@ class TestAgentChainIntegration:
         """
         # This will FAIL because agents don't exist yet
         with pytest.raises(ModuleNotFoundError):
-            from src.resume_core.agents.human_interface_agent import HumanInterfaceAgent
+            from src.agents.human_interface_agent import HumanInterfaceAgent
 
             human_interface_agent = HumanInterfaceAgent()
 
@@ -467,8 +467,8 @@ class TestAgentChainIntegration:
         """
         # This will FAIL because agents don't exist yet
         with pytest.raises(ModuleNotFoundError):
-            from src.resume_core.agents.job_analysis_agent import JobAnalysisAgent
-            from src.resume_core.agents.profile_matching_agent import ProfileMatchingAgent
+            from src.agents.job_analysis_agent import JobAnalysisAgent
+            from src.agents.profile_matching import ProfileMatchingAgent
 
             # Test data integrity between agents
             job_analysis_agent = JobAnalysisAgent()
@@ -504,7 +504,7 @@ class TestAgentChainIntegration:
         """
         # This will FAIL because agents don't exist yet
         with pytest.raises(ModuleNotFoundError):
-            from src.resume_core.agents.job_analysis_agent import JobAnalysisAgent
+            from src.agents.job_analysis_agent import JobAnalysisAgent
 
             agent_timings = {}
 

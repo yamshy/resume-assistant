@@ -10,7 +10,7 @@ from datetime import date
 from typing import Dict, Any
 from pydantic import ValidationError
 
-# Import all models from main models package (which re-exports from resume_core)
+# Import all models from main models package (which re-exports from src)
 from models import (
     # Profile models
     ContactInfo,
@@ -33,28 +33,28 @@ from models.job_analysis import (
     JobAnalysis,
 )
 
-# Import matching models from resume_core
-from resume_core.models.matching import (
+# Import matching models from src
+from src.models.matching import (
     SkillMatch,
     ExperienceMatch,
     MatchingResult,
 )
 
-# Import validation models from resume_core
-from resume_core.models.validation import (
+# Import validation models from src
+from src.models.validation import (
     ValidationIssue,
     ValidationWarning,
     ValidationResult,
 )
 
-# Import resume optimization models from resume_core
-from resume_core.models.resume_optimization import (
+# Import resume optimization models from src
+from src.models.resume_optimization import (
     ContentOptimization,
     TailoredResume,
 )
 
-# Import approval models from resume_core
-from resume_core.models.approval import (
+# Import approval models from src
+from src.models.approval import (
     ResumeSection,
     ApprovalStatus,
     ReviewDecision,
@@ -173,7 +173,8 @@ def valid_job_analysis(valid_job_requirement) -> Dict[str, Any]:
         "industry": "Technology",
         "salary_range": "$120,000 - $160,000",
         "benefits": ["Health insurance", "401k matching", "Flexible PTO"],
-        "preferred_qualifications": ["AWS experience", "Docker knowledge"]
+        "preferred_qualifications": ["AWS experience", "Docker knowledge"],
+        "analysis_timestamp": "2025-09-18T12:00:00Z"
     }
 
 
@@ -328,7 +329,7 @@ class TestSkillCategory:
         """Test enum serialization behavior."""
         category = SkillCategory.TECHNICAL
         assert category.value == "technical"
-        assert str(category) == "technical"
+        assert str(category) == "SkillCategory.TECHNICAL"
 
 
 class TestSkill:

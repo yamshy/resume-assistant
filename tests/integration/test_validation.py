@@ -13,7 +13,7 @@ from pydantic_ai.models.test import TestModel
 
 # This import will fail initially - that's expected for TDD
 try:
-    from resume_core.agents.validation_agent import ValidationAgent, ValidationResult
+    from src.agents.validation_agent import ValidationAgent, ValidationResult
 except ImportError:
     # Expected to fail - agent doesn't exist yet
     ValidationAgent = None

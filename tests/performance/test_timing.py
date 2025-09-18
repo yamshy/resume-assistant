@@ -13,27 +13,27 @@ Follows constitutional agent-chain architecture with mocked agents for cost-effe
 import asyncio
 import time
 import uuid
-from datetime import datetime
+from datetime import datetime, date
 from typing import Dict, List, Tuple
 from unittest.mock import AsyncMock, patch
 
 import pytest
 from pydantic_ai.models.test import TestModel
 
-from resume_core.models.job_analysis import JobAnalysis, JobRequirement, ResponsibilityLevel
-from resume_core.models.matching import MatchingResult, SkillMatch, ExperienceMatch
-from resume_core.models.profile import UserProfile, SkillCategory, WorkExperience, Education
-from resume_core.models.resume_optimization import TailoredResume, ContentOptimization
-from resume_core.models.validation import ValidationResult, ValidationIssue, ValidationWarning
-from resume_core.models.approval import ApprovalWorkflow, ReviewDecision, ApprovalStatus, ApprovalRequest, ResumeSection
+from src.models.job_analysis import JobAnalysis, JobRequirement, ResponsibilityLevel
+from src.models.matching import MatchingResult, SkillMatch, ExperienceMatch
+from src.models.profile import UserProfile, SkillCategory, WorkExperience, Education, ContactInfo, Skill
+from src.models.resume_optimization import TailoredResume, ContentOptimization
+from src.models.validation import ValidationResult, ValidationIssue, ValidationWarning
+from src.models.approval import ApprovalWorkflow, ReviewDecision, ApprovalStatus, ApprovalRequest, ResumeSection
 
-from resume_core.agents.job_analysis_agent import JobAnalysisAgent
-from resume_core.agents.profile_matching import ProfileMatchingAgent
-from resume_core.agents.resume_generation_agent import ResumeGenerationAgent
-from resume_core.agents.validation_agent import ValidationAgent
+from src.agents.job_analysis_agent import JobAnalysisAgent
+from src.agents.profile_matching import ProfileMatchingAgent
+from src.agents.resume_generation_agent import ResumeGenerationAgent
+from src.agents.validation_agent import ValidationAgent
 
 # ResumeService import commented out due to missing human_interface_agent
-# from resume_core.services.resume_service import ResumeService
+# from src.services.resume_service import ResumeService
 
 
 class PerformanceMeasurement:
@@ -99,23 +99,27 @@ def sample_job_posting() -> str:
 def sample_user_profile() -> UserProfile:
     """Sample user profile for performance testing."""
     return UserProfile(
-        personal_info={
-            "full_name": "John Smith",
-            "email": "john.smith@example.com",
-            "phone": "+1-555-0123",
-            "location": "San Francisco, CA"
-        },
+        version="1.0",
+        metadata={"created_at": "2025-09-18T00:00:00Z", "updated_at": "2025-09-18T00:00:00Z"},
+        contact=ContactInfo(
+            name="John Smith",
+            email="john.smith@example.com",
+            phone="+1-555-0123",
+            location="San Francisco, CA"
+        ),
         professional_summary="Experienced backend engineer with 6 years in Python development",
-        work_experience=[
+        experience=[
             WorkExperience(
                 company="StartupCo",
-                title="Senior Python Developer",
-                start_date="2020-01",
-                end_date="2024-01",
-                responsibilities=[
-                    "Built scalable APIs with FastAPI",
-                    "Implemented microservices architecture",
-                    "Mentored 3 junior developers"
+                position="Senior Python Developer",
+                location="San Francisco, CA",
+                start_date=date(2020, 1, 1),
+                end_date=date(2024, 1, 1),
+                description="Built scalable backend systems using Python and FastAPI",
+                achievements=[
+                    "Built scalable APIs with FastAPI serving 1M+ requests/day",
+                    "Implemented microservices architecture reducing deployment time by 60%",
+                    "Mentored 3 junior developers, improving team productivity by 40%"
                 ],
                 technologies=["Python", "FastAPI", "PostgreSQL", "Docker"]
             )
@@ -124,23 +128,15 @@ def sample_user_profile() -> UserProfile:
             Education(
                 institution="UC Berkeley",
                 degree="BS Computer Science",
-                graduation_year="2018",
-                gpa="3.8"
+                graduation_date=date(2018, 6, 1),
+                gpa=3.8
             )
         ],
-        skills={
-            SkillCategory.TECHNICAL: ["Python", "FastAPI", "PostgreSQL", "Docker", "AWS"],
-            SkillCategory.SOFT: ["Leadership", "Problem Solving", "Communication"],
-            SkillCategory.LANGUAGE: ["English (Native)", "Spanish (Conversational)"]
-        },
-        certifications=["AWS Solutions Architect"],
-        projects=[
-            {
-                "name": "E-commerce Platform",
-                "description": "Built backend services for high-traffic e-commerce site",
-                "technologies": ["Python", "FastAPI", "PostgreSQL"],
-                "url": "https://github.com/johnsmith/ecommerce"
-            }
+        skills=[
+            Skill(name="Python", category=SkillCategory.TECHNICAL, proficiency=5, years_experience=6),
+            Skill(name="FastAPI", category=SkillCategory.TECHNICAL, proficiency=4, years_experience=3),
+            Skill(name="PostgreSQL", category=SkillCategory.TECHNICAL, proficiency=4, years_experience=4),
+            Skill(name="Leadership", category=SkillCategory.SOFT, proficiency=4, years_experience=3)
         ]
     )
 
@@ -194,7 +190,8 @@ def create_mock_job_analysis() -> JobAnalysis:
         industry="Technology",
         salary_range="$150,000 - $200,000",
         benefits=["Health insurance", "401k matching", "Stock options"],
-        preferred_qualifications=["Docker", "Kubernetes", "TDD experience"]
+        preferred_qualifications=["Docker", "Kubernetes", "TDD experience"],
+        analysis_timestamp="2025-09-18T12:00:00Z"
     )
 
 
@@ -586,7 +583,7 @@ async def test_api_endpoint_response_times(async_client):
 
     # Test health check endpoint
     async with PerformanceMeasurement("health_endpoint") as perf:
-        response = await async_client.get("/health")
+        response = await async_client.get("/api/v1/health")
 
     assert perf.elapsed_seconds < 0.5, f"Health endpoint took {perf.elapsed_seconds:.2f}s, too slow"
     assert response.status_code == 200

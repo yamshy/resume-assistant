@@ -20,7 +20,7 @@ class TestDownloadEndpoint:
         resume_id = str(uuid.uuid4())
 
         response = await async_client.get(
-            f"/resumes/{resume_id}/download",
+            f"/api/v1/resumes/{resume_id}/download",
             params={"format": "markdown"}
         )
 
@@ -38,7 +38,7 @@ class TestDownloadEndpoint:
         resume_id = str(uuid.uuid4())
 
         response = await async_client.get(
-            f"/resumes/{resume_id}/download",
+            f"/api/v1/resumes/{resume_id}/download",
             params={"format": "pdf"}
         )
 
@@ -56,7 +56,7 @@ class TestDownloadEndpoint:
         resume_id = str(uuid.uuid4())
 
         response = await async_client.get(
-            f"/resumes/{resume_id}/download",
+            f"/api/v1/resumes/{resume_id}/download",
             params={"format": "docx"}
         )
 
@@ -73,7 +73,7 @@ class TestDownloadEndpoint:
         """Test downloading resume with default format (markdown)."""
         resume_id = str(uuid.uuid4())
 
-        response = await async_client.get(f"/resumes/{resume_id}/download")
+        response = await async_client.get(f"/api/v1/resumes/{resume_id}/download")
 
         # This test MUST fail initially - endpoint doesn't exist
         assert response.status_code == 200
@@ -89,7 +89,7 @@ class TestDownloadEndpoint:
         resume_id = str(uuid.uuid4())
 
         response = await async_client.get(
-            f"/resumes/{resume_id}/download",
+            f"/api/v1/resumes/{resume_id}/download",
             params={"format": "invalid"}
         )
 
@@ -102,7 +102,7 @@ class TestDownloadEndpoint:
         resume_id = str(uuid.uuid4())
 
         response = await async_client.get(
-            f"/resumes/{resume_id}/download",
+            f"/api/v1/resumes/{resume_id}/download",
             params={"format": "markdown"}
         )
 
@@ -115,7 +115,7 @@ class TestDownloadEndpoint:
         invalid_resume_id = "not-a-uuid"
 
         response = await async_client.get(
-            f"/resumes/{invalid_resume_id}/download",
+            f"/api/v1/resumes/{invalid_resume_id}/download",
             params={"format": "markdown"}
         )
 
@@ -136,7 +136,7 @@ class TestDownloadEndpoint:
 
         for format_param, expected_content_type in formats_and_types:
             response = await async_client.get(
-                f"/resumes/{resume_id}/download",
+                f"/api/v1/resumes/{resume_id}/download",
                 params={"format": format_param}
             )
 

@@ -32,7 +32,7 @@ class TestResumeApprovalEndpoint:
 
         # Act
         response = await async_client.post(
-            f"/resumes/{resume_id}/approve",
+            f"/api/v1/resumes/{resume_id}/approve",
             json=review_decision
         )
 
@@ -73,7 +73,7 @@ class TestResumeApprovalEndpoint:
 
         # Act
         response = await async_client.post(
-            f"/resumes/{resume_id}/approve",
+            f"/api/v1/resumes/{resume_id}/approve",
             json=review_decision
         )
 
@@ -99,7 +99,7 @@ class TestResumeApprovalEndpoint:
 
         # Act
         response = await async_client.post(
-            f"/resumes/{resume_id}/approve",
+            f"/api/v1/resumes/{resume_id}/approve",
             json=review_decision
         )
 
@@ -122,7 +122,7 @@ class TestResumeApprovalEndpoint:
 
         # Act
         response = await async_client.post(
-            f"/resumes/{non_existent_resume_id}/approve",
+            f"/api/v1/resumes/{non_existent_resume_id}/approve",
             json=review_decision
         )
 
@@ -144,7 +144,7 @@ class TestResumeApprovalEndpoint:
 
         # Act
         response = await async_client.post(
-            f"/resumes/{invalid_resume_id}/approve",
+            f"/api/v1/resumes/{invalid_resume_id}/approve",
             json=review_decision
         )
 
@@ -163,7 +163,7 @@ class TestResumeApprovalEndpoint:
 
         # Act
         response = await async_client.post(
-            f"/resumes/{resume_id}/approve",
+            f"/api/v1/resumes/{resume_id}/approve",
             json=invalid_review_decision
         )
 
@@ -181,7 +181,7 @@ class TestResumeApprovalEndpoint:
 
         # Act
         response = await async_client.post(
-            f"/resumes/{resume_id}/approve",
+            f"/api/v1/resumes/{resume_id}/approve",
             json=invalid_review_decision
         )
 
@@ -209,7 +209,7 @@ class TestResumeApprovalEndpoint:
 
         # Act
         response = await async_client.post(
-            f"/resumes/{resume_id}/approve",
+            f"/api/v1/resumes/{resume_id}/approve",
             json=review_decision
         )
 

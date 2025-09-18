@@ -19,18 +19,18 @@ from pydantic_ai.models.test import TestModel
 from pydantic_ai.exceptions import ModelRetry
 
 # Import agents
-from resume_core.agents.job_analysis_agent import JobAnalysisAgent, create_job_analysis_agent
-from resume_core.agents.profile_matching import ProfileMatchingAgent, create_profile_matching_agent
-from resume_core.agents.resume_generation_agent import ResumeGenerationAgent, create_resume_generation_agent
-from resume_core.agents.validation_agent import ValidationAgent, create_validation_agent
+from src.agents.job_analysis_agent import JobAnalysisAgent, create_job_analysis_agent
+from src.agents.profile_matching import ProfileMatchingAgent, create_profile_matching_agent
+from src.agents.resume_generation_agent import ResumeGenerationAgent, create_resume_generation_agent
+from src.agents.validation_agent import ValidationAgent, create_validation_agent
 
 # Import models for output validation
-from resume_core.models.job_analysis import JobAnalysis, JobRequirement, ResponsibilityLevel
-from resume_core.models.matching import MatchingResult, SkillMatch, ExperienceMatch
-from resume_core.models.resume_optimization import TailoredResume, ContentOptimization
-from resume_core.models.validation import ValidationResult, ValidationIssue, ValidationWarning
-from resume_core.models.profile import UserProfile, ContactInfo, WorkExperience, Education, Skill, Project, SkillCategory
-from resume_core.models.approval import ResumeSection
+from src.models.job_analysis import JobAnalysis, JobRequirement, ResponsibilityLevel
+from src.models.matching import MatchingResult, SkillMatch, ExperienceMatch
+from src.models.resume_optimization import TailoredResume, ContentOptimization
+from src.models.validation import ValidationResult, ValidationIssue, ValidationWarning
+from src.models.profile import UserProfile, ContactInfo, WorkExperience, Education, Skill, Project, SkillCategory
+from src.models.approval import ResumeSection
 
 
 class TestJobAnalysisAgentMock:
@@ -206,7 +206,8 @@ class TestProfileMatchingAgentMock:
             industry="Technology",
             salary_range="$120k-$150k",
             benefits=["Health insurance", "401k matching"],
-            preferred_qualifications=["Docker experience", "AWS certification"]
+            preferred_qualifications=["Docker experience", "AWS certification"],
+            analysis_timestamp="2025-09-18T12:00:00Z"
         )
 
     async def test_profile_matching_agent_mock_basic(self, mock_profile_matching_agent, sample_user_profile, sample_job_analysis):

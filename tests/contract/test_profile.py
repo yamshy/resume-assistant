@@ -23,7 +23,7 @@ async def test_get_profile_success(async_client: AsyncClient) -> None:
     - Response body: UserProfile schema with all required fields
     """
     # This test should FAIL initially - endpoint doesn't exist yet
-    response = await async_client.get("/profile")
+    response = await async_client.get("/api/v1/profile")
 
     assert response.status_code == status.HTTP_200_OK
     assert response.headers["content-type"] == "application/json"
@@ -64,7 +64,7 @@ async def test_get_profile_not_found(async_client: AsyncClient) -> None:
     FastAPI's default 404 format instead of the OpenAPI ErrorResponse schema.
     """
     # This test should FAIL initially - endpoint doesn't exist yet
-    response = await async_client.get("/profile")
+    response = await async_client.get("/api/v1/profile")
 
     # Currently returns 404 but this test verifies the correct format per OpenAPI spec
     assert response.status_code == status.HTTP_404_NOT_FOUND
@@ -90,7 +90,7 @@ async def test_get_profile_endpoint_exists(async_client: AsyncClient) -> None:
     Currently the endpoint returns FastAPI's default 404 because the route is not
     implemented yet. This test will pass but serves as documentation of the current state.
     """
-    response = await async_client.get("/profile")
+    response = await async_client.get("/api/v1/profile")
 
     # Currently returns 404 because the endpoint is not implemented
     # When implemented, it should return either 200 or proper 404 per OpenAPI spec
@@ -168,7 +168,7 @@ async def test_put_profile_success(async_client: AsyncClient) -> None:
 
     # This test should FAIL initially - endpoint doesn't exist yet
     response = await async_client.put(
-        "/profile",
+        "/api/v1/profile",
         json=profile_data,
         headers={"Content-Type": "application/json"}
     )
@@ -227,7 +227,7 @@ async def test_put_profile_validation_error(async_client: AsyncClient) -> None:
 
     # This test should FAIL initially - endpoint doesn't exist yet
     response = await async_client.put(
-        "/profile",
+        "/api/v1/profile",
         json=invalid_profile_data,
         headers={"Content-Type": "application/json"}
     )
@@ -258,7 +258,7 @@ async def test_put_profile_invalid_json(async_client: AsyncClient) -> None:
     """
     # This test should FAIL initially - endpoint doesn't exist yet
     response = await async_client.put(
-        "/profile",
+        "/api/v1/profile",
         content="{invalid json}",
         headers={"Content-Type": "application/json"}
     )
@@ -299,7 +299,7 @@ async def test_put_profile_endpoint_exists(async_client: AsyncClient) -> None:
     }
 
     response = await async_client.put(
-        "/profile",
+        "/api/v1/profile",
         json=minimal_profile,
         headers={"Content-Type": "application/json"}
     )

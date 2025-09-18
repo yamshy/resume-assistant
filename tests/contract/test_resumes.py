@@ -25,7 +25,7 @@ class TestTailorResumeEndpoint:
             }
         }
 
-        response = await async_client.post("/resumes/tailor", json=request_payload)
+        response = await async_client.post("/api/v1/resumes/tailor", json=request_payload)
 
         # Should return 200 OK with TailoringResult schema
         assert response.status_code == 200
@@ -90,7 +90,7 @@ class TestTailorResumeEndpoint:
             "job_description": "Senior Data Scientist role focusing on machine learning and Python development."
         }
 
-        response = await async_client.post("/resumes/tailor", json=request_payload)
+        response = await async_client.post("/api/v1/resumes/tailor", json=request_payload)
 
         # Should return 200 OK even with minimal request
         assert response.status_code == 200
@@ -113,7 +113,7 @@ class TestTailorResumeEndpoint:
             }
         }
 
-        response = await async_client.post("/resumes/tailor", json=request_payload)
+        response = await async_client.post("/api/v1/resumes/tailor", json=request_payload)
 
         # Should handle optional job_analysis_id parameter
         assert response.status_code == 200
@@ -131,7 +131,7 @@ class TestTailorResumeEndpoint:
             }
         }
 
-        response = await async_client.post("/resumes/tailor", json=request_payload)
+        response = await async_client.post("/api/v1/resumes/tailor", json=request_payload)
 
         # Should return 400 Bad Request for missing required field
         assert response.status_code == 400
@@ -150,7 +150,7 @@ class TestTailorResumeEndpoint:
             "job_description": ""
         }
 
-        response = await async_client.post("/resumes/tailor", json=request_payload)
+        response = await async_client.post("/api/v1/resumes/tailor", json=request_payload)
 
         # Should return 400 Bad Request for empty job description
         assert response.status_code == 400
@@ -164,7 +164,7 @@ class TestTailorResumeEndpoint:
         """Test handling of malformed JSON request."""
         # This will send malformed JSON
         response = await async_client.post(
-            "/resumes/tailor",
+            "/api/v1/resumes/tailor",
             content='{"job_description": "test", "invalid": }',  # Malformed JSON
             headers={"Content-Type": "application/json"}
         )
@@ -180,7 +180,7 @@ class TestTailorResumeEndpoint:
             "preferences": "invalid_string_instead_of_object"  # Should be object
         }
 
-        response = await async_client.post("/resumes/tailor", json=request_payload)
+        response = await async_client.post("/api/v1/resumes/tailor", json=request_payload)
 
         # Should return 400 Bad Request for invalid preferences type
         assert response.status_code == 400

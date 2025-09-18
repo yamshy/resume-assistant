@@ -28,7 +28,7 @@ async def async_client() -> AsyncGenerator[AsyncClient]:
 
 @pytest.fixture
 def mock_agent():
-    with patch("resume_core.agents.base_agent.Agent.run") as mock_run:
+    with patch("src.agents.base_agent.Agent.run") as mock_run:
         mock_run.return_value = {
             "analysis": "Mocked analysis result",
             "confidence": 0.95,
@@ -44,5 +44,5 @@ def mock_agent_async():
             "confidence": 0.90,
         }
 
-    with patch("resume_core.agents.base_agent.Agent.run", new=mock_run):
+    with patch("src.agents.base_agent.Agent.run", new=mock_run):
         yield

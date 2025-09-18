@@ -25,7 +25,7 @@ class TestResumeHistoryEndpoint:
         - Response body: Object with resumes array, total, limit, offset
         """
         # This test should FAIL initially - endpoint doesn't exist yet
-        response = await async_client.get("/resumes/history")
+        response = await async_client.get("/api/v1/resumes/history")
 
         assert response.status_code == 200
         assert "application/json" in response.headers["content-type"]
@@ -105,7 +105,7 @@ class TestResumeHistoryEndpoint:
     @pytest.mark.asyncio
     async def test_get_resume_history_default_parameters(self, async_client: AsyncClient) -> None:
         """Test GET /resumes/history uses default parameters when none provided."""
-        response = await async_client.get("/resumes/history")
+        response = await async_client.get("/api/v1/resumes/history")
 
         assert response.status_code == 200
         history_data = response.json()
@@ -146,7 +146,7 @@ class TestResumeHistoryEndpoint:
     @pytest.mark.asyncio
     async def test_get_resume_history_empty_result(self, async_client: AsyncClient) -> None:
         """Test GET /resumes/history handles empty history gracefully."""
-        response = await async_client.get("/resumes/history")
+        response = await async_client.get("/api/v1/resumes/history")
 
         assert response.status_code == 200
         history_data = response.json()

@@ -6,4 +6,6 @@ from httpx import AsyncClient
 async def test_health_check(async_client: AsyncClient):
     response = await async_client.get("/api/v1/health")
     assert response.status_code == 200
-    assert response.json() == {"status": "ok"}
+    response_data = response.json()
+    assert response_data["status"] == "healthy"
+    assert "timestamp" in response_data

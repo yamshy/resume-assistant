@@ -13,7 +13,7 @@ from typing import List
 import pytest
 from pydantic_ai.models.test import TestModel
 
-from src.resume_core.models.profile import (
+from src.models.profile import (
     ContactInfo,
     UserProfile,
     WorkExperience,
@@ -22,12 +22,12 @@ from src.resume_core.models.profile import (
     SkillCategory,
     Project,
 )
-from src.resume_core.models.job_analysis import (
+from src.models.job_analysis import (
     JobAnalysis,
     JobRequirement,
     ResponsibilityLevel,
 )
-from src.resume_core.models.matching import (
+from src.models.matching import (
     MatchingResult,
     SkillMatch,
     ExperienceMatch,
@@ -312,7 +312,7 @@ class TestProfileMatchingAgentAccuracy:
     async def test_high_match_profile_accuracy(self, high_match_profile, senior_python_job_analysis):
         """Test high-match profile (>80% skill overlap) produces accurate matching results."""
         # This test will FAIL until Profile Matching Agent is implemented
-        from src.resume_core.agents.profile_matching import ProfileMatchingAgent
+        from src.agents.profile_matching import ProfileMatchingAgent
 
         agent = ProfileMatchingAgent()
         agent = agent.override(model=TestModel())
@@ -356,7 +356,7 @@ class TestProfileMatchingAgentAccuracy:
     async def test_medium_match_profile_accuracy(self, medium_match_profile, senior_python_job_analysis):
         """Test medium-match profile (50-80% skill overlap) produces moderate matching results."""
         # This test will FAIL until Profile Matching Agent is implemented
-        from src.resume_core.agents.profile_matching import ProfileMatchingAgent
+        from src.agents.profile_matching import ProfileMatchingAgent
 
         agent = ProfileMatchingAgent()
         agent = agent.override(model=TestModel())
@@ -392,7 +392,7 @@ class TestProfileMatchingAgentAccuracy:
     async def test_low_match_profile_accuracy(self, low_match_profile, senior_python_job_analysis):
         """Test low-match profile (<50% skill overlap) produces accurate low scores."""
         # This test will FAIL until Profile Matching Agent is implemented
-        from src.resume_core.agents.profile_matching import ProfileMatchingAgent
+        from src.agents.profile_matching import ProfileMatchingAgent
 
         agent = ProfileMatchingAgent()
         agent = agent.override(model=TestModel())
@@ -427,7 +427,7 @@ class TestProfileMatchingAgentAccuracy:
     async def test_transferable_skills_identification(self, low_match_profile, senior_python_job_analysis):
         """Test accurate identification of transferable skills for career transitions."""
         # This test will FAIL until Profile Matching Agent is implemented
-        from src.resume_core.agents.profile_matching import ProfileMatchingAgent
+        from src.agents.profile_matching import ProfileMatchingAgent
 
         agent = ProfileMatchingAgent()
         agent = agent.override(model=TestModel())
@@ -452,7 +452,7 @@ class TestProfileMatchingAgentAccuracy:
     async def test_edge_case_empty_profile(self, empty_profile, senior_python_job_analysis):
         """Test handling of empty profile edge case."""
         # This test will FAIL until Profile Matching Agent is implemented
-        from src.resume_core.agents.profile_matching import ProfileMatchingAgent
+        from src.agents.profile_matching import ProfileMatchingAgent
 
         agent = ProfileMatchingAgent()
         agent = agent.override(model=TestModel())
@@ -478,7 +478,7 @@ class TestProfileMatchingAgentAccuracy:
     async def test_experience_matching_accuracy(self, high_match_profile, senior_python_job_analysis):
         """Test accurate matching of work experience against job responsibilities."""
         # This test will FAIL until Profile Matching Agent is implemented
-        from src.resume_core.agents.profile_matching import ProfileMatchingAgent
+        from src.agents.profile_matching import ProfileMatchingAgent
 
         agent = ProfileMatchingAgent()
         agent = agent.override(model=TestModel())
@@ -510,7 +510,7 @@ class TestProfileMatchingAgentPerformance:
     async def test_performance_timing_requirement(self, high_match_profile, senior_python_job_analysis):
         """Test that profile matching completes within 5 second constitutional requirement."""
         # This test will FAIL until Profile Matching Agent is implemented
-        from src.resume_core.agents.profile_matching import ProfileMatchingAgent
+        from src.agents.profile_matching import ProfileMatchingAgent
 
         agent = ProfileMatchingAgent()
         agent = agent.override(model=TestModel())
@@ -537,7 +537,7 @@ class TestProfileMatchingAgentPerformance:
     async def test_performance_with_large_profile(self, senior_python_job_analysis):
         """Test performance with profile containing large amounts of data."""
         # This test will FAIL until Profile Matching Agent is implemented
-        from src.resume_core.agents.profile_matching import ProfileMatchingAgent
+        from src.agents.profile_matching import ProfileMatchingAgent
 
         # Create profile with extensive data
         large_profile = UserProfile(
@@ -619,7 +619,7 @@ class TestProfileMatchingAgentErrorHandling:
     async def test_conflicting_profile_data(self, senior_python_job_analysis):
         """Test handling of conflicting data in user profile."""
         # This test will FAIL until Profile Matching Agent is implemented
-        from src.resume_core.agents.profile_matching import ProfileMatchingAgent
+        from src.agents.profile_matching import ProfileMatchingAgent
 
         # Create profile with conflicting skill data
         conflicting_profile = UserProfile(
@@ -674,7 +674,7 @@ class TestProfileMatchingAgentErrorHandling:
     async def test_minimal_job_requirements(self, high_match_profile):
         """Test handling of job analysis with minimal requirements."""
         # This test will FAIL until Profile Matching Agent is implemented
-        from src.resume_core.agents.profile_matching import ProfileMatchingAgent
+        from src.agents.profile_matching import ProfileMatchingAgent
 
         minimal_job = JobAnalysis(
             company_name="MinimalCorp",

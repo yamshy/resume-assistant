@@ -116,14 +116,14 @@ async def root():
     }
 
 
-# Include all routers
-app.include_router(health_router)
-app.include_router(profile_router)
-app.include_router(jobs_router)
-app.include_router(resumes_router)
-app.include_router(approval_router)
-app.include_router(download_router)
-app.include_router(history_router)
+# Include all routers with /api/v1 prefix for versioning
+app.include_router(health_router, prefix="/api/v1")
+app.include_router(profile_router, prefix="/api/v1")
+app.include_router(jobs_router, prefix="/api/v1")
+app.include_router(resumes_router, prefix="/api/v1")
+app.include_router(approval_router, prefix="/api/v1")
+app.include_router(download_router, prefix="/api/v1")
+app.include_router(history_router, prefix="/api/v1")
 
 
 # Development server entry point

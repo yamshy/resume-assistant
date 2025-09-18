@@ -21,10 +21,10 @@ from pydantic_ai.models.test import TestModel
 
 # Project models (will fail until implemented)
 try:
-    from src.resume_core.agents.resume_generation_agent import ResumeGenerationAgent
-    from src.resume_core.models.resume_optimization import TailoredResume
-    from src.resume_core.models.approval import ResumeSection
-    from src.resume_core.models.profile import (
+    from src.agents.resume_generation_agent import ResumeGenerationAgent
+    from src.models.resume_optimization import TailoredResume
+    from src.models.approval import ResumeSection
+    from src.models.profile import (
         ContactInfo,
         Skill,
         SkillCategory,
@@ -32,8 +32,8 @@ try:
         WorkExperience,
     )
 
-    from src.resume_core.models.job_analysis import JobAnalysis, JobRequirement, ResponsibilityLevel
-    from src.resume_core.models.matching import ExperienceMatch, MatchingResult, SkillMatch
+    from src.models.job_analysis import JobAnalysis, JobRequirement, ResponsibilityLevel
+    from src.models.matching import ExperienceMatch, MatchingResult, SkillMatch
 except ImportError:
     # Expected to fail in TDD - agents and models don't exist yet
     pytest.skip("Resume Generation Agent and models not implemented yet", allow_module_level=True)

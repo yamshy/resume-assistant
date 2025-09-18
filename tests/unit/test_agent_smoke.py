@@ -1,7 +1,7 @@
 import pytest
 
-from resume_core.agents import Agent
-from resume_core.services import AnalysisService
+from src.agents.base_agent import Agent
+from src.services.analysis import AnalysisService
 
 
 @pytest.mark.asyncio

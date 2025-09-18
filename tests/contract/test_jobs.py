@@ -42,7 +42,7 @@ class TestJobsAnalyzeEndpoint:
         }
 
         # Make POST request to /jobs/analyze
-        response = await async_client.post("/jobs/analyze", json=request_payload)
+        response = await async_client.post("/api/v1/jobs/analyze", json=request_payload)
 
         # Assert successful response
         assert response.status_code == 200
@@ -104,7 +104,7 @@ class TestJobsAnalyzeEndpoint:
         request_payload = {}
 
         # Make POST request to /jobs/analyze
-        response = await async_client.post("/jobs/analyze", json=request_payload)
+        response = await async_client.post("/api/v1/jobs/analyze", json=request_payload)
 
         # Assert validation error response
         assert response.status_code == 400
@@ -123,7 +123,7 @@ class TestJobsAnalyzeEndpoint:
         }
 
         # Make POST request to /jobs/analyze
-        response = await async_client.post("/jobs/analyze", json=request_payload)
+        response = await async_client.post("/api/v1/jobs/analyze", json=request_payload)
 
         # Assert validation error response
         assert response.status_code == 400
@@ -141,7 +141,7 @@ class TestJobsAnalyzeEndpoint:
         }
 
         # Make POST request to /jobs/analyze
-        response = await async_client.post("/jobs/analyze", json=request_payload)
+        response = await async_client.post("/api/v1/jobs/analyze", json=request_payload)
 
         # Assert validation error response
         assert response.status_code == 400
@@ -159,7 +159,7 @@ class TestJobsAnalyzeEndpoint:
         }
 
         # Make POST request to /jobs/analyze
-        response = await async_client.post("/jobs/analyze", json=request_payload)
+        response = await async_client.post("/api/v1/jobs/analyze", json=request_payload)
 
         # Should succeed with minimal input
         assert response.status_code == 200
@@ -179,7 +179,7 @@ class TestJobsAnalyzeEndpoint:
         """Test that endpoint only accepts JSON content type."""
         # Valid job description but wrong content type
         response = await async_client.post(
-            "/jobs/analyze",
+            "/api/v1/jobs/analyze",
             data="job_description=Software Developer position",
             headers={"Content-Type": "application/x-www-form-urlencoded"}
         )
