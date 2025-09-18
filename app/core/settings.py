@@ -15,6 +15,7 @@ class Settings(BaseSettings):
     ENV: str = "dev"
     MODEL_NAME: str = "gpt-4o"
     OPENAI_API_KEY: str | None = None
+    DATA_DIR: str | None = None
 
     APP_NAME: str = "Resume Assistant API"
     VERSION: str = "0.1.0"
