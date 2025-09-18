@@ -12,7 +12,6 @@ Integration Test Implementation: Uses real Resume Generation Agent with API call
 """
 
 import time
-from datetime import date
 
 import pytest
 
@@ -60,7 +59,7 @@ class TestResumeGenerationQuality:
                     position="Senior Software Engineer",
                     company="TechCorp",
                     location="San Francisco, CA",
-                    start_date=date(2020, 1, 1),
+                    start_date="2020-01-01",
                     end_date=None,
                     description="Lead development of RESTful APIs and microservices using Python and FastAPI.",
                     achievements=[
@@ -97,7 +96,7 @@ class TestResumeGenerationQuality:
                     position="Frontend Developer",
                     company="WebStart",
                     location="Austin, TX",
-                    start_date=date(2022, 6, 1),
+                    start_date="2022-06-01",
                     end_date=None,
                     description="Develop responsive web applications using React and JavaScript.",
                     achievements=[

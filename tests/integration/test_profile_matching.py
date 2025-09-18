@@ -7,7 +7,7 @@ against job requirements with proper scoring and performance timing.
 These tests are designed to FAIL initially (TDD) until the Profile Matching Agent is implemented.
 """
 import time
-from datetime import date
+# Removed datetime import - using string dates per UserProfile model
 from typing import List
 
 import pytest
@@ -53,7 +53,7 @@ def high_match_profile() -> UserProfile:
                 position="Senior Software Engineer",
                 company="Tech Corp",
                 location="San Francisco, CA",
-                start_date=date(2020, 1, 1),
+                start_date="2020-01-01",
                 end_date=None,
                 description="Lead full-stack development using Python, React, and AWS",
                 achievements=[
@@ -67,8 +67,8 @@ def high_match_profile() -> UserProfile:
                 position="Software Engineer",
                 company="StartupCo",
                 location="San Francisco, CA",
-                start_date=date(2018, 6, 1),
-                end_date=date(2019, 12, 31),
+                start_date="2018-06-01",
+                end_date="2019-12-31",
                 description="Full-stack development with Python/Django and React",
                 achievements=[
                     "Developed REST APIs serving 100K+ users",
@@ -82,7 +82,7 @@ def high_match_profile() -> UserProfile:
                 degree="Bachelor of Science in Computer Science",
                 institution="UC Berkeley",
                 location="Berkeley, CA",
-                graduation_date=date(2018, 5, 15),
+                graduation_date="2018-05-15",
                 gpa=3.8,
             )
         ],
@@ -99,7 +99,7 @@ def high_match_profile() -> UserProfile:
                 name="Microservices Platform",
                 description="Built scalable microservices platform using Python and AWS",
                 technologies=["Python", "AWS", "Docker", "Kubernetes"],
-                start_date=date(2023, 1, 1),
+                start_date="2023-01-01",
                 end_date=date(2023, 6, 1),
                 achievements=["Reduced deployment time by 50%", "Improved system reliability to 99.9%"],
             )
@@ -124,7 +124,7 @@ def medium_match_profile() -> UserProfile:
                 position="Software Developer",
                 company="WebDev Inc",
                 location="Austin, TX",
-                start_date=date(2021, 3, 1),
+                start_date="2021-03-01",
                 end_date=None,
                 description="Frontend development with JavaScript and React",
                 achievements=[
@@ -137,7 +137,7 @@ def medium_match_profile() -> UserProfile:
                 position="Junior Developer",
                 company="LocalTech",
                 location="Austin, TX",
-                start_date=date(2020, 1, 1),
+                start_date="2020-01-01",
                 end_date=date(2021, 2, 28),
                 description="Full-stack development with PHP and MySQL",
                 achievements=["Maintained legacy PHP applications"],
@@ -149,7 +149,7 @@ def medium_match_profile() -> UserProfile:
                 degree="Bachelor of Arts in Computer Science",
                 institution="UT Austin",
                 location="Austin, TX",
-                graduation_date=date(2019, 12, 15),
+                graduation_date="2019-12-15",
                 gpa=3.5,
             )
         ],
@@ -181,7 +181,7 @@ def low_match_profile() -> UserProfile:
                 position="Marketing Manager",
                 company="MarketingCorp",
                 location="Chicago, IL",
-                start_date=date(2019, 1, 1),
+                start_date="2019-01-01",
                 end_date=None,
                 description="Digital marketing campaigns and analytics",
                 achievements=[
@@ -196,7 +196,7 @@ def low_match_profile() -> UserProfile:
                 degree="Bachelor of Business Administration",
                 institution="Northwestern University",
                 location="Evanston, IL",
-                graduation_date=date(2018, 6, 15),
+                graduation_date="2018-06-15",
                 gpa=3.6,
             )
         ],
@@ -212,7 +212,7 @@ def low_match_profile() -> UserProfile:
                 name="Personal Website",
                 description="Built personal website using HTML and CSS",
                 technologies=["HTML", "CSS", "JavaScript"],
-                start_date=date(2024, 1, 1),
+                start_date="2024-01-01",
                 end_date=date(2024, 3, 1),
                 achievements=["Learned basic web development"],
             )
@@ -555,8 +555,8 @@ class TestProfileMatchingAgentPerformance:
                     position=f"Position {i}",
                     company=f"Company {i}",
                     location="San Francisco, CA",
-                    start_date=date(2020 - i, 1, 1),
-                    end_date=date(2021 - i, 1, 1) if i > 0 else None,
+                    start_date=f"{2020 - i}-01-01",
+                    end_date=f"{2021 - i}-01-01" if i > 0 else None,
                     description=f"Detailed description for position {i} with many responsibilities",
                     achievements=[f"Achievement {j}" for j in range(5)],
                     technologies=[f"Tech{j}" for j in range(10)],
@@ -568,7 +568,7 @@ class TestProfileMatchingAgentPerformance:
                     degree=f"Degree {i}",
                     institution=f"University {i}",
                     location="San Francisco, CA",
-                    graduation_date=date(2015 - i, 5, 15),
+                    graduation_date=f"{2015 - i}-05-15",
                 )
                 for i in range(3)  # 3 education entries
             ],
@@ -586,8 +586,8 @@ class TestProfileMatchingAgentPerformance:
                     name=f"Project {i}",
                     description=f"Detailed project description {i}",
                     technologies=[f"Tech{j}" for j in range(5)],
-                    start_date=date(2023 - i, 1, 1),
-                    end_date=date(2023 - i, 6, 1),
+                    start_date=f"{2023 - i}-01-01",
+                    end_date=f"{2023 - i}-06-01",
                     achievements=[f"Project achievement {j}" for j in range(3)],
                 )
                 for i in range(20)  # 20 projects
@@ -637,7 +637,7 @@ class TestProfileMatchingAgentErrorHandling:
                     position="Junior Developer",  # Junior but claiming senior experience
                     company="TechCorp",
                     location="San Francisco, CA",
-                    start_date=date(2023, 1, 1),  # Only 1 year actual experience
+                    start_date="2023-01-01",  # Only 1 year actual experience
                     end_date=None,
                     description="Learning Python development",
                     achievements=["Completed basic Python tutorials"],

@@ -14,7 +14,6 @@ Constitutional compliance:
 """
 
 import pytest
-from datetime import datetime
 from pydantic_ai.models.test import TestModel
 from pydantic_ai.exceptions import ModelRetry
 
@@ -130,8 +129,8 @@ class TestProfileMatchingAgentMock:
                     position="Software Engineer",
                     company="TechCorp",
                     location="San Francisco, CA",
-                    start_date=datetime(2020, 1, 1).date(),
-                    end_date=datetime(2023, 1, 1).date(),
+                    start_date="2020-01-01",
+                    end_date="2023-01-01",
                     description="Built web applications using Python and React",
                     achievements=["Increased performance by 30%", "Led team of 3 developers"],
                     technologies=["Python", "React", "PostgreSQL"]
@@ -142,7 +141,7 @@ class TestProfileMatchingAgentMock:
                     degree="BS Computer Science",
                     institution="Stanford University",
                     location="Stanford, CA",
-                    graduation_date=datetime(2020, 6, 1).date(),
+                    graduation_date="2020-06-01",
                     gpa=3.8,
                     honors=["Cum Laude"],
                     relevant_coursework=["Data Structures", "Algorithms", "Web Development"]
@@ -167,8 +166,8 @@ class TestProfileMatchingAgentMock:
                     name="E-commerce Platform",
                     description="Built full-stack e-commerce platform",
                     technologies=["Python", "React", "PostgreSQL"],
-                    start_date=datetime(2022, 1, 1).date(),
-                    end_date=datetime(2022, 6, 1).date(),
+                    start_date="2022-01-01",
+                    end_date="2022-06-01",
                     url="https://github.com/johndoe/ecommerce",
                     achievements=["1000+ active users", "98% uptime"]
                 )

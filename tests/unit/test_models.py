@@ -6,7 +6,6 @@ Constitutional compliance: Focus on data integrity across the agent chain.
 """
 
 import pytest
-from datetime import date
 from typing import Dict, Any
 from pydantic import ValidationError
 
@@ -84,8 +83,8 @@ def valid_work_experience() -> Dict[str, Any]:
         "position": "Senior Software Engineer",
         "company": "Tech Corp",
         "location": "San Francisco, CA",
-        "start_date": date(2020, 1, 15),
-        "end_date": date(2023, 6, 30),
+        "start_date": "2020-01-15",
+        "end_date": "2023-06-30",
         "description": "Led development of microservices architecture",
         "achievements": [
             "Reduced API response time by 40%",
@@ -102,7 +101,7 @@ def valid_education() -> Dict[str, Any]:
         "degree": "Bachelor of Science in Computer Science",
         "institution": "Stanford University",
         "location": "Stanford, CA",
-        "graduation_date": date(2019, 6, 15),
+        "graduation_date": "2019-06-15",
         "gpa": 3.8,
         "honors": ["Magna Cum Laude", "Dean's List"],
         "relevant_coursework": ["Data Structures", "Algorithms", "Machine Learning"]
@@ -250,8 +249,8 @@ class TestWorkExperience:
         experience = WorkExperience(**valid_work_experience)
         assert experience.position == "Senior Software Engineer"
         assert experience.company == "Tech Corp"
-        assert experience.start_date == date(2020, 1, 15)
-        assert experience.end_date == date(2023, 6, 30)
+        assert experience.start_date == "2020-01-15"
+        assert experience.end_date == "2023-06-30"
         assert len(experience.achievements) == 2
         assert len(experience.technologies) == 3
 
@@ -279,7 +278,7 @@ class TestWorkExperience:
         experience = WorkExperience(**valid_work_experience)
         json_data = experience.model_dump(mode='json')
 
-        # Dates should be serialized as strings in JSON mode
+        # Dates should be serialized as strings
         assert isinstance(json_data["start_date"], str)
         assert json_data["start_date"] == "2020-01-15"
 
@@ -376,8 +375,8 @@ class TestProject:
             "name": "Resume Assistant",
             "description": "AI-powered resume tailoring system",
             "technologies": ["Python", "FastAPI", "pydanticAI"],
-            "start_date": date(2024, 1, 1),
-            "end_date": date(2024, 6, 30),
+            "start_date": "2024-01-01",
+            "end_date": "2024-06-30",
             "url": "https://github.com/user/resume-assistant",
             "achievements": [
                 "Reduced resume creation time by 80%",
@@ -395,7 +394,7 @@ class TestProject:
             "name": "Open Source Project",
             "description": "Contributing to open source",
             "technologies": ["Python"],
-            "start_date": date(2024, 1, 1),
+            "start_date": "2024-01-01",
             "achievements": ["100+ commits"]
         }
         project = Project(**project_data)
@@ -1375,7 +1374,7 @@ class TestSerializationPatterns:
             position="Developer",
             company="Tech Corp",
             location="Remote",
-            start_date=date(2020, 1, 1),
+            start_date="2020-01-01",
             description="Development work",
             achievements=["Achievement 1", "Achievement 2"],
             technologies=["Python", "FastAPI"]
@@ -1428,7 +1427,7 @@ class TestEdgeCasesAndBoundaryConditions:
             position="Senior Software Engineer",
             company="Tech Corporation",
             location="San Francisco, CA",
-            start_date=date(2020, 1, 1),
+            start_date="2020-01-01",
             description=long_description,
             achievements=["Achievement 1"],
             technologies=["Python"]
@@ -1512,7 +1511,7 @@ class TestEdgeCasesAndBoundaryConditions:
             degree="Bachelor's",
             institution="University",
             location="City",
-            graduation_date=date(1970, 1, 1)
+            graduation_date="1970-01-01"
         )
         assert old_education.graduation_date.year == 1970
 
@@ -1521,7 +1520,7 @@ class TestEdgeCasesAndBoundaryConditions:
             name="Future Project",
             description="Planned project",
             technologies=["TBD"],
-            start_date=date(2030, 1, 1),
+            start_date="2030-01-01",
             achievements=[]
         )
         assert future_project.start_date.year == 2030
@@ -1531,8 +1530,8 @@ class TestEdgeCasesAndBoundaryConditions:
             position="Contractor",
             company="Client",
             location="Remote",
-            start_date=date(2024, 1, 1),
-            end_date=date(2024, 1, 1),
+            start_date="2024-01-01",
+            end_date="2024-01-01",
             description="One-day contract",
             achievements=[]
         )
@@ -1554,7 +1553,7 @@ class TestEdgeCasesAndBoundaryConditions:
             name="AI/ML Pipeline",
             description="End-to-end ML pipeline with 99.9% uptime & <100ms latency",
             technologies=["Python 3.11+", "TensorFlow 2.x"],
-            start_date=date(2024, 1, 1),
+            start_date="2024-01-01",
             achievements=["Reduced costs by $50,000+"]
         )
         assert "/" in project.name
@@ -1568,8 +1567,8 @@ class TestEdgeCasesAndBoundaryConditions:
             position="Marketing Manager",
             company="Retail Corp",
             location="New York, NY",
-            start_date=date(2015, 1, 1),
-            end_date=date(2020, 12, 31),
+            start_date="2015-01-01",
+            end_date="2020-12-31",
             description="Managed marketing campaigns for retail products",
             achievements=["Increased sales by 25%", "Led team of 8"],
             technologies=["Google Analytics", "Salesforce"]
@@ -1579,7 +1578,7 @@ class TestEdgeCasesAndBoundaryConditions:
             position="Junior Software Developer",
             company="Tech Startup",
             location="San Francisco, CA",
-            start_date=date(2021, 1, 1),
+            start_date="2021-01-01",
             description="Transitioned to software development",
             achievements=["Completed coding bootcamp", "Built 3 web applications"],
             technologies=["JavaScript", "React", "Node.js"]

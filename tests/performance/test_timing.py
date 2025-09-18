@@ -13,7 +13,7 @@ Follows constitutional agent-chain architecture with mocked agents for cost-effe
 import asyncio
 import time
 import uuid
-from datetime import datetime, date
+from datetime import datetime
 from typing import Dict, List, Tuple
 from unittest.mock import AsyncMock, patch
 
@@ -113,8 +113,8 @@ def sample_user_profile() -> UserProfile:
                 company="StartupCo",
                 position="Senior Python Developer",
                 location="San Francisco, CA",
-                start_date=date(2020, 1, 1),
-                end_date=date(2024, 1, 1),
+                start_date="2020-01-01",
+                end_date="2024-01-01",
                 description="Built scalable backend systems using Python and FastAPI",
                 achievements=[
                     "Built scalable APIs with FastAPI serving 1M+ requests/day",
@@ -128,7 +128,7 @@ def sample_user_profile() -> UserProfile:
             Education(
                 institution="UC Berkeley",
                 degree="BS Computer Science",
-                graduation_date=date(2018, 6, 1),
+                graduation_date="2018-06-01",
                 gpa=3.8
             )
         ],
