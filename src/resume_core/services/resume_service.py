@@ -57,10 +57,12 @@ class ResumeTailoringService:
         job_posting: str,
         profile_overrides: dict[str, Any] | None = None,
     ) -> TailoringResult:
-        profile: UserProfile = self.profile_service.load_profile()
-        if profile_overrides:
-            profile = profile.merge_overrides(profile_overrides)
-            self.profile_service.save_profile(profile)
+        stored_profile: UserProfile = self.profile_service.load_profile()
+        profile: UserProfile = (
+            stored_profile.merge_overrides(profile_overrides)
+            if profile_overrides
+            else stored_profile
+        )
 
         analysis = await self.job_analysis_agent.analyze(job_posting=job_posting)
         matching = await self.profile_matching_agent.match(profile=profile, analysis=analysis)

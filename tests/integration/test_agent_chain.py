@@ -18,3 +18,20 @@ async def test_agent_chain_workflow(tmp_path) -> None:
     assert result.matching.overall_score > 0
     assert result.validation.passed is True
     assert result.recommendation.decision in {"approved", "changes_requested"}
+
+
+@pytest.mark.asyncio
+async def test_profile_overrides_are_not_persisted(tmp_path) -> None:
+    profile_service = ProfileService(base_path=tmp_path)
+    baseline = build_sample_profile()
+    profile_service.save_profile(baseline)
+    resume_service = ResumeTailoringService(profile_service=profile_service)
+
+    overrides = {"contact": {"name": "Override Name"}}
+    await resume_service.tailor_resume(
+        job_posting=SAMPLE_JOB_POSTING,
+        profile_overrides=overrides,
+    )
+
+    persisted = profile_service.load_profile()
+    assert persisted.contact.name == baseline.contact.name

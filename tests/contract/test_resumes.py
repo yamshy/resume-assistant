@@ -20,3 +20,27 @@ async def test_resume_tailoring_contract(async_client: AsyncClient) -> None:
     assert payload["resume"]["markdown"].startswith("# ")
     assert payload["matching"]["overall_score"] >= 0
     assert payload["analysis"]["summary"]
+
+
+@pytest.mark.asyncio
+async def test_get_resume_returns_saved_resume(async_client: AsyncClient) -> None:
+    creation = await async_client.post(
+        "/api/v1/resumes/tailor",
+        json={"job_posting": JOB_POSTING},
+    )
+    resume_id = creation.json()["resume_id"]
+
+    response = await async_client.get(f"/api/v1/resumes/{resume_id}")
+
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload["resume_id"] == resume_id
+    assert payload["resume"]["markdown"].startswith("# ")
+
+
+@pytest.mark.asyncio
+async def test_get_resume_missing_returns_404(async_client: AsyncClient) -> None:
+    response = await async_client.get("/api/v1/resumes/does-not-exist")
+
+    assert response.status_code == 404
+    assert "not found" in response.json()["detail"].lower()

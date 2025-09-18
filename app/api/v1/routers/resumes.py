@@ -37,7 +37,10 @@ async def tailor_resume(request: ResumeTailorRequest) -> dict[str, Any]:
 
 @router.get("/resumes/{resume_id}")
 def get_resume(resume_id: str) -> dict[str, Any]:
-    result = _resume_service.load_resume(resume_id)
+    try:
+        result = _resume_service.load_resume(resume_id)
+    except FileNotFoundError as exc:  # pragma: no cover - error mapping
+        raise HTTPException(status_code=404, detail=str(exc)) from exc
     return {
         "resume_id": result.resume.resume_id,
         "status": result.status,
