@@ -11,9 +11,11 @@ Constitutional compliance:
 - Environment-based configuration
 """
 
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
+from fastapi.exceptions import RequestValidationError
+from pydantic import BaseModel
 import logging
 import sys
 from datetime import datetime
@@ -38,6 +40,12 @@ logging.basicConfig(
 logger = logging.getLogger("resume-assistant")
 
 
+class ErrorResponse(BaseModel):
+    """Standard error response format."""
+    error: str
+    timestamp: str
+
+
 # Create FastAPI application
 app = FastAPI(
     title="Resume Assistant API",
@@ -46,6 +54,8 @@ app = FastAPI(
     docs_url="/docs",
     redoc_url="/redoc"
 )
+
+
 
 
 # Add CORS middleware

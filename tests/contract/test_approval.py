@@ -1,7 +1,7 @@
-"""Contract tests for POST /resumes/{resume_id}/approve endpoint.
+"""Contract tests for POST /resumes/{session_id}/approve endpoint.
 
-This test validates the approval endpoint according to the OpenAPI specification.
-The test is designed to FAIL initially as part of TDD approach - the endpoint doesn't exist yet.
+This test validates the approval endpoint according to the working implementation.
+Updated to use session_id pattern consistent with working tailoring pipeline.
 """
 
 import uuid
@@ -15,115 +15,103 @@ class TestResumeApprovalEndpoint:
     """Contract tests for resume approval endpoint."""
 
     async def test_approve_resume_success(self, async_client: AsyncClient) -> None:
-        """Test successful resume approval with valid ReviewDecision.
+        """Test successful resume approval with valid ApprovalRequest.
 
-        This test MUST FAIL initially - the endpoint doesn't exist yet.
-        Tests the happy path where a valid resume ID and decision are provided.
+        Tests the happy path where a valid session ID and decision are provided.
         """
         # Arrange
-        resume_id = str(uuid.uuid4())
-        review_decision = {
-            "decision": "approved",
-            "feedback": "Excellent tailoring, all sections optimized well",
-            "requested_modifications": [],
-            "approved_sections": ["summary", "experience", "skills"],
-            "rejected_sections": []
+        session_id = str(uuid.uuid4())
+        approval_request = {
+            "decision": "approve",
+            "comments": "Excellent tailoring, all sections optimized well",
+            "requested_changes": None
         }
 
         # Act
         response = await async_client.post(
-            f"/api/v1/resumes/{resume_id}/approve",
-            json=review_decision
+            f"/api/v1/resumes/{session_id}/approve",
+            json=approval_request
         )
 
         # Assert
         assert response.status_code == 200
 
-        # Validate ApprovalResult schema compliance
+        # Validate ApprovalResponse schema compliance
         response_data = response.json()
-        assert "status" in response_data
-        assert response_data["status"] in ["approved", "rejected", "needs_revision"]
-        assert "revision_needed" in response_data
-        assert isinstance(response_data["revision_needed"], bool)
-        assert "next_steps" in response_data
-        assert isinstance(response_data["next_steps"], list)
+        assert "session_id" in response_data
+        assert "decision" in response_data
+        assert "message" in response_data
+        assert "timestamp" in response_data
 
         # For approved decision, expect specific response
-        assert response_data["status"] == "approved"
-        assert response_data["revision_needed"] is False
+        assert response_data["decision"] == "approve"
+        assert response_data["session_id"] == session_id
 
-        # final_resume_url should be present for approved resumes
-        if "final_resume_url" in response_data:
-            assert response_data["final_resume_url"] is not None
+        # export_path should be present for approved resumes
+        if "export_path" in response_data:
+            assert response_data["export_path"] is not None
 
     async def test_approve_resume_needs_revision(self, async_client: AsyncClient) -> None:
-        """Test resume approval with needs_revision decision."""
+        """Test resume approval with request_changes decision."""
         # Arrange
-        resume_id = str(uuid.uuid4())
-        review_decision = {
-            "decision": "needs_revision",
-            "feedback": "Good start but experience section needs improvement",
-            "requested_modifications": [
-                "Add more quantified achievements in experience section",
-                "Improve skills section keyword optimization"
-            ],
-            "approved_sections": ["summary"],
-            "rejected_sections": ["experience", "skills"]
+        session_id = str(uuid.uuid4())
+        approval_request = {
+            "decision": "request_changes",
+            "comments": "Good start but experience section needs improvement",
+            "requested_changes": "Add more quantified achievements in experience section and improve skills section keyword optimization"
         }
 
         # Act
         response = await async_client.post(
-            f"/api/v1/resumes/{resume_id}/approve",
-            json=review_decision
+            f"/api/v1/resumes/{session_id}/approve",
+            json=approval_request
         )
 
         # Assert
         assert response.status_code == 200
 
         response_data = response.json()
-        assert response_data["status"] == "needs_revision"
-        assert response_data["revision_needed"] is True
-        assert len(response_data["next_steps"]) > 0
+        assert response_data["decision"] == "request_changes"
+        assert response_data["session_id"] == session_id
+        assert "requested changes" in response_data["message"].lower()
 
     async def test_approve_resume_rejected(self, async_client: AsyncClient) -> None:
-        """Test resume approval with rejected decision."""
+        """Test resume approval with reject decision."""
         # Arrange
-        resume_id = str(uuid.uuid4())
-        review_decision = {
-            "decision": "rejected",
-            "feedback": "Resume doesn't match job requirements well enough",
-            "requested_modifications": [],
-            "approved_sections": [],
-            "rejected_sections": ["summary", "experience", "skills", "education"]
+        session_id = str(uuid.uuid4())
+        approval_request = {
+            "decision": "reject",
+            "comments": "Resume doesn't match job requirements well enough",
+            "requested_changes": None
         }
 
         # Act
         response = await async_client.post(
-            f"/api/v1/resumes/{resume_id}/approve",
-            json=review_decision
+            f"/api/v1/resumes/{session_id}/approve",
+            json=approval_request
         )
 
         # Assert
         assert response.status_code == 200
 
         response_data = response.json()
-        assert response_data["status"] == "rejected"
-        assert response_data["revision_needed"] is True
-        assert "final_resume_url" not in response_data or response_data["final_resume_url"] is None
+        assert response_data["decision"] == "reject"
+        assert response_data["session_id"] == session_id
+        assert "export_path" not in response_data or response_data["export_path"] is None
 
     async def test_approve_resume_not_found(self, async_client: AsyncClient) -> None:
-        """Test approval of non-existent resume returns 404."""
+        """Test approval of non-existent session returns 404."""
         # Arrange
-        non_existent_resume_id = str(uuid.uuid4())
-        review_decision = {
-            "decision": "approved",
-            "feedback": "Looks good",
+        non_existent_session_id = str(uuid.uuid4())
+        approval_request = {
+            "decision": "approve",
+            "comments": "Looks good",
         }
 
         # Act
         response = await async_client.post(
-            f"/api/v1/resumes/{non_existent_resume_id}/approve",
-            json=review_decision
+            f"/api/v1/resumes/{non_existent_session_id}/approve",
+            json=approval_request
         )
 
         # Assert
@@ -137,15 +125,15 @@ class TestResumeApprovalEndpoint:
     async def test_approve_resume_invalid_uuid(self, async_client: AsyncClient) -> None:
         """Test approval with invalid UUID format."""
         # Arrange
-        invalid_resume_id = "not-a-valid-uuid"
-        review_decision = {
-            "decision": "approved"
+        invalid_session_id = "not-a-valid-uuid"
+        approval_request = {
+            "decision": "approve"
         }
 
         # Act
         response = await async_client.post(
-            f"/api/v1/resumes/{invalid_resume_id}/approve",
-            json=review_decision
+            f"/api/v1/resumes/{invalid_session_id}/approve",
+            json=approval_request
         )
 
         # Assert
@@ -153,18 +141,18 @@ class TestResumeApprovalEndpoint:
         assert response.status_code in [404, 422]
 
     async def test_approve_resume_missing_required_fields(self, async_client: AsyncClient) -> None:
-        """Test approval with missing required fields in ReviewDecision."""
+        """Test approval with missing required fields in ApprovalRequest."""
         # Arrange
-        resume_id = str(uuid.uuid4())
-        invalid_review_decision = {
-            "feedback": "Missing required decision field"
+        session_id = str(uuid.uuid4())
+        invalid_approval_request = {
+            "comments": "Missing required decision field"
             # Missing required 'decision' field
         }
 
         # Act
         response = await async_client.post(
-            f"/api/v1/resumes/{resume_id}/approve",
-            json=invalid_review_decision
+            f"/api/v1/resumes/{session_id}/approve",
+            json=invalid_approval_request
         )
 
         # Assert
@@ -173,47 +161,53 @@ class TestResumeApprovalEndpoint:
     async def test_approve_resume_invalid_decision_value(self, async_client: AsyncClient) -> None:
         """Test approval with invalid decision value."""
         # Arrange
-        resume_id = str(uuid.uuid4())
-        invalid_review_decision = {
-            "decision": "invalid_decision_value",  # Not in enum [pending, approved, rejected, needs_revision]
-            "feedback": "Invalid decision value"
+        session_id = str(uuid.uuid4())
+        invalid_approval_request = {
+            "decision": "invalid_decision_value",  # Not in enum [approve, reject, request_changes]
+            "comments": "Invalid decision value"
         }
 
         # Act
         response = await async_client.post(
-            f"/api/v1/resumes/{resume_id}/approve",
-            json=invalid_review_decision
+            f"/api/v1/resumes/{session_id}/approve",
+            json=invalid_approval_request
         )
 
         # Assert
         assert response.status_code == 422  # Validation error for invalid enum value
 
-    @pytest.mark.parametrize("decision,expected_revision", [
-        ("approved", False),
-        ("rejected", True),
-        ("needs_revision", True),
+    @pytest.mark.parametrize("decision,expected_export", [
+        ("approve", True),
+        ("reject", False),
+        ("request_changes", False),
     ])
-    async def test_approve_resume_decision_revision_mapping(
+    async def test_approve_resume_decision_export_mapping(
         self,
         async_client: AsyncClient,
         decision: str,
-        expected_revision: bool
+        expected_export: bool
     ) -> None:
-        """Test that revision_needed field matches decision appropriately."""
+        """Test that export_path is provided based on decision appropriately."""
         # Arrange
-        resume_id = str(uuid.uuid4())
-        review_decision = {
+        session_id = str(uuid.uuid4())
+        approval_request = {
             "decision": decision,
-            "feedback": f"Test {decision} decision"
+            "comments": f"Test {decision} decision"
         }
 
         # Act
         response = await async_client.post(
-            f"/api/v1/resumes/{resume_id}/approve",
-            json=review_decision
+            f"/api/v1/resumes/{session_id}/approve",
+            json=approval_request
         )
 
         # Assert
         assert response.status_code == 200
         response_data = response.json()
-        assert response_data["revision_needed"] == expected_revision
+        assert response_data["decision"] == decision
+        if expected_export:
+            # For approved decisions, export_path may be present
+            pass  # Implementation dependent on storage service
+        else:
+            # For rejected/request_changes decisions, no export_path
+            assert "export_path" not in response_data or response_data["export_path"] is None

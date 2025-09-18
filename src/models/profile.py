@@ -5,8 +5,7 @@ Models follow the specifications from specs/001-resume-tailoring-feature/data-mo
 """
 
 from pydantic import BaseModel, Field, EmailStr
-from typing import List, Optional, Dict
-from datetime import date as Date
+from typing import List, Optional
 from enum import Enum
 
 
@@ -25,8 +24,8 @@ class WorkExperience(BaseModel):
     position: str = Field(description="Job title")
     company: str = Field(description="Company name")
     location: str = Field(description="Work location")
-    start_date: Date = Field(description="Start date")
-    end_date: Optional[Date] = Field(default=None, description="End date (None if current)")
+    start_date: str = Field(description="Start date")
+    end_date: Optional[str] = Field(default=None, description="End date (None if current)")
     description: str = Field(description="Role description and responsibilities")
     achievements: List[str] = Field(description="Quantified achievements with metrics")
     technologies: List[str] = Field(default=[], description="Technologies used")
@@ -37,7 +36,7 @@ class Education(BaseModel):
     degree: str = Field(description="Degree type and field")
     institution: str = Field(description="School/university name")
     location: str = Field(description="School location")
-    graduation_date: Date = Field(description="Graduation date")
+    graduation_date: str = Field(description="Graduation date")
     gpa: Optional[float] = Field(default=None, description="GPA if noteworthy")
     honors: List[str] = Field(default=[], description="Academic honors and awards")
     relevant_coursework: List[str] = Field(default=[], description="Relevant courses")
@@ -64,8 +63,8 @@ class Project(BaseModel):
     name: str = Field(description="Project name")
     description: str = Field(description="Project description")
     technologies: List[str] = Field(description="Technologies used")
-    start_date: Date = Field(description="Start date")
-    end_date: Optional[Date] = Field(default=None, description="End date (None if ongoing)")
+    start_date: str = Field(description="Start date")
+    end_date: Optional[str] = Field(default=None, description="End date (None if ongoing)")
     url: Optional[str] = Field(default=None, description="Project URL")
     achievements: List[str] = Field(description="Key achievements and outcomes")
 
@@ -74,7 +73,7 @@ class Publication(BaseModel):
     """Articles and papers."""
     title: str = Field(description="Publication title")
     venue: str = Field(description="Journal, conference, or platform")
-    date: Date = Field(description="Publication date")
+    date: str = Field(description="Publication date")
     url: Optional[str] = Field(default=None, description="Publication URL")
     authors: List[str] = Field(description="Co-authors")
 
@@ -83,7 +82,7 @@ class Award(BaseModel):
     """Recognition and awards."""
     title: str = Field(description="Award title")
     organization: str = Field(description="Awarding organization")
-    date: Date = Field(description="Award date")
+    date: str = Field(description="Award date")
     description: str = Field(description="Award description")
 
 
@@ -91,8 +90,8 @@ class VolunteerWork(BaseModel):
     """Volunteer experience."""
     role: str = Field(description="Volunteer role")
     organization: str = Field(description="Organization name")
-    start_date: Date = Field(description="Start date")
-    end_date: Optional[Date] = Field(default=None, description="End date (None if ongoing)")
+    start_date: str = Field(description="Start date")
+    end_date: Optional[str] = Field(default=None, description="End date (None if ongoing)")
     description: str = Field(description="Role description and impact")
 
 
@@ -104,8 +103,6 @@ class Language(BaseModel):
 
 class UserProfile(BaseModel):
     """Main profile aggregating all components."""
-    version: str = Field(default="1.0", description="Schema version")
-    metadata: Dict[str, str] = Field(description="Creation/update timestamps")
     contact: ContactInfo = Field(description="Contact information")
     professional_summary: str = Field(description="Professional summary/objective")
     experience: List[WorkExperience] = Field(description="Work experience entries")

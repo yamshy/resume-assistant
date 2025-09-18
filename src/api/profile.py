@@ -12,23 +12,18 @@ Constitutional compliance:
 """
 
 from fastapi import APIRouter, HTTPException, status
+from fastapi.responses import JSONResponse
 from pydantic import BaseModel
-from typing import Optional
+from datetime import datetime
 
 from models.profile import UserProfile
 from services.profile_service import create_profile_service
 
 
-class ProfileResponse(BaseModel):
-    """Response model for profile operations."""
-    profile: Optional[UserProfile] = None
-    message: str
-    profile_exists: bool
-
-
-class ProfileUpdateRequest(BaseModel):
-    """Request model for profile updates."""
-    profile: UserProfile
+class ErrorResponse(BaseModel):
+    """Error response model for API errors."""
+    error: str
+    timestamp: str
 
 
 # Create router for profile endpoints
@@ -38,36 +33,35 @@ router = APIRouter(prefix="/profile", tags=["profile"])
 profile_service = create_profile_service()
 
 
-@router.get("", response_model=ProfileResponse)
-async def get_profile() -> ProfileResponse:
+@router.get("", response_model=UserProfile)
+async def get_profile() -> UserProfile:
     """
     Get current user profile.
 
-    Returns the user's profile data if it exists, or indicates
-    that no profile has been created yet.
+    Returns the user's profile data if it exists.
 
     Returns:
-        ProfileResponse: Profile data and status
+        UserProfile: The user's profile data
+
+    Raises:
+        HTTPException: 404 if profile doesn't exist, 500 for other errors
     """
     try:
         profile = await profile_service.load_profile()
 
         if profile is None:
-            return ProfileResponse(
-                profile=None,
-                message="No profile found. Please create a profile first.",
-                profile_exists=False
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Profile not found"
             )
 
-        return ProfileResponse(
-            profile=profile,
-            message="Profile loaded successfully",
-            profile_exists=True
-        )
+        return profile
 
+    except HTTPException:
+        raise
     except ValueError as e:
         raise HTTPException(
-            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            status_code=status.HTTP_400_BAD_REQUEST,
             detail=f"Profile file error: {str(e)}"
         )
     except Exception as e:
@@ -77,8 +71,8 @@ async def get_profile() -> ProfileResponse:
         )
 
 
-@router.put("", response_model=ProfileResponse)
-async def update_profile(request: ProfileUpdateRequest) -> ProfileResponse:
+@router.put("", response_model=UserProfile)
+async def update_profile(profile: UserProfile) -> UserProfile:
     """
     Create or update user profile.
 
@@ -86,27 +80,23 @@ async def update_profile(request: ProfileUpdateRequest) -> ProfileResponse:
     the existing profile file.
 
     Args:
-        request: Profile update request with new profile data
+        profile: User profile data to save
 
     Returns:
-        ProfileResponse: Confirmation of profile save
+        UserProfile: The saved profile data
 
     Raises:
         HTTPException: If profile validation or saving fails
     """
     try:
         # Save profile using service
-        await profile_service.save_profile(request.profile)
+        await profile_service.save_profile(profile)
 
-        return ProfileResponse(
-            profile=request.profile,
-            message="Profile saved successfully",
-            profile_exists=True
-        )
+        return profile
 
     except ValueError as e:
         raise HTTPException(
-            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            status_code=status.HTTP_400_BAD_REQUEST,
             detail=f"Profile validation error: {str(e)}"
         )
     except Exception as e:
@@ -116,38 +106,38 @@ async def update_profile(request: ProfileUpdateRequest) -> ProfileResponse:
         )
 
 
-@router.delete("", response_model=ProfileResponse)
-async def delete_profile() -> ProfileResponse:
+@router.delete("")
+async def delete_profile():
     """
     Delete user profile.
 
     Removes the profile file from storage. This operation cannot be undone.
 
     Returns:
-        ProfileResponse: Confirmation of deletion
+        204 No Content on successful deletion
 
     Raises:
-        HTTPException: If deletion fails
+        HTTPException: 404 if profile doesn't exist, 500 for other errors
     """
     try:
         deleted = await profile_service.delete_profile()
 
         if not deleted:
-            return ProfileResponse(
-                profile=None,
-                message="No profile found to delete",
-                profile_exists=False
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Profile not found"
             )
 
-        return ProfileResponse(
-            profile=None,
-            message="Profile deleted successfully",
-            profile_exists=False
+        return JSONResponse(
+            status_code=status.HTTP_204_NO_CONTENT,
+            content=None
         )
 
+    except HTTPException:
+        raise
     except ValueError as e:
         raise HTTPException(
-            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            status_code=status.HTTP_400_BAD_REQUEST,
             detail=f"Profile deletion error: {str(e)}"
         )
     except Exception as e:
@@ -157,4 +147,4 @@ async def delete_profile() -> ProfileResponse:
         )
 
 
-__all__ = ["router", "ProfileResponse", "ProfileUpdateRequest"]
+__all__ = ["router", "ErrorResponse"]

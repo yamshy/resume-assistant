@@ -21,10 +21,10 @@ from agents.job_analysis_agent import create_job_analysis_agent
 
 class JobAnalysisRequest(BaseModel):
     """Request model for job analysis."""
-    job_posting_text: str = Field(
+    job_description: str = Field(
         ...,
         min_length=50,
-        description="Raw job posting text to analyze"
+        description="Raw job description text to analyze"
     )
 
 
@@ -62,18 +62,18 @@ async def analyze_job_posting(request: JobAnalysisRequest) -> JobAnalysisRespons
     """
     try:
         # Validate input length
-        if len(request.job_posting_text.strip()) < 50:
+        if len(request.job_description.strip()) < 50:
             raise HTTPException(
                 status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
-                detail="Job posting text must be at least 50 characters long"
+                detail="Job description text must be at least 50 characters long"
             )
 
         # Analyze job posting using agent
-        job_analysis = await job_analysis_agent.run(request.job_posting_text)
+        job_analysis = await job_analysis_agent.run(request.job_description)
 
         # Prepare metadata about the analysis
         analysis_metadata = {
-            "original_text_length": len(request.job_posting_text),
+            "original_text_length": len(request.job_description),
             "requirements_count": len(job_analysis.requirements),
             "required_skills_count": len([req for req in job_analysis.requirements if req.is_required]),
             "preferred_skills_count": len([req for req in job_analysis.requirements if not req.is_required]),
