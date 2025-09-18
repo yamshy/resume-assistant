@@ -19,18 +19,18 @@ from pydantic_ai.models.test import TestModel
 from pydantic_ai.exceptions import ModelRetry
 
 # Import agents
-from src.agents.job_analysis_agent import JobAnalysisAgent, create_job_analysis_agent
-from src.agents.profile_matching import ProfileMatchingAgent, create_profile_matching_agent
-from src.agents.resume_generation_agent import ResumeGenerationAgent, create_resume_generation_agent
-from src.agents.validation_agent import ValidationAgent, create_validation_agent
+from agents.job_analysis_agent import JobAnalysisAgent, create_job_analysis_agent
+from agents.profile_matching import ProfileMatchingAgent, create_profile_matching_agent
+from agents.resume_generation_agent import ResumeGenerationAgent, create_resume_generation_agent
+from agents.validation_agent import ValidationAgent, create_validation_agent
 
 # Import models for output validation
-from src.models.job_analysis import JobAnalysis, JobRequirement, ResponsibilityLevel
-from src.models.matching import MatchingResult, SkillMatch, ExperienceMatch
-from src.models.resume_optimization import TailoredResume, ContentOptimization
-from src.models.validation import ValidationResult, ValidationIssue, ValidationWarning
-from src.models.profile import UserProfile, ContactInfo, WorkExperience, Education, Skill, Project, SkillCategory
-from src.models.approval import ResumeSection
+from models.job_analysis import JobAnalysis, JobRequirement, ResponsibilityLevel
+from models.matching import MatchingResult, SkillMatch, ExperienceMatch
+from models.resume_optimization import TailoredResume, ContentOptimization
+from models.validation import ValidationResult, ValidationIssue, ValidationWarning
+from models.profile import UserProfile, ContactInfo, WorkExperience, Education, Skill, Project, SkillCategory
+from models.approval import ResumeSection
 
 
 class TestJobAnalysisAgentMock:
@@ -470,7 +470,8 @@ class TestAgentOverrideFunctionality:
         sample_job = JobAnalysis(
             company_name="Test Co", job_title="Test Role", location="Test City",
             requirements=[], key_responsibilities=["Test"], company_culture="Test",
-            role_level=ResponsibilityLevel.MID, industry="Test"
+            role_level=ResponsibilityLevel.MID, industry="Test",
+            analysis_timestamp="2024-01-15T12:00:00Z"
         )
         profile_result = await profile_agent.run(sample_profile, sample_job)
         assert profile_result.output is not None
@@ -566,7 +567,8 @@ class TestAgentChainIntegrationPoints:
         test_job = JobAnalysis(
             company_name="Test Co", job_title="Test Role", location="Test City",
             requirements=[], key_responsibilities=["Test"], company_culture="Test",
-            role_level=ResponsibilityLevel.MID, industry="Test"
+            role_level=ResponsibilityLevel.MID, industry="Test",
+            analysis_timestamp="2024-01-15T12:00:00Z"
         )
 
         # Run profile matching
@@ -635,7 +637,8 @@ class TestAgentMockDataConsistency:
         test_job = JobAnalysis(
             company_name="Test Co", job_title="Test Role", location="Test City",
             requirements=[], key_responsibilities=["Test"], company_culture="Test",
-            role_level=ResponsibilityLevel.MID, industry="Test"
+            role_level=ResponsibilityLevel.MID, industry="Test",
+            analysis_timestamp="2024-01-15T12:00:00Z"
         )
         matching_result = await agents['profile_matching'].run(test_profile, test_job)
         assert isinstance(matching_result.output, MatchingResult)

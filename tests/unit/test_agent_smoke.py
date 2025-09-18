@@ -1,7 +1,7 @@
 import pytest
 
-from src.agents.base_agent import Agent
-from src.services.analysis import AnalysisService
+from agents.base_agent import Agent
+from services.analysis import AnalysisService
 
 
 @pytest.mark.asyncio

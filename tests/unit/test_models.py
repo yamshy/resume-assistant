@@ -1184,7 +1184,7 @@ class TestCrossModelCompatibility:
 
         # Check for potential issues based on optimizations
         for opt_data in resume.optimizations:
-            opt = ContentOptimization(**opt_data)
+            opt = ContentOptimization.model_validate(opt_data)
             if len(opt.keywords_added) > 5:
                 issue = ValidationIssue(
                     severity="medium",
@@ -1310,7 +1310,8 @@ class TestSerializationPatterns:
             key_responsibilities=[],
             company_culture="Great culture",
             role_level=ResponsibilityLevel.SENIOR,
-            industry="Tech"
+            industry="Tech",
+            analysis_timestamp="2024-01-15T12:00:00Z"
         )
         json_data = analysis.model_dump(mode='json')
         assert json_data["role_level"] == "senior"
@@ -1481,7 +1482,8 @@ class TestEdgeCasesAndBoundaryConditions:
             role_level=ResponsibilityLevel.JUNIOR,
             industry="Industry",
             benefits=[],  # Empty benefits
-            preferred_qualifications=[]  # Empty qualifications
+            preferred_qualifications=[],  # Empty qualifications
+            analysis_timestamp="2024-01-15T12:00:00Z"
         )
 
         assert len(analysis.requirements) == 0

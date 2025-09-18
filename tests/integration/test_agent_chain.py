@@ -529,11 +529,11 @@ class TestAgentChainIntegration:
         """
         # Test that all 5 agents don't exist yet
         expected_agents = [
-            "src.resume_core.agents.job_analysis_agent",
-            "src.resume_core.agents.profile_matching_agent",
-            "src.resume_core.agents.resume_generation_agent",
-            "src.resume_core.agents.validation_agent",
-            "src.resume_core.agents.human_interface_agent"
+            "src.agents.job_analysis_agent",
+            "src.agents.profile_matching_agent",
+            "src.agents.resume_generation_agent",
+            "src.agents.validation_agent",
+            "src.agents.human_interface_agent"
         ]
 
         for agent_module in expected_agents:

@@ -118,6 +118,32 @@ class ProfileService:
         except Exception as e:
             raise ValueError(f"Failed to delete profile: {e}")
 
+    @staticmethod
+    async def validate_profile(profile_data) -> bool:
+        """
+        Validate profile data structure and completeness.
+        
+        Args:
+            profile_data: Profile data to validate (dict or UserProfile)
+            
+        Returns:
+            True if profile is valid
+            
+        Raises:
+            ValueError: If profile is invalid
+        """
+        try:
+            if isinstance(profile_data, dict):
+                UserProfile.model_validate(profile_data)
+            elif hasattr(profile_data, 'model_validate'):
+                # Already a pydantic model, just check if it's valid
+                pass
+            else:
+                raise ValueError("Profile data must be dict or UserProfile instance")
+            return True
+        except Exception as e:
+            raise ValueError(f"Profile validation failed: {e}")
+
 
 # Factory function for service creation
 def create_profile_service(profile_path: Optional[str] = None) -> ProfileService:
