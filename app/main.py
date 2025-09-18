@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from app.api.v1.routers import health
+from app.api.v1.routers import router as api_router
 from app.core.errors import install_error_handlers
 from app.core.settings import get_settings
 
@@ -23,7 +23,11 @@ def create_application() -> FastAPI:
         allow_headers=["*"],
     )
 
-    app.include_router(health.router, prefix="/api/v1")
+    # Expose both versioned and unversioned routes so the quickstart scripts that
+    # target the root paths continue to function while tests exercise the
+    # versioned namespace.
+    app.include_router(api_router)
+    app.include_router(api_router, prefix="/api/v1")
 
     install_error_handlers(app)
 

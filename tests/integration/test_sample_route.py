@@ -8,7 +8,8 @@ async def test_health_endpoint_integration(async_client: AsyncClient):
     assert response.status_code == 200
     data = response.json()
     assert "status" in data
-    assert data["status"] == "ok"
+    assert data["status"] == "healthy"
+    assert "timestamp" in data
 
 
 @pytest.mark.asyncio
