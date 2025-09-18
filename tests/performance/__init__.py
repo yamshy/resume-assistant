@@ -1,0 +1,1 @@
+"""Performance tests for resume assistant agent chain."""

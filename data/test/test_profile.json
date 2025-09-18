@@ -1,0 +1,51 @@
+{
+  "version": "1.0",
+  "metadata": {
+    "created_at": "2025-09-17T00:00:00Z",
+    "updated_at": "2025-09-17T00:00:00Z"
+  },
+  "contact": {
+    "name": "John Developer",
+    "email": "john@example.com",
+    "location": "San Francisco, CA",
+    "linkedin": "https://linkedin.com/in/johndeveloper"
+  },
+  "professional_summary": "Experienced software engineer with 6 years developing scalable backend systems. Expertise in Python, cloud infrastructure, and building high-performance APIs.",
+  "experience": [
+    {
+      "position": "Software Engineer",
+      "company": "StartupXYZ",
+      "location": "San Francisco, CA",
+      "start_date": "2019-01-15",
+      "end_date": null,
+      "description": "Lead backend development for core platform serving 100k+ users",
+      "achievements": [
+        "Reduced API response time by 40% through optimization and caching",
+        "Designed and implemented microservices architecture supporting 10x growth",
+        "Mentored 3 junior developers and led technical architecture discussions"
+      ],
+      "technologies": ["Python", "FastAPI", "PostgreSQL", "Docker", "AWS"]
+    }
+  ],
+  "education": [
+    {
+      "degree": "Bachelor of Science in Computer Science",
+      "institution": "UC Berkeley",
+      "location": "Berkeley, CA",
+      "graduation_date": "2018-05-15",
+      "honors": ["Magna Cum Laude", "Dean's List"]
+    }
+  ],
+  "skills": [
+    {"name": "Python", "category": "technical", "proficiency": 5, "years_experience": 6},
+    {"name": "FastAPI", "category": "technical", "proficiency": 4, "years_experience": 3},
+    {"name": "PostgreSQL", "category": "technical", "proficiency": 4, "years_experience": 4},
+    {"name": "AWS", "category": "technical", "proficiency": 3, "years_experience": 2},
+    {"name": "Docker", "category": "technical", "proficiency": 4, "years_experience": 3}
+  ],
+  "projects": [],
+  "publications": [],
+  "awards": [],
+  "volunteer": [],
+  "languages": []
+}
