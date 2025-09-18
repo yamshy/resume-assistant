@@ -80,10 +80,10 @@ cp .env.example .env
 ### Launch Production Server
 ```bash
 # With secrets management
-PYTHONPATH=src infisical run -- uv run python src/main.py
+infisical run -- uv run python src/main.py
 
 # Direct environment (dev only)
-PYTHONPATH=src OPENAI_API_KEY=xxx uv run python src/main.py
+OPENAI_API_KEY=xxx uv run python src/main.py
 ```
 
 ### Validate Deployment

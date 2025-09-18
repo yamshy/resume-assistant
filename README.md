@@ -25,10 +25,10 @@ cp .env.example .env
 ### Launch Server
 ```bash
 # With secrets management (recommended)
-PYTHONPATH=src infisical run -- uv run python src/main.py
+infisical run -- uv run python src/main.py
 
 # Direct environment (dev only)
-PYTHONPATH=src OPENAI_API_KEY=xxx uv run python src/main.py
+OPENAI_API_KEY=xxx uv run python src/main.py
 ```
 
 ### Test the System
@@ -40,7 +40,7 @@ curl http://localhost:8000/health
 open http://localhost:8000/docs
 
 # Run complete test suite
-PYTHONPATH=src infisical run -- uv run python tests/e2e/test_quickstart_scenario.py
+infisical run -- uv run python tests/e2e/test_quickstart_scenario.py
 ```
 
 ## 🏗️ System Architecture
@@ -95,10 +95,10 @@ The system returns:
 ### Run Tests
 ```bash
 # Unit tests with mocks
-PYTHONPATH=src uv run python -m pytest tests/unit/ -v
+uv run python -m pytest tests/unit/ -v
 
 # End-to-end validation
-PYTHONPATH=src infisical run -- uv run python tests/e2e/test_quickstart_scenario.py
+infisical run -- uv run python tests/e2e/test_quickstart_scenario.py
 
 # Code quality
 uv run ruff format . && uv run ruff check .
