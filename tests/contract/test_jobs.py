@@ -47,32 +47,40 @@ class TestJobsAnalyzeEndpoint:
         # Assert successful response
         assert response.status_code == 200
 
-        # Validate response structure matches JobAnalysis schema
+        # Validate JobAnalysisResponse wrapper structure
         response_data = response.json()
 
+        # Verify wrapper fields
+        assert "job_analysis" in response_data
+        assert "analysis_metadata" in response_data
+        assert "message" in response_data
+
+        # Get the nested job analysis data
+        job_analysis = response_data["job_analysis"]
+
         # Required fields from JobAnalysis schema
-        assert "company_name" in response_data
-        assert "job_title" in response_data
-        assert "location" in response_data
-        assert "requirements" in response_data
-        assert "key_responsibilities" in response_data
-        assert "company_culture" in response_data
-        assert "role_level" in response_data
-        assert "industry" in response_data
+        assert "company_name" in job_analysis
+        assert "job_title" in job_analysis
+        assert "location" in job_analysis
+        assert "requirements" in job_analysis
+        assert "key_responsibilities" in job_analysis
+        assert "company_culture" in job_analysis
+        assert "role_level" in job_analysis
+        assert "industry" in job_analysis
 
         # Validate data types and structure
-        assert isinstance(response_data["company_name"], str)
-        assert isinstance(response_data["job_title"], str)
-        assert isinstance(response_data["location"], str)
-        assert isinstance(response_data["requirements"], list)
-        assert isinstance(response_data["key_responsibilities"], list)
-        assert isinstance(response_data["company_culture"], str)
-        assert isinstance(response_data["role_level"], str)
-        assert isinstance(response_data["industry"], str)
+        assert isinstance(job_analysis["company_name"], str)
+        assert isinstance(job_analysis["job_title"], str)
+        assert isinstance(job_analysis["location"], str)
+        assert isinstance(job_analysis["requirements"], list)
+        assert isinstance(job_analysis["key_responsibilities"], list)
+        assert isinstance(job_analysis["company_culture"], str)
+        assert isinstance(job_analysis["role_level"], str)
+        assert isinstance(job_analysis["industry"], str)
 
         # Validate requirements array structure
-        if response_data["requirements"]:
-            req = response_data["requirements"][0]
+        if job_analysis["requirements"]:
+            req = job_analysis["requirements"][0]
             assert "skill" in req
             assert "importance" in req
             assert "category" in req
@@ -84,19 +92,19 @@ class TestJobsAnalyzeEndpoint:
             assert isinstance(req["is_required"], bool)
 
         # Validate role_level enum
-        assert response_data["role_level"] in ["junior", "mid", "senior", "lead", "executive"]
+        assert job_analysis["role_level"] in ["junior", "mid", "senior", "lead", "executive"]
 
         # Optional fields validation
-        if "department" in response_data:
-            assert isinstance(response_data["department"], (str, type(None)))
-        if "remote_policy" in response_data:
-            assert isinstance(response_data["remote_policy"], (str, type(None)))
-        if "salary_range" in response_data:
-            assert isinstance(response_data["salary_range"], (str, type(None)))
-        if "benefits" in response_data:
-            assert isinstance(response_data["benefits"], list)
-        if "preferred_qualifications" in response_data:
-            assert isinstance(response_data["preferred_qualifications"], list)
+        if "department" in job_analysis:
+            assert isinstance(job_analysis["department"], (str, type(None)))
+        if "remote_policy" in job_analysis:
+            assert isinstance(job_analysis["remote_policy"], (str, type(None)))
+        if "salary_range" in job_analysis:
+            assert isinstance(job_analysis["salary_range"], (str, type(None)))
+        if "benefits" in job_analysis:
+            assert isinstance(job_analysis["benefits"], list)
+        if "preferred_qualifications" in job_analysis:
+            assert isinstance(job_analysis["preferred_qualifications"], list)
 
     async def test_analyze_job_invalid_request_missing_field(self, async_client: AsyncClient) -> None:
         """Test job analysis with missing required job_description field."""
@@ -166,14 +174,23 @@ class TestJobsAnalyzeEndpoint:
 
         # Validate required fields are present
         response_data = response.json()
-        assert "company_name" in response_data
-        assert "job_title" in response_data
-        assert "location" in response_data
-        assert "requirements" in response_data
-        assert "key_responsibilities" in response_data
-        assert "company_culture" in response_data
-        assert "role_level" in response_data
-        assert "industry" in response_data
+
+        # Verify wrapper fields
+        assert "job_analysis" in response_data
+        assert "analysis_metadata" in response_data
+        assert "message" in response_data
+
+        # Get the nested job analysis data
+        job_analysis = response_data["job_analysis"]
+
+        assert "company_name" in job_analysis
+        assert "job_title" in job_analysis
+        assert "location" in job_analysis
+        assert "requirements" in job_analysis
+        assert "key_responsibilities" in job_analysis
+        assert "company_culture" in job_analysis
+        assert "role_level" in job_analysis
+        assert "industry" in job_analysis
 
     async def test_analyze_job_content_type_validation(self, async_client: AsyncClient) -> None:
         """Test that endpoint only accepts JSON content type."""

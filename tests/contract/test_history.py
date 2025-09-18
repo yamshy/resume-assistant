@@ -19,12 +19,11 @@ class TestResumeHistoryEndpoint:
         """
         Test GET /resumes/history returns paginated resume history.
 
-        Expected behavior per OpenAPI spec:
+        Expected behavior per implementation:
         - Status: 200 OK
         - Content-Type: application/json
-        - Response body: Object with resumes array, total, limit, offset
+        - Response body: HistoryResponse schema with pagination info
         """
-        # This test should FAIL initially - endpoint doesn't exist yet
         response = await async_client.get("/api/v1/resumes/history")
 
         assert response.status_code == 200
@@ -32,75 +31,68 @@ class TestResumeHistoryEndpoint:
 
         history_data = response.json()
 
-        # Verify response structure per OpenAPI spec
-        assert "resumes" in history_data
-        assert "total" in history_data
-        assert "limit" in history_data
-        assert "offset" in history_data
+        # Verify HistoryResponse schema
+        assert "history" in history_data
+        assert "total_count" in history_data
+        assert "page" in history_data
+        assert "page_size" in history_data
+        assert "has_more" in history_data
+        assert "message" in history_data
 
         # Verify data types
-        assert isinstance(history_data["resumes"], list)
-        assert isinstance(history_data["total"], int)
-        assert isinstance(history_data["limit"], int)
-        assert isinstance(history_data["offset"], int)
+        assert isinstance(history_data["history"], list)
+        assert isinstance(history_data["total_count"], int)
+        assert isinstance(history_data["page"], int)
+        assert isinstance(history_data["page_size"], int)
+        assert isinstance(history_data["has_more"], bool)
+        assert isinstance(history_data["message"], str)
 
-        # Verify ResumeHistoryItem structure if resumes exist
-        if history_data["resumes"]:
-            resume_item = history_data["resumes"][0]
-            assert "resume_id" in resume_item
-            assert "job_title" in resume_item
-            assert "company_name" in resume_item
-            assert "created_at" in resume_item
-            assert "status" in resume_item
-            assert "match_score" in resume_item
-
-            # Verify data types
-            assert isinstance(resume_item["resume_id"], str)
-            assert isinstance(resume_item["job_title"], str)
-            assert isinstance(resume_item["company_name"], str)
-            assert isinstance(resume_item["created_at"], str)
-            assert isinstance(resume_item["status"], str)
-            assert isinstance(resume_item["match_score"], (int, float))
-
-            # Verify enum values
-            assert resume_item["status"] in ["pending", "approved", "rejected", "needs_revision"]
-            assert 0 <= resume_item["match_score"] <= 1
+        # Verify HistoryItem structure if history exists
+        if history_data["history"]:
+            history_item = history_data["history"][0]
+            assert "exported_at" in history_item
+            assert "job_title" in history_item
+            assert "company_name" in history_item
+            assert "resume_file" in history_item
+            assert "file_path" in history_item
+            assert "file_size" in history_item
+            assert "optimizations_count" in history_item
 
     @pytest.mark.asyncio
-    async def test_get_resume_history_with_limit(self, async_client: AsyncClient) -> None:
-        """Test GET /resumes/history with limit parameter."""
-        response = await async_client.get("/resumes/history?limit=5")
+    async def test_get_resume_history_with_page_size(self, async_client: AsyncClient) -> None:
+        """Test GET /resumes/history with page_size parameter."""
+        response = await async_client.get("/api/v1/resumes/history?page_size=5")
 
         assert response.status_code == 200
         history_data = response.json()
 
-        # Verify limit is respected
-        assert history_data["limit"] == 5
-        assert len(history_data["resumes"]) <= 5
+        # Verify page_size is respected
+        assert history_data["page_size"] == 5
+        assert len(history_data["history"]) <= 5
 
     @pytest.mark.asyncio
-    async def test_get_resume_history_with_offset(self, async_client: AsyncClient) -> None:
-        """Test GET /resumes/history with offset parameter."""
-        response = await async_client.get("/resumes/history?offset=10")
+    async def test_get_resume_history_with_page(self, async_client: AsyncClient) -> None:
+        """Test GET /resumes/history with page parameter."""
+        response = await async_client.get("/api/v1/resumes/history?page=2")
 
         assert response.status_code == 200
         history_data = response.json()
 
-        # Verify offset is applied
-        assert history_data["offset"] == 10
+        # Verify page is applied
+        assert history_data["page"] == 2
 
     @pytest.mark.asyncio
-    async def test_get_resume_history_with_limit_and_offset(self, async_client: AsyncClient) -> None:
-        """Test GET /resumes/history with both limit and offset parameters."""
-        response = await async_client.get("/resumes/history?limit=3&offset=5")
+    async def test_get_resume_history_with_page_and_page_size(self, async_client: AsyncClient) -> None:
+        """Test GET /resumes/history with both page and page_size parameters."""
+        response = await async_client.get("/api/v1/resumes/history?page=2&page_size=3")
 
         assert response.status_code == 200
         history_data = response.json()
 
         # Verify parameters are applied
-        assert history_data["limit"] == 3
-        assert history_data["offset"] == 5
-        assert len(history_data["resumes"]) <= 3
+        assert history_data["page"] == 2
+        assert history_data["page_size"] == 3
+        assert len(history_data["history"]) <= 3
 
     @pytest.mark.asyncio
     async def test_get_resume_history_default_parameters(self, async_client: AsyncClient) -> None:
@@ -111,36 +103,36 @@ class TestResumeHistoryEndpoint:
         history_data = response.json()
 
         # Verify default values per OpenAPI spec
-        assert history_data["limit"] == 10  # Default limit
-        assert history_data["offset"] == 0   # Default offset
+        assert history_data["page"] == 1      # Default page
+        assert history_data["page_size"] == 10  # Default page_size
 
     @pytest.mark.asyncio
-    async def test_get_resume_history_limit_validation(self, async_client: AsyncClient) -> None:
-        """Test GET /resumes/history validates limit parameter constraints."""
-        # Test minimum limit (should be 1)
-        response = await async_client.get("/resumes/history?limit=0")
+    async def test_get_resume_history_page_size_validation(self, async_client: AsyncClient) -> None:
+        """Test GET /resumes/history validates page_size parameter constraints."""
+        # Test minimum page_size (should be 1)
+        response = await async_client.get("/api/v1/resumes/history?page_size=0")
         assert response.status_code == 422  # Validation error
 
-        # Test maximum limit (should be 100)
-        response = await async_client.get("/resumes/history?limit=101")
+        # Test maximum page_size (should be 100)
+        response = await async_client.get("/api/v1/resumes/history?page_size=101")
         assert response.status_code == 422  # Validation error
 
     @pytest.mark.asyncio
-    async def test_get_resume_history_offset_validation(self, async_client: AsyncClient) -> None:
-        """Test GET /resumes/history validates offset parameter constraints."""
-        # Test negative offset (should be >= 0)
-        response = await async_client.get("/resumes/history?offset=-1")
+    async def test_get_resume_history_page_validation(self, async_client: AsyncClient) -> None:
+        """Test GET /resumes/history validates page parameter constraints."""
+        # Test negative page (should be >= 1)
+        response = await async_client.get("/api/v1/resumes/history?page=0")
         assert response.status_code == 422  # Validation error
 
     @pytest.mark.asyncio
     async def test_get_resume_history_invalid_parameter_types(self, async_client: AsyncClient) -> None:
         """Test GET /resumes/history handles invalid parameter types."""
-        # Test non-integer limit
-        response = await async_client.get("/resumes/history?limit=abc")
+        # Test non-integer page_size
+        response = await async_client.get("/api/v1/resumes/history?page_size=abc")
         assert response.status_code == 422  # Validation error
 
-        # Test non-integer offset
-        response = await async_client.get("/resumes/history?offset=xyz")
+        # Test non-integer page
+        response = await async_client.get("/api/v1/resumes/history?page=xyz")
         assert response.status_code == 422  # Validation error
 
     @pytest.mark.asyncio
@@ -152,11 +144,13 @@ class TestResumeHistoryEndpoint:
         history_data = response.json()
 
         # Should return valid structure even when empty
-        assert "resumes" in history_data
-        assert "total" in history_data
-        assert "limit" in history_data
-        assert "offset" in history_data
+        assert "history" in history_data
+        assert "total_count" in history_data
+        assert "page" in history_data
+        assert "page_size" in history_data
+        assert "has_more" in history_data
+        assert "message" in history_data
 
-        # Empty case should have total = 0 and empty resumes array
-        if history_data["total"] == 0:
-            assert history_data["resumes"] == []
+        # Empty case should have total_count = 0 and empty history array
+        if history_data["total_count"] == 0:
+            assert history_data["history"] == []

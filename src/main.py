@@ -127,13 +127,15 @@ async def root():
 
 
 # Include all routers with /api/v1 prefix for versioning
+# NOTE: history_router must come before resumes_router to avoid route conflicts
+# /resumes/history must be matched before /resumes/{session_id}
 app.include_router(health_router, prefix="/api/v1")
 app.include_router(profile_router, prefix="/api/v1")
 app.include_router(jobs_router, prefix="/api/v1")
+app.include_router(history_router, prefix="/api/v1")
 app.include_router(resumes_router, prefix="/api/v1")
 app.include_router(approval_router, prefix="/api/v1")
 app.include_router(download_router, prefix="/api/v1")
-app.include_router(history_router, prefix="/api/v1")
 
 
 # Development server entry point
