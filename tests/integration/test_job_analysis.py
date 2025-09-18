@@ -17,8 +17,8 @@ from pydantic_ai.models.test import TestModel
 
 # These imports will fail until the agent is implemented - this is expected for TDD
 try:
-    from src.agents.job_analysis_agent import JobAnalysisAgent
-    from src.models.job_analysis import JobAnalysis, JobRequirement, ResponsibilityLevel
+    from agents.job_analysis_agent import JobAnalysisAgent
+    from models.job_analysis import JobAnalysis, JobRequirement, ResponsibilityLevel
 except ImportError:
     # Expected to fail in TDD - agents and models don't exist yet
     pytest.skip("Job Analysis Agent and models not implemented yet", allow_module_level=True)

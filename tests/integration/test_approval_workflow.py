@@ -11,15 +11,15 @@ from typing import List, Optional
 # Import data models (these will be created later)
 # These imports will cause the test to fail initially as expected for TDD
 try:
-    from src.models.approval import (
+    from models.approval import (
         ApprovalStatus,
         ApprovalRequest,
         ReviewDecision,
         ApprovalWorkflow,
         ResumeSection
     )
-    from src.models.validation import ValidationResult, ValidationIssue
-    from src.agents.human_interface_agent import HumanInterfaceAgent
+    from models.validation import ValidationResult, ValidationIssue
+    from agents.human_interface_agent import HumanInterfaceAgent
 except ImportError:
     # Expected to fail in TDD - agents and models don't exist yet
     pytest.skip("Human Interface Agent and approval models not implemented yet", allow_module_level=True)

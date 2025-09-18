@@ -133,7 +133,7 @@ class ResumeGenerationAgent:
         agent = self._get_agent()
         result = await agent.run(context)
 
-        return result
+        return result.output
 
     def _prepare_context_from_dict(
         self, user_profile: dict, job_analysis: dict, matching_result: dict

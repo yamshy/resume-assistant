@@ -13,7 +13,7 @@ from typing import List
 import pytest
 from pydantic_ai.models.test import TestModel
 
-from src.models.profile import (
+from models.profile import (
     ContactInfo,
     UserProfile,
     WorkExperience,
@@ -22,12 +22,12 @@ from src.models.profile import (
     SkillCategory,
     Project,
 )
-from src.models.job_analysis import (
+from models.job_analysis import (
     JobAnalysis,
     JobRequirement,
     ResponsibilityLevel,
 )
-from src.models.matching import (
+from models.matching import (
     MatchingResult,
     SkillMatch,
     ExperienceMatch,

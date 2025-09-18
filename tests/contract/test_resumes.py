@@ -15,30 +15,85 @@ class TestTailorResumeEndpoint:
 
     @pytest.mark.asyncio
     async def test_tailor_resume_success(self, async_client: httpx.AsyncClient):
-        """Test successful resume tailoring request returns TailoringResult schema."""
-        # Valid request payload according to API spec
+        """Test successful resume tailoring request returns ResumeTailoringResponse schema."""
+        # Valid request payload according to actual API contract
         request_payload = {
-            "job_description": "Software Engineer position at TechCorp requiring Python, FastAPI, and cloud experience. We are looking for a mid-level developer with 3+ years experience.",
-            "preferences": {
-                "emphasis_areas": ["python", "fastapi", "cloud"],
-                "excluded_sections": ["publications"]
+            "job_posting_text": "Software Engineer position at TechCorp requiring Python, FastAPI, and cloud experience. We are looking for a mid-level developer with 3+ years experience. Responsibilities include: Develop web applications using Python and FastAPI, Design scalable cloud architecture, Collaborate with cross-functional teams, Write clean and maintainable code, Participate in code reviews and technical discussions.",
+            "use_stored_profile": False,
+            "profile": {
+                "version": "1.0",
+                "metadata": {
+                    "created_at": "2023-01-01T00:00:00",
+                    "updated_at": "2023-01-01T00:00:00"
+                },
+                "contact": {
+                    "name": "John Doe",
+                    "email": "john.doe@example.com",
+                    "location": "San Francisco, CA",
+                    "phone": "+1-555-0123"
+                },
+                "professional_summary": "Experienced software engineer with 5+ years in Python development.",
+                "experience": [
+                    {
+                        "position": "Software Engineer",
+                        "company": "TechCorp",
+                        "location": "San Francisco, CA",
+                        "start_date": "2020-01-01",
+                        "end_date": None,
+                        "description": "Developed web applications using Python and FastAPI.",
+                        "achievements": ["Improved performance by 40%"],
+                        "technologies": ["Python", "FastAPI", "PostgreSQL"]
+                    }
+                ],
+                "education": [
+                    {
+                        "degree": "Bachelor of Science in Computer Science",
+                        "institution": "University of California",
+                        "location": "Berkeley, CA",
+                        "graduation_date": "2019-05-15",
+                        "gpa": 3.8,
+                        "honors": [],
+                        "relevant_coursework": []
+                    }
+                ],
+                "skills": [
+                    {
+                        "name": "Python",
+                        "category": "technical",
+                        "proficiency": 5,
+                        "years_experience": 5
+                    }
+                ],
+                "projects": [],
+                "publications": [],
+                "awards": [],
+                "volunteer": [],
+                "languages": []
             }
         }
 
         response = await async_client.post("/api/v1/resumes/tailor", json=request_payload)
 
-        # Should return 200 OK with TailoringResult schema
+        # Debug response if not 200
+        if response.status_code != 200:
+            print(f"Response status: {response.status_code}")
+            print(f"Response text: {response.text}")
+
+        # Should return 200 OK with ResumeTailoringResponse schema
         assert response.status_code == 200
 
         result = response.json()
 
-        # Verify TailoringResult schema compliance
-        assert "resume_id" in result
+        # Verify ResumeTailoringResponse schema compliance per actual API
+        assert "session_id" in result
+        assert "processing_time_seconds" in result
         assert "job_analysis" in result
         assert "matching_result" in result
         assert "tailored_resume" in result
         assert "validation_result" in result
         assert "approval_workflow" in result
+        assert "final_status" in result
+        assert "message" in result
 
         # Verify resume_id is valid UUID format
         resume_id = result["resume_id"]

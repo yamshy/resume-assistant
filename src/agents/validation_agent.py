@@ -174,7 +174,7 @@ Always provide specific, actionable feedback for improvement.
             # Verify score ranges
             self._validate_scores(result.output)
 
-            return result
+            return result.output
 
         except Exception as e:
             raise ModelRetry(f"Validation failed: {str(e)}. Please retry with valid scores and complete analysis.")

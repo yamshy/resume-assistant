@@ -128,7 +128,7 @@ class ProfileMatchingAgent:
         agent = self._get_agent()
         result = await agent.run(context)
 
-        return result
+        return result.output
 
     def _prepare_analysis_context(self, user_profile: UserProfile, job_analysis: JobAnalysis) -> str:
         """Prepare structured context for AI analysis."""

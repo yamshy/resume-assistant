@@ -108,8 +108,7 @@ class ResumeTailoringService:
 
             # Step 2: Profile Matching Agent - Match profile against job requirements
             profile_matching_agent = self._get_profile_matching_agent()
-            matching_result_output = await profile_matching_agent.run(user_profile, job_analysis)
-            matching_result = matching_result_output.output
+            matching_result = await profile_matching_agent.run(user_profile, job_analysis)
 
             # Step 3: Resume Generation Agent - Create tailored resume content
             resume_generation_agent = self._get_resume_generation_agent()
@@ -118,16 +117,14 @@ class ResumeTailoringService:
                 "job_analysis": job_analysis,
                 "matching_result": matching_result
             }
-            resume_result = await resume_generation_agent.run(context_data)
-            tailored_resume = resume_result.output
+            tailored_resume = await resume_generation_agent.run(context_data)
 
             # Step 4: Validation Agent - Verify accuracy against source data
             validation_agent = self._get_validation_agent()
             # Convert models to dict format for validation
             resume_data = tailored_resume.model_dump()
             source_profile = user_profile.model_dump()
-            validation_result_output = await validation_agent.run(resume_data, source_profile)
-            validation_result = validation_result_output.output
+            validation_result = await validation_agent.run(resume_data, source_profile)
 
             # Step 5: Human Interface Agent - Determine approval workflow
             human_interface_agent = self._get_human_interface_agent()

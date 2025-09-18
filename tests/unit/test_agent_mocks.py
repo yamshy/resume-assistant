@@ -214,32 +214,29 @@ class TestProfileMatchingAgentMock:
         """Test basic Profile Matching Agent mocking with structured output."""
         result = await mock_profile_matching_agent.run(sample_user_profile, sample_job_analysis)
 
-        # Verify result structure - profile matching agent returns AgentRunResult
-        assert hasattr(result, 'output')
-        assert isinstance(result.output, MatchingResult)
+        # Verify result structure - profile matching agent returns MatchingResult directly
+        assert isinstance(result, MatchingResult)
 
         # Verify required fields exist
-        output = result.output
-        assert hasattr(output, 'overall_match_score')
-        assert hasattr(output, 'skill_matches')
-        assert hasattr(output, 'experience_matches')
-        assert hasattr(output, 'missing_requirements')
-        assert hasattr(output, 'strength_areas')
-        assert hasattr(output, 'transferable_skills')
-        assert hasattr(output, 'recommendations')
-        assert hasattr(output, 'confidence_score')
+        assert hasattr(result, 'overall_match_score')
+        assert hasattr(result, 'skill_matches')
+        assert hasattr(result, 'experience_matches')
+        assert hasattr(result, 'missing_requirements')
+        assert hasattr(result, 'strength_areas')
+        assert hasattr(result, 'transferable_skills')
+        assert hasattr(result, 'recommendations')
+        assert hasattr(result, 'confidence_score')
 
     async def test_profile_matching_agent_mock_output_validation(self, mock_profile_matching_agent, sample_user_profile, sample_job_analysis):
         """Test that mocked agent returns valid MatchingResult structure."""
         result = await mock_profile_matching_agent.run(sample_user_profile, sample_job_analysis)
 
         # TestModel returns minimal valid structures
-        output = result.output
-        assert isinstance(output.overall_match_score, float)
-        assert isinstance(output.skill_matches, list)
-        assert isinstance(output.experience_matches, list)
-        assert isinstance(output.missing_requirements, list)
-        assert isinstance(output.confidence_score, float)
+        assert isinstance(result.overall_match_score, float)
+        assert isinstance(result.skill_matches, list)
+        assert isinstance(result.experience_matches, list)
+        assert isinstance(result.missing_requirements, list)
+        assert isinstance(result.confidence_score, float)
 
     async def test_profile_matching_agent_override_functionality(self, sample_user_profile, sample_job_analysis):
         """Test Profile Matching Agent override functionality."""
@@ -251,7 +248,7 @@ class TestProfileMatchingAgentMock:
 
         # Mock agent should work
         result = await mock_agent.run(sample_user_profile, sample_job_analysis)
-        assert result.output is not None
+        assert result is not None
 
 
 class TestResumeGenerationAgentMock:
@@ -291,32 +288,29 @@ class TestResumeGenerationAgentMock:
         """Test basic Resume Generation Agent mocking with structured output."""
         result = await mock_resume_generation_agent.run(sample_context_data)
 
-        # Verify result structure - resume generation agent returns AgentRunResult
-        assert hasattr(result, 'output')
-        assert isinstance(result.output, TailoredResume)
+        # Verify result structure - resume generation agent returns TailoredResume directly
+        assert isinstance(result, TailoredResume)
 
         # Verify required fields exist
-        output = result.output
-        assert hasattr(output, 'job_title')
-        assert hasattr(output, 'company_name')
-        assert hasattr(output, 'optimizations')
-        assert hasattr(output, 'full_resume_markdown')
-        assert hasattr(output, 'summary_of_changes')
-        assert hasattr(output, 'estimated_match_score')
-        assert hasattr(output, 'generation_timestamp')
+        assert hasattr(result, 'job_title')
+        assert hasattr(result, 'company_name')
+        assert hasattr(result, 'optimizations')
+        assert hasattr(result, 'full_resume_markdown')
+        assert hasattr(result, 'summary_of_changes')
+        assert hasattr(result, 'estimated_match_score')
+        assert hasattr(result, 'generation_timestamp')
 
     async def test_resume_generation_agent_mock_output_types(self, mock_resume_generation_agent, sample_context_data):
         """Test that mocked agent returns correct TailoredResume structure."""
         result = await mock_resume_generation_agent.run(sample_context_data)
 
-        output = result.output
-        assert isinstance(output.job_title, str)
-        assert isinstance(output.company_name, str)
-        assert isinstance(output.optimizations, list)
-        assert isinstance(output.full_resume_markdown, str)
-        assert isinstance(output.summary_of_changes, str)
-        assert isinstance(output.estimated_match_score, float)
-        assert isinstance(output.generation_timestamp, str)
+        assert isinstance(result.job_title, str)
+        assert isinstance(result.company_name, str)
+        assert isinstance(result.optimizations, list)
+        assert isinstance(result.full_resume_markdown, str)
+        assert isinstance(result.summary_of_changes, str)
+        assert isinstance(result.estimated_match_score, float)
+        assert isinstance(result.generation_timestamp, str)
 
     async def test_resume_generation_agent_override_functionality(self, sample_context_data):
         """Test Resume Generation Agent override functionality."""
@@ -328,7 +322,7 @@ class TestResumeGenerationAgentMock:
 
         # Mock agent should work
         result = await mock_agent.run(sample_context_data)
-        assert result.output is not None
+        assert result is not None
 
 
 class TestValidationAgentMock:
@@ -382,34 +376,31 @@ class TestValidationAgentMock:
         """Test basic Validation Agent mocking with structured output."""
         result = await mock_validation_agent.run(sample_resume_data, sample_source_profile)
 
-        # Verify result structure - validation agent returns AgentRunResult
-        assert hasattr(result, 'output')
-        assert isinstance(result.output, ValidationResult)
+        # Verify result structure - validation agent returns ValidationResult directly
+        assert isinstance(result, ValidationResult)
 
         # Verify required fields exist
-        output = result.output
-        assert hasattr(output, 'is_valid')
-        assert hasattr(output, 'accuracy_score')
-        assert hasattr(output, 'readability_score')
-        assert hasattr(output, 'keyword_optimization_score')
-        assert hasattr(output, 'overall_quality_score')
-        assert hasattr(output, 'issues')
-        assert hasattr(output, 'strengths')
-        assert hasattr(output, 'validation_timestamp')
+        assert hasattr(result, 'is_valid')
+        assert hasattr(result, 'accuracy_score')
+        assert hasattr(result, 'readability_score')
+        assert hasattr(result, 'keyword_optimization_score')
+        assert hasattr(result, 'overall_quality_score')
+        assert hasattr(result, 'issues')
+        assert hasattr(result, 'strengths')
+        assert hasattr(result, 'validation_timestamp')
 
     async def test_validation_agent_mock_output_types(self, mock_validation_agent, sample_resume_data, sample_source_profile):
         """Test that mocked agent returns correct ValidationResult structure."""
         result = await mock_validation_agent.run(sample_resume_data, sample_source_profile)
 
-        output = result.output
-        assert isinstance(output.is_valid, bool)
-        assert isinstance(output.accuracy_score, float)
-        assert isinstance(output.readability_score, float)
-        assert isinstance(output.keyword_optimization_score, float)
-        assert isinstance(output.overall_quality_score, float)
-        assert isinstance(output.issues, list)
-        assert isinstance(output.strengths, list)
-        assert isinstance(output.validation_timestamp, str)
+        assert isinstance(result.is_valid, bool)
+        assert isinstance(result.accuracy_score, float)
+        assert isinstance(result.readability_score, float)
+        assert isinstance(result.keyword_optimization_score, float)
+        assert isinstance(result.overall_quality_score, float)
+        assert isinstance(result.issues, list)
+        assert isinstance(result.strengths, list)
+        assert isinstance(result.validation_timestamp, str)
 
     async def test_validation_agent_override_functionality(self, sample_resume_data, sample_source_profile):
         """Test Validation Agent override functionality."""
@@ -421,7 +412,7 @@ class TestValidationAgentMock:
 
         # Mock agent should work
         result = await mock_agent.run(sample_resume_data, sample_source_profile)
-        assert result.output is not None
+        assert result is not None
 
 
 class TestAgentOverrideFunctionality:
@@ -474,16 +465,16 @@ class TestAgentOverrideFunctionality:
             analysis_timestamp="2024-01-15T12:00:00Z"
         )
         profile_result = await profile_agent.run(sample_profile, sample_job)
-        assert profile_result.output is not None
+        assert profile_result is not None
 
         # Test resume agent
         sample_context = {"user_profile": {"contact": {"name": "Test"}}, "job_analysis": {"company_name": "Test"}, "matching_result": {"overall_match_score": 0.8}}
         resume_result = await resume_agent.run(sample_context)
-        assert resume_result.output is not None
+        assert resume_result is not None
 
         # Test validation agent
         validation_result = await validation_agent.run({"test": "data"}, {"source": "data"})
-        assert validation_result.output is not None
+        assert validation_result is not None
 
 
 class TestAgentErrorHandling:
@@ -509,10 +500,10 @@ class TestAgentErrorHandling:
         result = await agent.run({"test": "data"}, {"source": "data"})
 
         # Should complete without errors despite TestModel's minimal responses
-        assert result.output is not None
-        assert hasattr(result.output, 'confidence')
-        assert hasattr(result.output, 'errors')
-        assert hasattr(result.output, 'warnings')
+        assert result is not None
+        assert hasattr(result, 'confidence')
+        assert hasattr(result, 'errors')
+        assert hasattr(result, 'warnings')
 
     async def test_agents_handle_missing_optional_fields(self):
         """Test that agents handle missing optional fields gracefully."""
@@ -549,8 +540,8 @@ class TestAgentChainIntegrationPoints:
         # Note: TestModel outputs won't be realistic, but structure should work
         profile_result = await profile_agent.run(test_profile, job_result)
 
-        assert profile_result.output is not None
-        assert isinstance(profile_result.output, MatchingResult)
+        assert profile_result is not None
+        assert isinstance(profile_result, MatchingResult)
 
     async def test_matching_to_resume_generation_chain(self):
         """Test that Profile Matching output can be used for Resume Generation."""
@@ -584,8 +575,8 @@ class TestAgentChainIntegrationPoints:
         # Generate resume
         resume_result = await resume_agent.run(context)
 
-        assert resume_result.output is not None
-        assert isinstance(resume_result.output, TailoredResume)
+        assert resume_result is not None
+        assert isinstance(resume_result, TailoredResume)
 
     async def test_resume_to_validation_chain(self):
         """Test that Resume Generation output can be validated."""
@@ -606,8 +597,8 @@ class TestAgentChainIntegrationPoints:
 
         validation_result = await validation_agent.run(resume_data, source_data)
 
-        assert validation_result.output is not None
-        assert isinstance(validation_result.output, ValidationResult)
+        assert validation_result is not None
+        assert isinstance(validation_result, ValidationResult)
 
 
 class TestAgentMockDataConsistency:
@@ -641,16 +632,16 @@ class TestAgentMockDataConsistency:
             analysis_timestamp="2024-01-15T12:00:00Z"
         )
         matching_result = await agents['profile_matching'].run(test_profile, test_job)
-        assert isinstance(matching_result.output, MatchingResult)
+        assert isinstance(matching_result, MatchingResult)
 
         # Test resume generation
         context = {"user_profile": {"contact": {"name": "Test"}}, "job_analysis": {"company_name": "Test"}, "matching_result": {"overall_match_score": 0.8}}
         resume_result = await agents['resume_generation'].run(context)
-        assert isinstance(resume_result.output, TailoredResume)
+        assert isinstance(resume_result, TailoredResume)
 
         # Test validation
         validation_result = await agents['validation'].run({"test": "data"}, {"source": "data"})
-        assert isinstance(validation_result.output, ValidationResult)
+        assert isinstance(validation_result, ValidationResult)
 
     async def test_mocked_agents_handle_pydantic_validation(self):
         """Test that mocked agents work with pydantic validation constraints."""
@@ -661,11 +652,10 @@ class TestAgentMockDataConsistency:
         result = await validation_agent.run({"test": "data"}, {"source": "data"})
 
         # Basic structure should be valid even if values are minimal
-        output = result.output
-        assert hasattr(output, 'is_valid')
-        assert hasattr(output, 'accuracy_score')
-        assert hasattr(output, 'overall_quality_score')
-        assert hasattr(output, 'validation_timestamp')
+        assert hasattr(result, 'is_valid')
+        assert hasattr(result, 'accuracy_score')
+        assert hasattr(result, 'overall_quality_score')
+        assert hasattr(result, 'validation_timestamp')
 
 
 # Configuration for pytest-asyncio
