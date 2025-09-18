@@ -195,6 +195,7 @@ def sample_job_description():
 def sample_user_profile():
     """Sample user profile data for testing."""
     return {
+        "metadata": {"created_at": "2023-01-01T00:00:00", "updated_at": "2023-01-01T00:00:00"},
         "contact": {
             "name": "John Doe",
             "email": "john.doe@email.com",
@@ -221,6 +222,16 @@ def sample_user_profile():
             {"name": "Python", "category": "technical", "proficiency": 5, "years_experience": 6},
             {"name": "PostgreSQL", "category": "technical", "proficiency": 4, "years_experience": 4},
             {"name": "AWS", "category": "technical", "proficiency": 4, "years_experience": 3}
+        ],
+        "education": [
+            {
+                "degree": "Bachelor of Science in Computer Science",
+                "institution": "University of Washington",
+                "location": "Seattle, WA",
+                "graduation_date": "2018-06-15",
+                "gpa": 3.7,
+                "honors": ["Magna Cum Laude"]
+            }
         ]
     }
 
@@ -462,38 +473,34 @@ class TestAgentChainIntegration:
     async def test_agent_chain_data_flow_integrity(self, sample_job_description, sample_user_profile):
         """Test that data flows correctly between agents without corruption.
 
-        This test will FAIL because the agents don't exist yet.
         Validates that each agent's output becomes the next agent's input without data loss or corruption.
         """
-        # This will FAIL because agents don't exist yet
-        with pytest.raises(ModuleNotFoundError):
-            from src.agents.job_analysis_agent import JobAnalysisAgent
-            from src.agents.profile_matching import ProfileMatchingAgent
+        from agents.job_analysis_agent import JobAnalysisAgent
+        from agents.profile_matching import ProfileMatchingAgent
 
-            # Test data integrity between agents
-            job_analysis_agent = JobAnalysisAgent()
-            profile_matching_agent = ProfileMatchingAgent()
+        # Test data integrity between agents
+        job_analysis_agent = JobAnalysisAgent()
+        profile_matching_agent = ProfileMatchingAgent()
 
-            # Get job analysis result
-            job_result = await job_analysis_agent.run(sample_job_description)
-            original_requirements_count = len(job_result.data.requirements)
+        # Get job analysis result
+        job_result = await job_analysis_agent.run(sample_job_description)
+        original_requirements_count = len(job_result.requirements)
 
-            # Pass to profile matching agent
-            matching_input = {
-                "job_analysis": job_result.data,
-                "user_profile": sample_user_profile
-            }
-            matching_result = await profile_matching_agent.run(matching_input)
+        # Pass to profile matching agent  
+        # Convert dict to UserProfile object
+        from models.profile import UserProfile
+        user_profile_obj = UserProfile.model_validate(sample_user_profile)
+        matching_result = await profile_matching_agent.run(user_profile_obj, job_result)
 
-            # Verify data integrity
-            assert len(matching_result.data.skill_matches) > 0
-            assert matching_result.data.overall_match_score >= 0
-            # Ensure all job requirements are considered in matching
-            total_requirements_considered = (
-                len(matching_result.data.skill_matches) +
-                len(matching_result.data.missing_requirements)
-            )
-            assert total_requirements_considered <= original_requirements_count
+        # Verify data integrity
+        assert len(matching_result.skill_matches) > 0
+        assert matching_result.overall_match_score >= 0
+        # Ensure all job requirements are considered in matching
+        total_requirements_considered = (
+            len(matching_result.skill_matches) +
+            len(matching_result.missing_requirements)
+        )
+        assert total_requirements_considered <= original_requirements_count
 
     @pytest.mark.asyncio
     async def test_agent_chain_performance_monitoring(self, sample_job_description, sample_user_profile):
