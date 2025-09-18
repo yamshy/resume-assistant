@@ -11,12 +11,14 @@ Constitutional compliance:
 """
 
 from datetime import datetime
+
 from fastapi import APIRouter
 from pydantic import BaseModel
 
 
 class HealthResponse(BaseModel):
     """Health check response model."""
+
     status: str
     timestamp: str
 
@@ -36,10 +38,7 @@ async def health_check() -> HealthResponse:
     Returns:
         HealthResponse: Status and timestamp
     """
-    return HealthResponse(
-        status="ok",
-        timestamp=datetime.now().isoformat()
-    )
+    return HealthResponse(status="ok", timestamp=datetime.now().isoformat())
 
 
 __all__ = ["router", "HealthResponse"]

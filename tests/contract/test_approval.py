@@ -5,7 +5,6 @@ Updated to use session_id pattern consistent with working tailoring pipeline.
 """
 
 import uuid
-from typing import Any, Dict
 
 import pytest
 from httpx import AsyncClient
@@ -24,13 +23,12 @@ class TestResumeApprovalEndpoint:
         approval_request = {
             "decision": "approve",
             "comments": "Excellent tailoring, all sections optimized well",
-            "requested_changes": None
+            "requested_changes": None,
         }
 
         # Act
         response = await async_client.post(
-            f"/api/v1/resumes/{session_id}/approve",
-            json=approval_request
+            f"/api/v1/resumes/{session_id}/approve", json=approval_request
         )
 
         # Assert
@@ -58,13 +56,12 @@ class TestResumeApprovalEndpoint:
         approval_request = {
             "decision": "request_changes",
             "comments": "Good start but experience section needs improvement",
-            "requested_changes": "Add more quantified achievements in experience section and improve skills section keyword optimization"
+            "requested_changes": "Add more quantified achievements in experience section and improve skills section keyword optimization",
         }
 
         # Act
         response = await async_client.post(
-            f"/api/v1/resumes/{session_id}/approve",
-            json=approval_request
+            f"/api/v1/resumes/{session_id}/approve", json=approval_request
         )
 
         # Assert
@@ -82,13 +79,12 @@ class TestResumeApprovalEndpoint:
         approval_request = {
             "decision": "reject",
             "comments": "Resume doesn't match job requirements well enough",
-            "requested_changes": None
+            "requested_changes": None,
         }
 
         # Act
         response = await async_client.post(
-            f"/api/v1/resumes/{session_id}/approve",
-            json=approval_request
+            f"/api/v1/resumes/{session_id}/approve", json=approval_request
         )
 
         # Assert
@@ -110,8 +106,7 @@ class TestResumeApprovalEndpoint:
 
         # Act
         response = await async_client.post(
-            f"/api/v1/resumes/{non_existent_session_id}/approve",
-            json=approval_request
+            f"/api/v1/resumes/{non_existent_session_id}/approve", json=approval_request
         )
 
         # Assert
@@ -120,20 +115,19 @@ class TestResumeApprovalEndpoint:
         # Validate ErrorResponse schema (or default FastAPI 404)
         response_data = response.json()
         # Accept either our custom ErrorResponse format or FastAPI default
-        assert ("error" in response_data and "timestamp" in response_data) or "detail" in response_data
+        assert (
+            "error" in response_data and "timestamp" in response_data
+        ) or "detail" in response_data
 
     async def test_approve_resume_invalid_uuid(self, async_client: AsyncClient) -> None:
         """Test approval with invalid UUID format."""
         # Arrange
         invalid_session_id = "not-a-valid-uuid"
-        approval_request = {
-            "decision": "approve"
-        }
+        approval_request = {"decision": "approve"}
 
         # Act
         response = await async_client.post(
-            f"/api/v1/resumes/{invalid_session_id}/approve",
-            json=approval_request
+            f"/api/v1/resumes/{invalid_session_id}/approve", json=approval_request
         )
 
         # Assert
@@ -151,8 +145,7 @@ class TestResumeApprovalEndpoint:
 
         # Act
         response = await async_client.post(
-            f"/api/v1/resumes/{session_id}/approve",
-            json=invalid_approval_request
+            f"/api/v1/resumes/{session_id}/approve", json=invalid_approval_request
         )
 
         # Assert
@@ -164,41 +157,36 @@ class TestResumeApprovalEndpoint:
         session_id = str(uuid.uuid4())
         invalid_approval_request = {
             "decision": "invalid_decision_value",  # Not in enum [approve, reject, request_changes]
-            "comments": "Invalid decision value"
+            "comments": "Invalid decision value",
         }
 
         # Act
         response = await async_client.post(
-            f"/api/v1/resumes/{session_id}/approve",
-            json=invalid_approval_request
+            f"/api/v1/resumes/{session_id}/approve", json=invalid_approval_request
         )
 
         # Assert
         assert response.status_code == 422  # Validation error for invalid enum value
 
-    @pytest.mark.parametrize("decision,expected_export", [
-        ("approve", True),
-        ("reject", False),
-        ("request_changes", False),
-    ])
+    @pytest.mark.parametrize(
+        "decision,expected_export",
+        [
+            ("approve", True),
+            ("reject", False),
+            ("request_changes", False),
+        ],
+    )
     async def test_approve_resume_decision_export_mapping(
-        self,
-        async_client: AsyncClient,
-        decision: str,
-        expected_export: bool
+        self, async_client: AsyncClient, decision: str, expected_export: bool
     ) -> None:
         """Test that export_path is provided based on decision appropriately."""
         # Arrange
         session_id = str(uuid.uuid4())
-        approval_request = {
-            "decision": decision,
-            "comments": f"Test {decision} decision"
-        }
+        approval_request = {"decision": decision, "comments": f"Test {decision} decision"}
 
         # Act
         response = await async_client.post(
-            f"/api/v1/resumes/{session_id}/approve",
-            json=approval_request
+            f"/api/v1/resumes/{session_id}/approve", json=approval_request
         )
 
         # Assert

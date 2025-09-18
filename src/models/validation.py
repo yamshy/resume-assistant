@@ -6,7 +6,6 @@ providing detailed feedback on resume accuracy, quality, and potential issues.
 """
 
 from pydantic import BaseModel, Field
-from typing import List
 
 
 class ValidationIssue(BaseModel):
@@ -46,15 +45,15 @@ class ValidationResult(BaseModel):
     accuracy_score: float = Field(ge=0, le=1, description="Accuracy against source profile")
     readability_score: float = Field(ge=0, le=1, description="Content readability and flow")
     keyword_optimization_score: float = Field(ge=0, le=1, description="Keyword usage effectiveness")
-    issues: List[ValidationIssue] = Field(description="Identified issues")
-    strengths: List[str] = Field(description="Validation strengths identified")
+    issues: list[ValidationIssue] = Field(description="Identified issues")
+    strengths: list[str] = Field(description="Validation strengths identified")
     overall_quality_score: float = Field(ge=0, le=1, description="Overall quality rating")
     validation_timestamp: str = Field(description="When validation was performed")
 
     # Additional fields expected by tests
     confidence: float = Field(ge=0, le=1, description="Confidence in validation results")
-    errors: List[ValidationIssue] = Field(description="Critical validation errors")
-    warnings: List[ValidationWarning] = Field(description="Non-critical validation warnings")
+    errors: list[ValidationIssue] = Field(description="Critical validation errors")
+    warnings: list[ValidationWarning] = Field(description="Non-critical validation warnings")
 
 
 __all__ = ["ValidationIssue", "ValidationWarning", "ValidationResult"]

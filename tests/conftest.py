@@ -1,3 +1,5 @@
+import os
+import sys
 from collections.abc import AsyncGenerator
 from unittest.mock import patch
 
@@ -7,9 +9,7 @@ from fastapi.testclient import TestClient
 from httpx import ASGITransport, AsyncClient
 from pydantic_ai.models.test import TestModel
 
-import sys
-import os
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'src'))
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "src"))
 from main import app
 
 
@@ -71,11 +71,18 @@ def mock_agents_for_contract_tests():
         mock_validation_agent = create_validation_agent().override(model=TestModel())
 
         # Patch both module-level instances and creation functions
-        with patch("api.jobs.job_analysis_agent", mock_job_agent), \
-             patch("agents.job_analysis_agent.create_job_analysis_agent", lambda: mock_job_agent), \
-             patch("agents.profile_matching.create_profile_matching_agent", lambda: mock_profile_agent), \
-             patch("agents.resume_generation_agent.create_resume_generation_agent", lambda: mock_resume_agent), \
-             patch("agents.validation_agent.create_validation_agent", lambda: mock_validation_agent):
+        with (
+            patch("api.jobs.job_analysis_agent", mock_job_agent),
+            patch("agents.job_analysis_agent.create_job_analysis_agent", lambda: mock_job_agent),
+            patch(
+                "agents.profile_matching.create_profile_matching_agent", lambda: mock_profile_agent
+            ),
+            patch(
+                "agents.resume_generation_agent.create_resume_generation_agent",
+                lambda: mock_resume_agent,
+            ),
+            patch("agents.validation_agent.create_validation_agent", lambda: mock_validation_agent),
+        ):
             yield
     finally:
         # Restore original API key

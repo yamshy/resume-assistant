@@ -13,24 +13,34 @@ Follows constitutional agent-chain architecture with mocked agents for cost-effe
 import asyncio
 import time
 import uuid
-from datetime import datetime
-from typing import Dict, List, Tuple
-from unittest.mock import AsyncMock, patch
+from unittest.mock import AsyncMock
 
 import pytest
 from pydantic_ai.models.test import TestModel
-
-from src.models.job_analysis import JobAnalysis, JobRequirement, ResponsibilityLevel
-from src.models.matching import MatchingResult, SkillMatch, ExperienceMatch
-from src.models.profile import UserProfile, SkillCategory, WorkExperience, Education, ContactInfo, Skill
-from src.models.resume_optimization import TailoredResume, ContentOptimization
-from src.models.validation import ValidationResult, ValidationIssue, ValidationWarning
-from src.models.approval import ApprovalWorkflow, ReviewDecision, ApprovalStatus, ApprovalRequest, ResumeSection
 
 from src.agents.job_analysis_agent import JobAnalysisAgent
 from src.agents.profile_matching import ProfileMatchingAgent
 from src.agents.resume_generation_agent import ResumeGenerationAgent
 from src.agents.validation_agent import ValidationAgent
+from src.models.approval import (
+    ApprovalRequest,
+    ApprovalStatus,
+    ApprovalWorkflow,
+    ResumeSection,
+    ReviewDecision,
+)
+from src.models.job_analysis import JobAnalysis, JobRequirement, ResponsibilityLevel
+from src.models.matching import ExperienceMatch, MatchingResult, SkillMatch
+from src.models.profile import (
+    ContactInfo,
+    Education,
+    Skill,
+    SkillCategory,
+    UserProfile,
+    WorkExperience,
+)
+from src.models.resume_optimization import ContentOptimization, TailoredResume
+from src.models.validation import ValidationIssue, ValidationResult, ValidationWarning
 
 # ResumeService import commented out due to missing human_interface_agent
 # from src.services.resume_service import ResumeService
@@ -105,7 +115,7 @@ def sample_user_profile() -> UserProfile:
             name="John Smith",
             email="john.smith@example.com",
             phone="+1-555-0123",
-            location="San Francisco, CA"
+            location="San Francisco, CA",
         ),
         professional_summary="Experienced backend engineer with 6 years in Python development",
         experience=[
@@ -119,9 +129,9 @@ def sample_user_profile() -> UserProfile:
                 achievements=[
                     "Built scalable APIs with FastAPI serving 1M+ requests/day",
                     "Implemented microservices architecture reducing deployment time by 60%",
-                    "Mentored 3 junior developers, improving team productivity by 40%"
+                    "Mentored 3 junior developers, improving team productivity by 40%",
                 ],
-                technologies=["Python", "FastAPI", "PostgreSQL", "Docker"]
+                technologies=["Python", "FastAPI", "PostgreSQL", "Docker"],
             )
         ],
         education=[
@@ -129,15 +139,26 @@ def sample_user_profile() -> UserProfile:
                 institution="UC Berkeley",
                 degree="BS Computer Science",
                 graduation_date="2018-06-01",
-                gpa=3.8
+                gpa=3.8,
             )
         ],
         skills=[
-            Skill(name="Python", category=SkillCategory.TECHNICAL, proficiency=5, years_experience=6),
-            Skill(name="FastAPI", category=SkillCategory.TECHNICAL, proficiency=4, years_experience=3),
-            Skill(name="PostgreSQL", category=SkillCategory.TECHNICAL, proficiency=4, years_experience=4),
-            Skill(name="Leadership", category=SkillCategory.SOFT, proficiency=4, years_experience=3)
-        ]
+            Skill(
+                name="Python", category=SkillCategory.TECHNICAL, proficiency=5, years_experience=6
+            ),
+            Skill(
+                name="FastAPI", category=SkillCategory.TECHNICAL, proficiency=4, years_experience=3
+            ),
+            Skill(
+                name="PostgreSQL",
+                category=SkillCategory.TECHNICAL,
+                proficiency=4,
+                years_experience=4,
+            ),
+            Skill(
+                name="Leadership", category=SkillCategory.SOFT, proficiency=4, years_experience=3
+            ),
+        ],
     )
 
 
@@ -156,34 +177,34 @@ def create_mock_job_analysis() -> JobAnalysis:
                 importance=5,
                 category=SkillCategory.TECHNICAL,
                 is_required=True,
-                context="5+ years Python development experience"
+                context="5+ years Python development experience",
             ),
             JobRequirement(
                 skill="FastAPI",
                 importance=4,
                 category=SkillCategory.TECHNICAL,
                 is_required=True,
-                context="Strong experience with FastAPI, asyncio"
+                context="Strong experience with FastAPI, asyncio",
             ),
             JobRequirement(
                 skill="PostgreSQL",
                 importance=4,
                 category=SkillCategory.TECHNICAL,
                 is_required=True,
-                context="Knowledge of PostgreSQL, Redis"
+                context="Knowledge of PostgreSQL, Redis",
             ),
             JobRequirement(
                 skill="AWS",
                 importance=3,
                 category=SkillCategory.TECHNICAL,
                 is_required=False,
-                context="Experience with AWS cloud services"
-            )
+                context="Experience with AWS cloud services",
+            ),
         ],
         key_responsibilities=[
             "Design and implement scalable backend services",
             "Mentor junior developers",
-            "Lead technical architecture decisions"
+            "Lead technical architecture decisions",
         ],
         company_culture="Fast-paced startup environment with focus on innovation",
         role_level=ResponsibilityLevel.SENIOR,
@@ -191,7 +212,7 @@ def create_mock_job_analysis() -> JobAnalysis:
         salary_range="$150,000 - $200,000",
         benefits=["Health insurance", "401k matching", "Stock options"],
         preferred_qualifications=["Docker", "Kubernetes", "TDD experience"],
-        analysis_timestamp="2025-09-18T12:00:00Z"
+        analysis_timestamp="2025-09-18T12:00:00Z",
     )
 
 
@@ -205,21 +226,27 @@ def create_mock_matching_result() -> MatchingResult:
                 job_importance=5,
                 user_proficiency=5,
                 match_score=0.95,
-                evidence=["6 years experience in StartupCo", "Built scalable APIs with FastAPI"]
+                evidence=["6 years experience in StartupCo", "Built scalable APIs with FastAPI"],
             ),
             SkillMatch(
                 skill_name="FastAPI",
                 job_importance=4,
                 user_proficiency=4,
                 match_score=0.88,
-                evidence=["Built scalable APIs with FastAPI", "Implemented microservices architecture"]
-            )
+                evidence=[
+                    "Built scalable APIs with FastAPI",
+                    "Implemented microservices architecture",
+                ],
+            ),
         ],
         experience_matches=[
             ExperienceMatch(
                 job_responsibility="Design and implement scalable backend services",
-                matching_experiences=["Built scalable APIs with FastAPI", "Implemented microservices architecture"],
-                relevance_score=0.92
+                matching_experiences=[
+                    "Built scalable APIs with FastAPI",
+                    "Implemented microservices architecture",
+                ],
+                relevance_score=0.92,
             )
         ],
         missing_requirements=[
@@ -228,7 +255,7 @@ def create_mock_matching_result() -> MatchingResult:
                 importance=3,
                 category=SkillCategory.TECHNICAL,
                 is_required=False,
-                context="Docker and Kubernetes experience"
+                context="Docker and Kubernetes experience",
             )
         ],
         strength_areas=["Python expertise", "Leadership experience", "Mentoring background"],
@@ -236,9 +263,9 @@ def create_mock_matching_result() -> MatchingResult:
         recommendations=[
             "Emphasize Python expertise and FastAPI experience",
             "Highlight mentoring experience for leadership role",
-            "Mention any cloud services experience"
+            "Mention any cloud services experience",
         ],
-        confidence_score=0.92
+        confidence_score=0.92,
     )
 
 
@@ -254,7 +281,7 @@ def create_mock_tailored_resume() -> TailoredResume:
                 optimized_content="Senior Python Developer | Led backend architecture for scalable FastAPI services",
                 optimization_reason="Emphasized FastAPI expertise and architecture leadership to match job requirements",
                 keywords_added=["FastAPI", "scalable", "backend architecture"],
-                match_improvement=0.15
+                match_improvement=0.15,
             )
         ],
         full_resume_markdown="""# John Smith
@@ -278,7 +305,7 @@ Senior Backend Engineer with 6+ years Python expertise, specializing in scalable
 """,
         summary_of_changes="Emphasized Python expertise, FastAPI experience, and leadership capabilities to align with job requirements",
         estimated_match_score=0.85,
-        generation_timestamp="2024-01-15T10:30:00Z"
+        generation_timestamp="2024-01-15T10:30:00Z",
     )
 
 
@@ -296,13 +323,13 @@ def create_mock_validation_result() -> ValidationResult:
                 description="End date formatting should be consistent",
                 location="Professional Experience section",
                 suggestion="Use 'Present' instead of current month",
-                error_type="formatting_inconsistency"
+                error_type="formatting_inconsistency",
             )
         ],
         strengths=[
             "6 years Python experience verified against work history",
             "FastAPI experience confirmed from project descriptions",
-            "Leadership experience validated from role progression"
+            "Leadership experience validated from role progression",
         ],
         overall_quality_score=0.92,
         validation_timestamp="2024-01-15T10:30:00Z",
@@ -315,9 +342,9 @@ def create_mock_validation_result() -> ValidationResult:
                 description="Minor formatting improvement needed",
                 location="Professional Experience section",
                 suggestion="Use consistent date formatting",
-                warning_type="formatting_suggestion"
+                warning_type="formatting_suggestion",
             )
-        ]
+        ],
     )
 
 
@@ -332,20 +359,20 @@ def create_mock_approval_workflow() -> ApprovalWorkflow:
             confidence_score=0.92,
             risk_factors=[],
             auto_approve_eligible=True,
-            review_deadline=None
+            review_deadline=None,
         ),
         decision=ReviewDecision(
             decision=ApprovalStatus.APPROVED,
             feedback=None,
             requested_modifications=[],
             approved_sections=[],
-            rejected_sections=[]
+            rejected_sections=[],
         ),
         iterations=1,
         final_resume=None,
         workflow_status=ApprovalStatus.APPROVED,
         created_at="2024-01-15T10:30:00Z",
-        completed_at="2024-01-15T10:30:05Z"
+        completed_at="2024-01-15T10:30:05Z",
     )
 
 
@@ -353,6 +380,7 @@ def create_mock_approval_workflow() -> ApprovalWorkflow:
 @pytest.fixture
 def mock_job_analysis_agent():
     """Mock Job Analysis Agent with realistic timing."""
+
     async def mock_run(job_text: str):
         # Simulate realistic processing time for job analysis
         await asyncio.sleep(0.1)  # 100ms simulation
@@ -366,10 +394,12 @@ def mock_job_analysis_agent():
 @pytest.fixture
 def mock_profile_matching_agent():
     """Mock Profile Matching Agent with realistic timing."""
+
     async def mock_run(profile: UserProfile, job_analysis: JobAnalysis):
         # Simulate realistic processing time for profile matching
         await asyncio.sleep(0.15)  # 150ms simulation
         from types import SimpleNamespace
+
         result = SimpleNamespace()
         result.output = create_mock_matching_result()
         return result
@@ -382,10 +412,12 @@ def mock_profile_matching_agent():
 @pytest.fixture
 def mock_resume_generation_agent():
     """Mock Resume Generation Agent with realistic timing."""
-    async def mock_run(context_data: Dict):
+
+    async def mock_run(context_data: dict):
         # Simulate realistic processing time for resume generation
         await asyncio.sleep(0.2)  # 200ms simulation
         from types import SimpleNamespace
+
         result = SimpleNamespace()
         result.output = create_mock_tailored_resume()
         return result
@@ -398,10 +430,12 @@ def mock_resume_generation_agent():
 @pytest.fixture
 def mock_validation_agent():
     """Mock Validation Agent with realistic timing."""
-    async def mock_run(resume_data: Dict, source_profile: Dict):
+
+    async def mock_run(resume_data: dict, source_profile: dict):
         # Simulate realistic processing time for validation
         await asyncio.sleep(0.1)  # 100ms simulation
         from types import SimpleNamespace
+
         result = SimpleNamespace()
         result.output = create_mock_validation_result()
         return result
@@ -414,10 +448,12 @@ def mock_validation_agent():
 @pytest.fixture
 def mock_human_interface_agent():
     """Mock Human Interface Agent with realistic timing."""
+
     async def mock_run(validation_result: ValidationResult):
         # Simulate realistic processing time for approval workflow
         await asyncio.sleep(0.05)  # 50ms simulation
         from types import SimpleNamespace
+
         result = SimpleNamespace()
         result.output = create_mock_approval_workflow()
         return result
@@ -429,6 +465,7 @@ def mock_human_interface_agent():
 
 # CONSTITUTIONAL REQUIREMENT TESTS
 
+
 @pytest.mark.asyncio
 async def test_full_chain_performance_constitutional_requirement(
     sample_user_profile,
@@ -437,7 +474,7 @@ async def test_full_chain_performance_constitutional_requirement(
     mock_profile_matching_agent,
     mock_resume_generation_agent,
     mock_validation_agent,
-    mock_human_interface_agent
+    mock_human_interface_agent,
 ):
     """
     Test full 4-agent chain performance meets constitutional requirement of <30 seconds.
@@ -460,7 +497,7 @@ async def test_full_chain_performance_constitutional_requirement(
         context_data = {
             "user_profile": sample_user_profile,
             "job_analysis": job_analysis,
-            "matching_result": matching_result.output
+            "matching_result": matching_result.output,
         }
         resume_result = await mock_resume_generation_agent.run(context_data)
 
@@ -470,7 +507,9 @@ async def test_full_chain_performance_constitutional_requirement(
         validation_result = await mock_validation_agent.run(resume_data, source_profile)
 
     # Constitutional requirement: <30 seconds (even with 4 agents should be well under)
-    assert perf.elapsed_seconds < 30.0, f"Full chain took {perf.elapsed_seconds:.2f}s, exceeds 30s constitutional limit"
+    assert perf.elapsed_seconds < 30.0, (
+        f"Full chain took {perf.elapsed_seconds:.2f}s, exceeds 30s constitutional limit"
+    )
 
     # Verify chain completed successfully
     assert job_analysis is not None
@@ -479,7 +518,9 @@ async def test_full_chain_performance_constitutional_requirement(
     assert validation_result is not None
 
     # Log performance for monitoring
-    print(f"✅ Full chain performance (4 agents): {perf.elapsed_seconds:.3f}s (Constitutional limit: 30s)")
+    print(
+        f"✅ Full chain performance (4 agents): {perf.elapsed_seconds:.3f}s (Constitutional limit: 30s)"
+    )
 
 
 @pytest.mark.asyncio
@@ -496,9 +537,11 @@ async def test_individual_agent_performance_constitutional_requirements():
     mock_job_agent = job_analysis_agent.override(model=TestModel())
 
     async with PerformanceMeasurement("job_analysis_agent") as perf:
-        result = await mock_job_agent.run("Sample job posting text for performance testing")
+        await mock_job_agent.run("Sample job posting text for performance testing")
 
-    assert perf.elapsed_seconds < 5.0, f"Job Analysis Agent took {perf.elapsed_seconds:.2f}s, exceeds 5s limit"
+    assert perf.elapsed_seconds < 5.0, (
+        f"Job Analysis Agent took {perf.elapsed_seconds:.2f}s, exceeds 5s limit"
+    )
     print(f"✅ Job Analysis Agent: {perf.elapsed_seconds:.3f}s (Limit: 5s)")
 
     # Test Profile Matching Agent
@@ -512,15 +555,17 @@ async def test_individual_agent_performance_constitutional_requirements():
         education=[],
         skills={},
         certifications=[],
-        projects=[]
+        projects=[],
     )
 
     sample_job_analysis = create_mock_job_analysis()
 
     async with PerformanceMeasurement("profile_matching_agent") as perf:
-        result = await mock_profile_agent.run(sample_profile, sample_job_analysis)
+        await mock_profile_agent.run(sample_profile, sample_job_analysis)
 
-    assert perf.elapsed_seconds < 5.0, f"Profile Matching Agent took {perf.elapsed_seconds:.2f}s, exceeds 5s limit"
+    assert perf.elapsed_seconds < 5.0, (
+        f"Profile Matching Agent took {perf.elapsed_seconds:.2f}s, exceeds 5s limit"
+    )
     print(f"✅ Profile Matching Agent: {perf.elapsed_seconds:.3f}s (Limit: 5s)")
 
     # Test Resume Generation Agent
@@ -530,13 +575,15 @@ async def test_individual_agent_performance_constitutional_requirements():
     context_data = {
         "user_profile": sample_profile,
         "job_analysis": sample_job_analysis,
-        "matching_result": create_mock_matching_result()
+        "matching_result": create_mock_matching_result(),
     }
 
     async with PerformanceMeasurement("resume_generation_agent") as perf:
-        result = await mock_resume_agent.run(context_data)
+        await mock_resume_agent.run(context_data)
 
-    assert perf.elapsed_seconds < 5.0, f"Resume Generation Agent took {perf.elapsed_seconds:.2f}s, exceeds 5s limit"
+    assert perf.elapsed_seconds < 5.0, (
+        f"Resume Generation Agent took {perf.elapsed_seconds:.2f}s, exceeds 5s limit"
+    )
     print(f"✅ Resume Generation Agent: {perf.elapsed_seconds:.3f}s (Limit: 5s)")
 
     # Test Validation Agent
@@ -547,9 +594,11 @@ async def test_individual_agent_performance_constitutional_requirements():
     source_profile = sample_profile.model_dump()
 
     async with PerformanceMeasurement("validation_agent") as perf:
-        result = await mock_validation_agent.run(resume_data, source_profile)
+        await mock_validation_agent.run(resume_data, source_profile)
 
-    assert perf.elapsed_seconds < 5.0, f"Validation Agent took {perf.elapsed_seconds:.2f}s, exceeds 5s limit"
+    assert perf.elapsed_seconds < 5.0, (
+        f"Validation Agent took {perf.elapsed_seconds:.2f}s, exceeds 5s limit"
+    )
     print(f"✅ Validation Agent: {perf.elapsed_seconds:.3f}s (Limit: 5s)")
 
     # Note: Human Interface Agent test skipped as it's not yet implemented
@@ -558,6 +607,7 @@ async def test_individual_agent_performance_constitutional_requirements():
 
 # SERVICE LAYER PERFORMANCE TESTS
 
+
 @pytest.mark.asyncio
 async def test_service_layer_performance():
     """Test agent initialization performance for bottlenecks."""
@@ -565,17 +615,20 @@ async def test_service_layer_performance():
     # Test individual agent initialization performance
     async with PerformanceMeasurement("agent_initialization") as perf:
         # Initialize all available agents
-        job_agent = JobAnalysisAgent()
-        profile_agent = ProfileMatchingAgent()
-        resume_agent = ResumeGenerationAgent()
-        validation_agent = ValidationAgent()
+        JobAnalysisAgent()
+        ProfileMatchingAgent()
+        ResumeGenerationAgent()
+        ValidationAgent()
 
     # Agent initialization should be fast
-    assert perf.elapsed_seconds < 1.0, f"Agent initialization took {perf.elapsed_seconds:.2f}s, too slow"
+    assert perf.elapsed_seconds < 1.0, (
+        f"Agent initialization took {perf.elapsed_seconds:.2f}s, too slow"
+    )
     print(f"✅ Agent initialization: {perf.elapsed_seconds:.3f}s")
 
 
 # API ENDPOINT PERFORMANCE TESTS
+
 
 @pytest.mark.asyncio
 async def test_api_endpoint_response_times(async_client):
@@ -592,6 +645,7 @@ async def test_api_endpoint_response_times(async_client):
 
 # MEMORY USAGE AND RESOURCE MONITORING
 
+
 @pytest.mark.asyncio
 async def test_memory_usage_patterns(sample_user_profile, sample_job_posting):
     """Test memory usage patterns during agent chain execution."""
@@ -599,14 +653,11 @@ async def test_memory_usage_patterns(sample_user_profile, sample_job_posting):
     # This is a simplified memory test - in production you'd use psutil
     # for detailed memory profiling
 
-    # Create service and simulate workload
-    service = ResumeService()
-
     # Test multiple rapid requests to check for memory leaks
     for i in range(5):
         try:
             # This will fail without mocks but we're testing memory patterns
-            async with PerformanceMeasurement(f"memory_test_iteration_{i}") as perf:
+            async with PerformanceMeasurement(f"memory_test_iteration_{i}"):
                 pass  # Would call service.generate_tailored_resume with mocks
         except Exception:
             pass  # Expected without full mocks
@@ -617,6 +668,7 @@ async def test_memory_usage_patterns(sample_user_profile, sample_job_posting):
 
 # CONCURRENT REQUEST HANDLING
 
+
 @pytest.mark.asyncio
 async def test_concurrent_request_handling(
     sample_user_profile,
@@ -625,7 +677,7 @@ async def test_concurrent_request_handling(
     mock_profile_matching_agent,
     mock_resume_generation_agent,
     mock_validation_agent,
-    mock_human_interface_agent
+    mock_human_interface_agent,
 ):
     """Test handling of concurrent agent chain executions for load testing."""
 
@@ -641,7 +693,7 @@ async def test_concurrent_request_handling(
         context_data = {
             "user_profile": sample_user_profile,
             "job_analysis": job_analysis,
-            "matching_result": matching_result.output
+            "matching_result": matching_result.output,
         }
         resume_result = await mock_resume_generation_agent.run(context_data)
 
@@ -659,7 +711,9 @@ async def test_concurrent_request_handling(
 
     # Concurrent requests should not significantly slow down
     # 3 requests should take less than 2x single request time
-    assert perf.elapsed_seconds < 2.0, f"3 concurrent requests took {perf.elapsed_seconds:.2f}s, too slow"
+    assert perf.elapsed_seconds < 2.0, (
+        f"3 concurrent requests took {perf.elapsed_seconds:.2f}s, too slow"
+    )
 
     # All requests should succeed
     for i, result in enumerate(results):
@@ -669,6 +723,7 @@ async def test_concurrent_request_handling(
 
 
 # PERFORMANCE REGRESSION DETECTION
+
 
 @pytest.mark.asyncio
 async def test_performance_regression():
@@ -681,7 +736,7 @@ async def test_performance_regression():
         "resume_generation": 1.0,
         "validation": 0.3,
         "human_interface": 0.2,
-        "full_chain": 3.0  # With mocks, should be much faster than 30s
+        "full_chain": 3.0,  # With mocks, should be much faster than 30s
     }
 
     # Test individual agent baselines with TestModel
@@ -699,6 +754,7 @@ async def test_performance_regression():
 
 # STRESS TESTING
 
+
 @pytest.mark.asyncio
 async def test_large_data_performance(mock_job_analysis_agent):
     """Test performance with large job posting data."""
@@ -707,14 +763,17 @@ async def test_large_data_performance(mock_job_analysis_agent):
     large_job_posting = "Senior Software Engineer position. " * 500  # ~15KB text
 
     async with PerformanceMeasurement("large_data_test") as perf:
-        result = await mock_job_analysis_agent.run(large_job_posting)
+        await mock_job_analysis_agent.run(large_job_posting)
 
     # Should handle large data efficiently
-    assert perf.elapsed_seconds < 1.0, f"Large data processing took {perf.elapsed_seconds:.2f}s, too slow"
+    assert perf.elapsed_seconds < 1.0, (
+        f"Large data processing took {perf.elapsed_seconds:.2f}s, too slow"
+    )
     print(f"✅ Large data performance: {perf.elapsed_seconds:.3f}s for ~15KB input")
 
 
 # PERFORMANCE REPORTING
+
 
 def test_performance_targets_documentation():
     """Document current performance targets for monitoring."""
@@ -722,16 +781,13 @@ def test_performance_targets_documentation():
     targets = {
         "Constitutional Requirements": {
             "Full agent chain": "< 30 seconds",
-            "Individual agents": "< 5 seconds each"
+            "Individual agents": "< 5 seconds each",
         },
         "Service Performance": {
             "Service initialization": "< 1 second",
-            "Health endpoint": "< 0.5 seconds"
+            "Health endpoint": "< 0.5 seconds",
         },
-        "Load Testing": {
-            "3 concurrent requests": "< 2 seconds",
-            "Large data (15KB)": "< 1 second"
-        }
+        "Load Testing": {"3 concurrent requests": "< 2 seconds", "Large data (15KB)": "< 1 second"},
     }
 
     print("\n📊 Performance Targets:")

@@ -11,30 +11,30 @@ Constitutional compliance:
 - Environment-based configuration
 """
 
-from fastapi import FastAPI, HTTPException, Request
-from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import JSONResponse
-from fastapi.exceptions import RequestValidationError
-from pydantic import BaseModel
 import logging
 import sys
 from datetime import datetime
 
-# Import all API routers
-from api.health import router as health_router
-from api.profile import router as profile_router
-from api.jobs import router as jobs_router
-from api.resumes import router as resumes_router
+from fastapi import FastAPI, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
+from pydantic import BaseModel
+
 from api.approval import router as approval_router
 from api.download import router as download_router
-from api.history import router as history_router
 
+# Import all API routers
+from api.health import router as health_router
+from api.history import router as history_router
+from api.jobs import router as jobs_router
+from api.profile import router as profile_router
+from api.resumes import router as resumes_router
 
 # Configure structured logging
 logging.basicConfig(
     level=logging.INFO,
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-    handlers=[logging.StreamHandler(sys.stderr)]
+    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+    handlers=[logging.StreamHandler(sys.stderr)],
 )
 
 logger = logging.getLogger("resume-assistant")
@@ -42,6 +42,7 @@ logger = logging.getLogger("resume-assistant")
 
 class ErrorResponse(BaseModel):
     """Standard error response format."""
+
     error: str
     timestamp: str
 
@@ -52,10 +53,8 @@ app = FastAPI(
     description="AI-powered resume tailoring system using agent-chain architecture",
     version="1.0.0",
     docs_url="/docs",
-    redoc_url="/redoc"
+    redoc_url="/redoc",
 )
-
-
 
 
 # Add CORS middleware
@@ -78,8 +77,8 @@ async def http_exception_handler(request, exc):
             "error": True,
             "detail": exc.detail,
             "status_code": exc.status_code,
-            "timestamp": datetime.now().isoformat()
-        }
+            "timestamp": datetime.now().isoformat(),
+        },
     )
 
 
@@ -93,8 +92,8 @@ async def general_exception_handler(request, exc):
             "error": True,
             "detail": "Internal server error",
             "status_code": 500,
-            "timestamp": datetime.now().isoformat()
-        }
+            "timestamp": datetime.now().isoformat(),
+        },
     )
 
 
@@ -122,7 +121,7 @@ async def root():
         "version": "1.0.0",
         "docs_url": "/docs",
         "health_check": "/health",
-        "timestamp": datetime.now().isoformat()
+        "timestamp": datetime.now().isoformat(),
     }
 
 
@@ -141,13 +140,8 @@ app.include_router(download_router, prefix="/api/v1")
 # Development server entry point
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run(
-        "main:app",
-        host="0.0.0.0",
-        port=8000,
-        reload=True,
-        log_level="info"
-    )
+
+    uvicorn.run("main:app", host="0.0.0.0", port=8000, reload=True, log_level="info")
 
 
 __all__ = ["app"]

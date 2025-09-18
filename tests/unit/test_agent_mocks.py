@@ -15,21 +15,27 @@ Constitutional compliance:
 
 import pytest
 from pydantic_ai.models.test import TestModel
-from pydantic_ai.exceptions import ModelRetry
 
 # Import agents
-from agents.job_analysis_agent import JobAnalysisAgent, create_job_analysis_agent
-from agents.profile_matching import ProfileMatchingAgent, create_profile_matching_agent
-from agents.resume_generation_agent import ResumeGenerationAgent, create_resume_generation_agent
-from agents.validation_agent import ValidationAgent, create_validation_agent
+from agents.job_analysis_agent import create_job_analysis_agent
+from agents.profile_matching import create_profile_matching_agent
+from agents.resume_generation_agent import create_resume_generation_agent
+from agents.validation_agent import create_validation_agent
 
 # Import models for output validation
 from models.job_analysis import JobAnalysis, JobRequirement, ResponsibilityLevel
-from models.matching import MatchingResult, SkillMatch, ExperienceMatch
-from models.resume_optimization import TailoredResume, ContentOptimization
-from models.validation import ValidationResult, ValidationIssue, ValidationWarning
-from models.profile import UserProfile, ContactInfo, WorkExperience, Education, Skill, Project, SkillCategory
-from models.approval import ResumeSection
+from models.matching import MatchingResult
+from models.profile import (
+    ContactInfo,
+    Education,
+    Project,
+    Skill,
+    SkillCategory,
+    UserProfile,
+    WorkExperience,
+)
+from models.resume_optimization import TailoredResume
+from models.validation import ValidationResult
 
 
 class TestJobAnalysisAgentMock:
@@ -90,14 +96,14 @@ class TestJobAnalysisAgentMock:
         result = await mock_job_analysis_agent.run("Software Engineer at TechCorp")
 
         # Verify all required fields exist
-        assert hasattr(result, 'company_name')
-        assert hasattr(result, 'job_title')
-        assert hasattr(result, 'location')
-        assert hasattr(result, 'requirements')
-        assert hasattr(result, 'key_responsibilities')
-        assert hasattr(result, 'company_culture')
-        assert hasattr(result, 'role_level')
-        assert hasattr(result, 'industry')
+        assert hasattr(result, "company_name")
+        assert hasattr(result, "job_title")
+        assert hasattr(result, "location")
+        assert hasattr(result, "requirements")
+        assert hasattr(result, "key_responsibilities")
+        assert hasattr(result, "company_culture")
+        assert hasattr(result, "role_level")
+        assert hasattr(result, "industry")
 
 
 class TestProfileMatchingAgentMock:
@@ -121,7 +127,7 @@ class TestProfileMatchingAgentMock:
                 phone="555-0123",
                 location="San Francisco, CA",
                 linkedin="https://linkedin.com/in/johndoe",
-                portfolio="https://johndoe.dev"
+                portfolio="https://johndoe.dev",
             ),
             professional_summary="Experienced software engineer with 5 years in web development",
             experience=[
@@ -133,7 +139,7 @@ class TestProfileMatchingAgentMock:
                     end_date="2023-01-01",
                     description="Built web applications using Python and React",
                     achievements=["Increased performance by 30%", "Led team of 3 developers"],
-                    technologies=["Python", "React", "PostgreSQL"]
+                    technologies=["Python", "React", "PostgreSQL"],
                 )
             ],
             education=[
@@ -144,7 +150,7 @@ class TestProfileMatchingAgentMock:
                     graduation_date="2020-06-01",
                     gpa=3.8,
                     honors=["Cum Laude"],
-                    relevant_coursework=["Data Structures", "Algorithms", "Web Development"]
+                    relevant_coursework=["Data Structures", "Algorithms", "Web Development"],
                 )
             ],
             skills=[
@@ -152,14 +158,14 @@ class TestProfileMatchingAgentMock:
                     name="Python",
                     category=SkillCategory.TECHNICAL,
                     proficiency=4,
-                    years_experience=5
+                    years_experience=5,
                 ),
                 Skill(
                     name="React",
                     category=SkillCategory.TECHNICAL,
                     proficiency=4,
-                    years_experience=3
-                )
+                    years_experience=3,
+                ),
             ],
             projects=[
                 Project(
@@ -169,9 +175,9 @@ class TestProfileMatchingAgentMock:
                     start_date="2022-01-01",
                     end_date="2022-06-01",
                     url="https://github.com/johndoe/ecommerce",
-                    achievements=["1000+ active users", "98% uptime"]
+                    achievements=["1000+ active users", "98% uptime"],
                 )
-            ]
+            ],
         )
 
     @pytest.fixture
@@ -189,15 +195,15 @@ class TestProfileMatchingAgentMock:
                     importance=5,
                     category=SkillCategory.TECHNICAL,
                     is_required=True,
-                    context="Must have 3+ years Python experience"
+                    context="Must have 3+ years Python experience",
                 ),
                 JobRequirement(
                     skill="React",
                     importance=4,
                     category=SkillCategory.TECHNICAL,
                     is_required=True,
-                    context="Frontend development with React"
-                )
+                    context="Frontend development with React",
+                ),
             ],
             key_responsibilities=["Build scalable web applications", "Mentor junior developers"],
             company_culture="Fast-paced startup environment",
@@ -206,10 +212,12 @@ class TestProfileMatchingAgentMock:
             salary_range="$120k-$150k",
             benefits=["Health insurance", "401k matching"],
             preferred_qualifications=["Docker experience", "AWS certification"],
-            analysis_timestamp="2025-09-18T12:00:00Z"
+            analysis_timestamp="2025-09-18T12:00:00Z",
         )
 
-    async def test_profile_matching_agent_mock_basic(self, mock_profile_matching_agent, sample_user_profile, sample_job_analysis):
+    async def test_profile_matching_agent_mock_basic(
+        self, mock_profile_matching_agent, sample_user_profile, sample_job_analysis
+    ):
         """Test basic Profile Matching Agent mocking with structured output."""
         result = await mock_profile_matching_agent.run(sample_user_profile, sample_job_analysis)
 
@@ -217,16 +225,18 @@ class TestProfileMatchingAgentMock:
         assert isinstance(result, MatchingResult)
 
         # Verify required fields exist
-        assert hasattr(result, 'overall_match_score')
-        assert hasattr(result, 'skill_matches')
-        assert hasattr(result, 'experience_matches')
-        assert hasattr(result, 'missing_requirements')
-        assert hasattr(result, 'strength_areas')
-        assert hasattr(result, 'transferable_skills')
-        assert hasattr(result, 'recommendations')
-        assert hasattr(result, 'confidence_score')
+        assert hasattr(result, "overall_match_score")
+        assert hasattr(result, "skill_matches")
+        assert hasattr(result, "experience_matches")
+        assert hasattr(result, "missing_requirements")
+        assert hasattr(result, "strength_areas")
+        assert hasattr(result, "transferable_skills")
+        assert hasattr(result, "recommendations")
+        assert hasattr(result, "confidence_score")
 
-    async def test_profile_matching_agent_mock_output_validation(self, mock_profile_matching_agent, sample_user_profile, sample_job_analysis):
+    async def test_profile_matching_agent_mock_output_validation(
+        self, mock_profile_matching_agent, sample_user_profile, sample_job_analysis
+    ):
         """Test that mocked agent returns valid MatchingResult structure."""
         result = await mock_profile_matching_agent.run(sample_user_profile, sample_job_analysis)
 
@@ -237,7 +247,9 @@ class TestProfileMatchingAgentMock:
         assert isinstance(result.missing_requirements, list)
         assert isinstance(result.confidence_score, float)
 
-    async def test_profile_matching_agent_override_functionality(self, sample_user_profile, sample_job_analysis):
+    async def test_profile_matching_agent_override_functionality(
+        self, sample_user_profile, sample_job_analysis
+    ):
         """Test Profile Matching Agent override functionality."""
         original_agent = create_profile_matching_agent()
         mock_agent = original_agent.override(model=TestModel())
@@ -268,22 +280,21 @@ class TestResumeGenerationAgentMock:
                     "name": "John Doe",
                     "email": "john@example.com",
                     "phone": "555-0123",
-                    "location": "San Francisco, CA"
+                    "location": "San Francisco, CA",
                 },
-                "professional_summary": "Experienced software engineer"
+                "professional_summary": "Experienced software engineer",
             },
             "job_analysis": {
                 "company_name": "TechCorp",
                 "job_title": "Software Engineer",
-                "location": "San Francisco, CA"
+                "location": "San Francisco, CA",
             },
-            "matching_result": {
-                "overall_match_score": 0.85,
-                "confidence_score": 0.9
-            }
+            "matching_result": {"overall_match_score": 0.85, "confidence_score": 0.9},
         }
 
-    async def test_resume_generation_agent_mock_basic(self, mock_resume_generation_agent, sample_context_data):
+    async def test_resume_generation_agent_mock_basic(
+        self, mock_resume_generation_agent, sample_context_data
+    ):
         """Test basic Resume Generation Agent mocking with structured output."""
         result = await mock_resume_generation_agent.run(sample_context_data)
 
@@ -291,15 +302,17 @@ class TestResumeGenerationAgentMock:
         assert isinstance(result, TailoredResume)
 
         # Verify required fields exist
-        assert hasattr(result, 'job_title')
-        assert hasattr(result, 'company_name')
-        assert hasattr(result, 'optimizations')
-        assert hasattr(result, 'full_resume_markdown')
-        assert hasattr(result, 'summary_of_changes')
-        assert hasattr(result, 'estimated_match_score')
-        assert hasattr(result, 'generation_timestamp')
+        assert hasattr(result, "job_title")
+        assert hasattr(result, "company_name")
+        assert hasattr(result, "optimizations")
+        assert hasattr(result, "full_resume_markdown")
+        assert hasattr(result, "summary_of_changes")
+        assert hasattr(result, "estimated_match_score")
+        assert hasattr(result, "generation_timestamp")
 
-    async def test_resume_generation_agent_mock_output_types(self, mock_resume_generation_agent, sample_context_data):
+    async def test_resume_generation_agent_mock_output_types(
+        self, mock_resume_generation_agent, sample_context_data
+    ):
         """Test that mocked agent returns correct TailoredResume structure."""
         result = await mock_resume_generation_agent.run(sample_context_data)
 
@@ -341,37 +354,35 @@ class TestValidationAgentMock:
             "professional_summary": "Experienced software engineer with 5 years",
             "experience": "Software Engineer at TechCorp (2020-2023)",
             "education": "BS Computer Science, Stanford University (2020)",
-            "skills": "Python, React, PostgreSQL"
+            "skills": "Python, React, PostgreSQL",
         }
 
     @pytest.fixture
     def sample_source_profile(self):
         """Create sample source profile for validation testing."""
         return {
-            "personal_info": {
-                "name": "John Doe",
-                "email": "john@example.com",
-                "phone": "555-0123"
-            },
+            "personal_info": {"name": "John Doe", "email": "john@example.com", "phone": "555-0123"},
             "experience": [
                 {
                     "position": "Software Engineer",
                     "company": "TechCorp",
                     "start_date": "2020-01-01",
-                    "end_date": "2023-01-01"
+                    "end_date": "2023-01-01",
                 }
             ],
             "education": [
                 {
                     "degree": "BS Computer Science",
                     "institution": "Stanford University",
-                    "graduation_date": "2020-06-01"
+                    "graduation_date": "2020-06-01",
                 }
             ],
-            "skills": ["Python", "React", "PostgreSQL"]
+            "skills": ["Python", "React", "PostgreSQL"],
         }
 
-    async def test_validation_agent_mock_basic(self, mock_validation_agent, sample_resume_data, sample_source_profile):
+    async def test_validation_agent_mock_basic(
+        self, mock_validation_agent, sample_resume_data, sample_source_profile
+    ):
         """Test basic Validation Agent mocking with structured output."""
         result = await mock_validation_agent.run(sample_resume_data, sample_source_profile)
 
@@ -379,16 +390,18 @@ class TestValidationAgentMock:
         assert isinstance(result, ValidationResult)
 
         # Verify required fields exist
-        assert hasattr(result, 'is_valid')
-        assert hasattr(result, 'accuracy_score')
-        assert hasattr(result, 'readability_score')
-        assert hasattr(result, 'keyword_optimization_score')
-        assert hasattr(result, 'overall_quality_score')
-        assert hasattr(result, 'issues')
-        assert hasattr(result, 'strengths')
-        assert hasattr(result, 'validation_timestamp')
+        assert hasattr(result, "is_valid")
+        assert hasattr(result, "accuracy_score")
+        assert hasattr(result, "readability_score")
+        assert hasattr(result, "keyword_optimization_score")
+        assert hasattr(result, "overall_quality_score")
+        assert hasattr(result, "issues")
+        assert hasattr(result, "strengths")
+        assert hasattr(result, "validation_timestamp")
 
-    async def test_validation_agent_mock_output_types(self, mock_validation_agent, sample_resume_data, sample_source_profile):
+    async def test_validation_agent_mock_output_types(
+        self, mock_validation_agent, sample_resume_data, sample_source_profile
+    ):
         """Test that mocked agent returns correct ValidationResult structure."""
         result = await mock_validation_agent.run(sample_resume_data, sample_source_profile)
 
@@ -401,7 +414,9 @@ class TestValidationAgentMock:
         assert isinstance(result.strengths, list)
         assert isinstance(result.validation_timestamp, str)
 
-    async def test_validation_agent_override_functionality(self, sample_resume_data, sample_source_profile):
+    async def test_validation_agent_override_functionality(
+        self, sample_resume_data, sample_source_profile
+    ):
         """Test Validation Agent override functionality."""
         original_agent = create_validation_agent()
         mock_agent = original_agent.override(model=TestModel())
@@ -453,21 +468,35 @@ class TestAgentOverrideFunctionality:
         sample_profile = UserProfile(
             version="1.0",
             metadata={"created_at": "2023-01-01T00:00:00"},
-            contact=ContactInfo(name="Test", email="test@example.com", phone="555-0123", location="Test City"),
+            contact=ContactInfo(
+                name="Test", email="test@example.com", phone="555-0123", location="Test City"
+            ),
             professional_summary="Test summary",
-            experience=[], education=[], skills=[], projects=[]
+            experience=[],
+            education=[],
+            skills=[],
+            projects=[],
         )
         sample_job = JobAnalysis(
-            company_name="Test Co", job_title="Test Role", location="Test City",
-            requirements=[], key_responsibilities=["Test"], company_culture="Test",
-            role_level=ResponsibilityLevel.MID, industry="Test",
-            analysis_timestamp="2024-01-15T12:00:00Z"
+            company_name="Test Co",
+            job_title="Test Role",
+            location="Test City",
+            requirements=[],
+            key_responsibilities=["Test"],
+            company_culture="Test",
+            role_level=ResponsibilityLevel.MID,
+            industry="Test",
+            analysis_timestamp="2024-01-15T12:00:00Z",
         )
         profile_result = await profile_agent.run(sample_profile, sample_job)
         assert profile_result is not None
 
         # Test resume agent
-        sample_context = {"user_profile": {"contact": {"name": "Test"}}, "job_analysis": {"company_name": "Test"}, "matching_result": {"overall_match_score": 0.8}}
+        sample_context = {
+            "user_profile": {"contact": {"name": "Test"}},
+            "job_analysis": {"company_name": "Test"},
+            "matching_result": {"overall_match_score": 0.8},
+        }
         resume_result = await resume_agent.run(sample_context)
         assert resume_result is not None
 
@@ -500,9 +529,9 @@ class TestAgentErrorHandling:
 
         # Should complete without errors despite TestModel's minimal responses
         assert result is not None
-        assert hasattr(result, 'confidence')
-        assert hasattr(result, 'errors')
-        assert hasattr(result, 'warnings')
+        assert hasattr(result, "confidence")
+        assert hasattr(result, "errors")
+        assert hasattr(result, "warnings")
 
     async def test_agents_handle_missing_optional_fields(self):
         """Test that agents handle missing optional fields gracefully."""
@@ -531,8 +560,14 @@ class TestAgentChainIntegrationPoints:
         test_profile = UserProfile(
             version="1.0",
             metadata={"created_at": "2023-01-01T00:00:00"},
-            contact=ContactInfo(name="Test", email="test@example.com", phone="555-0123", location="Test City"),
-            professional_summary="Test", experience=[], education=[], skills=[], projects=[]
+            contact=ContactInfo(
+                name="Test", email="test@example.com", phone="555-0123", location="Test City"
+            ),
+            professional_summary="Test",
+            experience=[],
+            education=[],
+            skills=[],
+            projects=[],
         )
 
         # Use job analysis result as input to profile matching
@@ -551,24 +586,35 @@ class TestAgentChainIntegrationPoints:
         test_profile = UserProfile(
             version="1.0",
             metadata={"created_at": "2023-01-01T00:00:00"},
-            contact=ContactInfo(name="Test", email="test@example.com", phone="555-0123", location="Test City"),
-            professional_summary="Test", experience=[], education=[], skills=[], projects=[]
+            contact=ContactInfo(
+                name="Test", email="test@example.com", phone="555-0123", location="Test City"
+            ),
+            professional_summary="Test",
+            experience=[],
+            education=[],
+            skills=[],
+            projects=[],
         )
         test_job = JobAnalysis(
-            company_name="Test Co", job_title="Test Role", location="Test City",
-            requirements=[], key_responsibilities=["Test"], company_culture="Test",
-            role_level=ResponsibilityLevel.MID, industry="Test",
-            analysis_timestamp="2024-01-15T12:00:00Z"
+            company_name="Test Co",
+            job_title="Test Role",
+            location="Test City",
+            requirements=[],
+            key_responsibilities=["Test"],
+            company_culture="Test",
+            role_level=ResponsibilityLevel.MID,
+            industry="Test",
+            analysis_timestamp="2024-01-15T12:00:00Z",
         )
 
         # Run profile matching
-        matching_result = await profile_agent.run(test_profile, test_job)
+        await profile_agent.run(test_profile, test_job)
 
         # Create context for resume generation
         context = {
             "user_profile": {"contact": {"name": "Test"}},
             "job_analysis": {"company_name": "Test Co"},
-            "matching_result": {"overall_match_score": 0.8, "confidence_score": 0.9}
+            "matching_result": {"overall_match_score": 0.8, "confidence_score": 0.9},
         }
 
         # Generate resume
@@ -586,9 +632,9 @@ class TestAgentChainIntegrationPoints:
         context = {
             "user_profile": {"contact": {"name": "Test"}},
             "job_analysis": {"company_name": "Test Co"},
-            "matching_result": {"overall_match_score": 0.8}
+            "matching_result": {"overall_match_score": 0.8},
         }
-        resume_result = await resume_agent.run(context)
+        await resume_agent.run(context)
 
         # Validate resume (using dict format for testing)
         resume_data = {"content": "test resume content"}
@@ -607,39 +653,54 @@ class TestAgentMockDataConsistency:
         """Test that all agents return properly structured outputs when mocked."""
         # Create all mocked agents
         agents = {
-            'job_analysis': create_job_analysis_agent().override(model=TestModel()),
-            'profile_matching': create_profile_matching_agent().override(model=TestModel()),
-            'resume_generation': create_resume_generation_agent().override(model=TestModel()),
-            'validation': create_validation_agent().override(model=TestModel())
+            "job_analysis": create_job_analysis_agent().override(model=TestModel()),
+            "profile_matching": create_profile_matching_agent().override(model=TestModel()),
+            "resume_generation": create_resume_generation_agent().override(model=TestModel()),
+            "validation": create_validation_agent().override(model=TestModel()),
         }
 
         # Test job analysis
-        job_result = await agents['job_analysis'].run("Test job posting")
+        job_result = await agents["job_analysis"].run("Test job posting")
         assert isinstance(job_result, JobAnalysis)
 
         # Test profile matching with minimal data
         test_profile = UserProfile(
             version="1.0",
             metadata={"created_at": "2023-01-01T00:00:00"},
-            contact=ContactInfo(name="Test", email="test@example.com", phone="555-0123", location="Test City"),
-            professional_summary="Test", experience=[], education=[], skills=[], projects=[]
+            contact=ContactInfo(
+                name="Test", email="test@example.com", phone="555-0123", location="Test City"
+            ),
+            professional_summary="Test",
+            experience=[],
+            education=[],
+            skills=[],
+            projects=[],
         )
         test_job = JobAnalysis(
-            company_name="Test Co", job_title="Test Role", location="Test City",
-            requirements=[], key_responsibilities=["Test"], company_culture="Test",
-            role_level=ResponsibilityLevel.MID, industry="Test",
-            analysis_timestamp="2024-01-15T12:00:00Z"
+            company_name="Test Co",
+            job_title="Test Role",
+            location="Test City",
+            requirements=[],
+            key_responsibilities=["Test"],
+            company_culture="Test",
+            role_level=ResponsibilityLevel.MID,
+            industry="Test",
+            analysis_timestamp="2024-01-15T12:00:00Z",
         )
-        matching_result = await agents['profile_matching'].run(test_profile, test_job)
+        matching_result = await agents["profile_matching"].run(test_profile, test_job)
         assert isinstance(matching_result, MatchingResult)
 
         # Test resume generation
-        context = {"user_profile": {"contact": {"name": "Test"}}, "job_analysis": {"company_name": "Test"}, "matching_result": {"overall_match_score": 0.8}}
-        resume_result = await agents['resume_generation'].run(context)
+        context = {
+            "user_profile": {"contact": {"name": "Test"}},
+            "job_analysis": {"company_name": "Test"},
+            "matching_result": {"overall_match_score": 0.8},
+        }
+        resume_result = await agents["resume_generation"].run(context)
         assert isinstance(resume_result, TailoredResume)
 
         # Test validation
-        validation_result = await agents['validation'].run({"test": "data"}, {"source": "data"})
+        validation_result = await agents["validation"].run({"test": "data"}, {"source": "data"})
         assert isinstance(validation_result, ValidationResult)
 
     async def test_mocked_agents_handle_pydantic_validation(self):
@@ -651,10 +712,10 @@ class TestAgentMockDataConsistency:
         result = await validation_agent.run({"test": "data"}, {"source": "data"})
 
         # Basic structure should be valid even if values are minimal
-        assert hasattr(result, 'is_valid')
-        assert hasattr(result, 'accuracy_score')
-        assert hasattr(result, 'overall_quality_score')
-        assert hasattr(result, 'validation_timestamp')
+        assert hasattr(result, "is_valid")
+        assert hasattr(result, "accuracy_score")
+        assert hasattr(result, "overall_quality_score")
+        assert hasattr(result, "validation_timestamp")
 
 
 # Configuration for pytest-asyncio

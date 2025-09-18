@@ -7,7 +7,6 @@ The endpoint should accept job descriptions and return structured job analysis.
 This is a TDD test that MUST FAIL initially since the endpoint doesn't exist yet.
 """
 
-import pytest
 from httpx import AsyncClient
 
 
@@ -106,7 +105,9 @@ class TestJobsAnalyzeEndpoint:
         if "preferred_qualifications" in job_analysis:
             assert isinstance(job_analysis["preferred_qualifications"], list)
 
-    async def test_analyze_job_invalid_request_missing_field(self, async_client: AsyncClient) -> None:
+    async def test_analyze_job_invalid_request_missing_field(
+        self, async_client: AsyncClient
+    ) -> None:
         """Test job analysis with missing required job_description field."""
         # Missing job_description field
         request_payload = {}
@@ -123,12 +124,12 @@ class TestJobsAnalyzeEndpoint:
         assert "timestamp" in response_data
         assert isinstance(response_data["error"], str)
 
-    async def test_analyze_job_invalid_request_empty_description(self, async_client: AsyncClient) -> None:
+    async def test_analyze_job_invalid_request_empty_description(
+        self, async_client: AsyncClient
+    ) -> None:
         """Test job analysis with empty job description."""
         # Empty job description
-        request_payload = {
-            "job_description": ""
-        }
+        request_payload = {"job_description": ""}
 
         # Make POST request to /jobs/analyze
         response = await async_client.post("/api/v1/jobs/analyze", json=request_payload)
@@ -144,9 +145,7 @@ class TestJobsAnalyzeEndpoint:
     async def test_analyze_job_invalid_request_wrong_type(self, async_client: AsyncClient) -> None:
         """Test job analysis with wrong data type for job_description."""
         # Wrong data type (should be string)
-        request_payload = {
-            "job_description": 12345
-        }
+        request_payload = {"job_description": 12345}
 
         # Make POST request to /jobs/analyze
         response = await async_client.post("/api/v1/jobs/analyze", json=request_payload)
@@ -198,7 +197,7 @@ class TestJobsAnalyzeEndpoint:
         response = await async_client.post(
             "/api/v1/jobs/analyze",
             data="job_description=Software Developer position",
-            headers={"Content-Type": "application/x-www-form-urlencoded"}
+            headers={"Content-Type": "application/x-www-form-urlencoded"},
         )
 
         # Should reject non-JSON content

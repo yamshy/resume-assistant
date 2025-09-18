@@ -12,22 +12,16 @@ Constitutional compliance:
 - Agent-chain architecture verification
 """
 
-import pytest
-import json
 import asyncio
 from datetime import datetime
-from typing import Dict, Any
+from typing import Any
+
+import pytest
 
 from models.profile import UserProfile
-from models.job_analysis import JobAnalysis
-from models.matching import MatchingResult
-from models.resume_optimization import TailoredResume
-from models.validation import ValidationResult
-from models.approval import ApprovalWorkflow
-
 from services.profile_service import create_profile_service
-from services.tailoring_service import create_resume_tailoring_service
 from services.storage_service import create_storage_service
+from services.tailoring_service import create_resume_tailoring_service
 
 
 class TestQuickstartScenario:
@@ -61,19 +55,19 @@ We offer competitive salary, excellent health benefits, flexible work arrangemen
 and opportunities for professional growth in a collaborative environment."""
 
     @pytest.fixture
-    def sample_user_profile(self) -> Dict[str, Any]:
+    def sample_user_profile(self) -> dict[str, Any]:
         """Sample user profile from quickstart guide."""
         return {
             "version": "1.0",
             "metadata": {
                 "created_at": "2025-09-17T00:00:00Z",
-                "updated_at": "2025-09-17T00:00:00Z"
+                "updated_at": "2025-09-17T00:00:00Z",
             },
             "contact": {
                 "name": "John Developer",
                 "email": "john@example.com",
                 "location": "San Francisco, CA",
-                "linkedin": "https://linkedin.com/in/johndeveloper"
+                "linkedin": "https://linkedin.com/in/johndeveloper",
             },
             "professional_summary": "Experienced software engineer with 6 years developing scalable backend systems. Expertise in Python, cloud infrastructure, and building high-performance APIs.",
             "experience": [
@@ -87,9 +81,9 @@ and opportunities for professional growth in a collaborative environment."""
                     "achievements": [
                         "Reduced API response time by 40% through optimization and caching",
                         "Designed and implemented microservices architecture supporting 10x growth",
-                        "Mentored 3 junior developers and led technical architecture discussions"
+                        "Mentored 3 junior developers and led technical architecture discussions",
                     ],
-                    "technologies": ["Python", "FastAPI", "PostgreSQL", "Docker", "AWS"]
+                    "technologies": ["Python", "FastAPI", "PostgreSQL", "Docker", "AWS"],
                 }
             ],
             "education": [
@@ -98,25 +92,47 @@ and opportunities for professional growth in a collaborative environment."""
                     "institution": "UC Berkeley",
                     "location": "Berkeley, CA",
                     "graduation_date": "2018-05-15",
-                    "honors": ["Magna Cum Laude", "Dean's List"]
+                    "honors": ["Magna Cum Laude", "Dean's List"],
                 }
             ],
             "skills": [
-                {"name": "Python", "category": "technical", "proficiency": 5, "years_experience": 6},
-                {"name": "FastAPI", "category": "technical", "proficiency": 4, "years_experience": 3},
-                {"name": "PostgreSQL", "category": "technical", "proficiency": 4, "years_experience": 4},
+                {
+                    "name": "Python",
+                    "category": "technical",
+                    "proficiency": 5,
+                    "years_experience": 6,
+                },
+                {
+                    "name": "FastAPI",
+                    "category": "technical",
+                    "proficiency": 4,
+                    "years_experience": 3,
+                },
+                {
+                    "name": "PostgreSQL",
+                    "category": "technical",
+                    "proficiency": 4,
+                    "years_experience": 4,
+                },
                 {"name": "AWS", "category": "technical", "proficiency": 3, "years_experience": 2},
-                {"name": "Docker", "category": "technical", "proficiency": 4, "years_experience": 3}
+                {
+                    "name": "Docker",
+                    "category": "technical",
+                    "proficiency": 4,
+                    "years_experience": 3,
+                },
             ],
             "projects": [],
             "publications": [],
             "awards": [],
             "volunteer": [],
-            "languages": []
+            "languages": [],
         }
 
     @pytest.mark.asyncio
-    async def test_complete_quickstart_workflow(self, sample_job_posting: str, sample_user_profile: Dict[str, Any]):
+    async def test_complete_quickstart_workflow(
+        self, sample_job_posting: str, sample_user_profile: dict[str, Any]
+    ):
         """
         Test the complete end-to-end workflow from quickstart guide.
 
@@ -149,8 +165,7 @@ and opportunities for professional growth in a collaborative environment."""
 
         pipeline_start = datetime.now()
         pipeline_results = await tailoring_service.tailor_resume(
-            user_profile=user_profile,
-            job_posting_text=sample_job_posting
+            user_profile=user_profile, job_posting_text=sample_job_posting
         )
         pipeline_duration = (datetime.now() - pipeline_start).total_seconds()
 
@@ -232,14 +247,14 @@ and opportunities for professional growth in a collaborative environment."""
                 tailored_resume=tailored_resume,
                 job_title=job_analysis.job_title,
                 company_name=job_analysis.company_name,
-                session_id=session_id
+                session_id=session_id,
             )
             assert export_path is not None
             print("✅ Resume export completed successfully")
 
         # Step 8: Performance and quality summary
         total_duration = (datetime.now() - start_time).total_seconds()
-        print(f"\n=== QUICKSTART VALIDATION SUMMARY ===")
+        print("\n=== QUICKSTART VALIDATION SUMMARY ===")
         print(f"✅ Total workflow time: {total_duration:.2f} seconds")
         print(f"✅ Pipeline time: {pipeline_duration:.2f} seconds")
         print(f"✅ Match score: {matching_result.overall_match_score:.2%}")
@@ -248,14 +263,22 @@ and opportunities for professional growth in a collaborative environment."""
         print(f"✅ Session ID: {session_id}")
 
         # Final validation
-        assert total_duration < 150, f"Total workflow took {total_duration:.2f}s - functional validation only"
-        assert matching_result.overall_match_score > 0.5, "Match score should be reasonable for good candidate"
-        assert validation_result.overall_quality_score > 0.7, "Quality score should indicate good resume"
+        assert total_duration < 150, (
+            f"Total workflow took {total_duration:.2f}s - functional validation only"
+        )
+        assert matching_result.overall_match_score > 0.5, (
+            "Match score should be reasonable for good candidate"
+        )
+        assert validation_result.overall_quality_score > 0.7, (
+            "Quality score should indicate good resume"
+        )
 
         print("✅ Complete quickstart workflow validation PASSED")
 
     @pytest.mark.asyncio
-    async def test_quickstart_data_quality_validation(self, sample_job_posting: str, sample_user_profile: Dict[str, Any]):
+    async def test_quickstart_data_quality_validation(
+        self, sample_job_posting: str, sample_user_profile: dict[str, Any]
+    ):
         """
         Test data quality and content validation from quickstart scenario.
 
@@ -270,8 +293,7 @@ and opportunities for professional growth in a collaborative environment."""
 
         # Execute pipeline
         results = await tailoring_service.tailor_resume(
-            user_profile=user_profile,
-            job_posting_text=sample_job_posting
+            user_profile=user_profile, job_posting_text=sample_job_posting
         )
 
         pipeline_data = results["pipeline_results"]
@@ -286,7 +308,9 @@ and opportunities for professional growth in a collaborative environment."""
         assert python_req.is_required, "Python should be marked as required"
 
         # Should identify FastAPI as requirement
-        fastapi_req = next((req for req in job_analysis.requirements if "FastAPI" in req.skill), None)
+        fastapi_req = next(
+            (req for req in job_analysis.requirements if "FastAPI" in req.skill), None
+        )
         assert fastapi_req is not None, "Should identify FastAPI requirement"
 
         print("✅ Job analysis quality validated")
@@ -295,7 +319,9 @@ and opportunities for professional growth in a collaborative environment."""
         matching_result = pipeline_data["matching_result"]
 
         # Should have high Python match
-        python_match = next((match for match in matching_result.skill_matches if "Python" in match.skill_name), None)
+        python_match = next(
+            (match for match in matching_result.skill_matches if "Python" in match.skill_name), None
+        )
         assert python_match is not None, "Should match Python skill"
         assert python_match.match_score >= 0.9, "Python should have high match score"
         assert python_match.user_proficiency >= 4, "User has strong Python skills"
@@ -319,7 +345,9 @@ and opportunities for professional growth in a collaborative environment."""
         assert len(tailored_resume.optimizations) >= 3, "Should have multiple optimizations"
 
         # Should show improved match score
-        assert tailored_resume.estimated_match_score >= matching_result.overall_match_score, "Resume should improve match score"
+        assert tailored_resume.estimated_match_score >= matching_result.overall_match_score, (
+            "Resume should improve match score"
+        )
 
         print("✅ Resume generation quality validated")
 
@@ -331,7 +359,9 @@ and opportunities for professional growth in a collaborative environment."""
         assert validation_result.overall_quality_score >= 0.7, "Should have good quality"
 
         # Should have minimal critical issues
-        critical_issues = [issue for issue in validation_result.issues if issue.severity in ["critical", "high"]]
+        critical_issues = [
+            issue for issue in validation_result.issues if issue.severity in ["critical", "high"]
+        ]
         assert len(critical_issues) <= 2, "Should have minimal critical issues"
 
         print("✅ Validation quality confirmed")
@@ -339,7 +369,7 @@ and opportunities for professional growth in a collaborative environment."""
         print("✅ Complete data quality validation PASSED")
 
     @pytest.mark.asyncio
-    async def test_quickstart_error_scenarios(self, sample_user_profile: Dict[str, Any]):
+    async def test_quickstart_error_scenarios(self, sample_user_profile: dict[str, Any]):
         """Test error handling in quickstart workflow scenarios."""
         print("\n=== QUICKSTART ERROR SCENARIO VALIDATION ===")
 
@@ -348,18 +378,14 @@ and opportunities for professional growth in a collaborative environment."""
 
         # Test 1: Empty job posting
         with pytest.raises(Exception) as exc_info:
-            await tailoring_service.tailor_resume(
-                user_profile=user_profile,
-                job_posting_text=""
-            )
+            await tailoring_service.tailor_resume(user_profile=user_profile, job_posting_text="")
         assert "empty" in str(exc_info.value).lower() or "cannot" in str(exc_info.value).lower()
         print("✅ Empty job posting error handling validated")
 
         # Test 2: Very short job posting
         with pytest.raises(Exception) as exc_info:
             await tailoring_service.tailor_resume(
-                user_profile=user_profile,
-                job_posting_text="Short job"
+                user_profile=user_profile, job_posting_text="Short job"
             )
         print("✅ Short job posting error handling validated")
 
@@ -369,7 +395,6 @@ and opportunities for professional growth in a collaborative environment."""
 if __name__ == "__main__":
     """Run quickstart validation directly."""
     import sys
-    import tempfile
 
     # Setup test data
     sample_job_posting = """Senior Software Engineer - Backend Development
@@ -398,15 +423,12 @@ and opportunities for professional growth in a collaborative environment."""
 
     sample_user_profile = {
         "version": "1.0",
-        "metadata": {
-            "created_at": "2025-09-17T00:00:00Z",
-            "updated_at": "2025-09-17T00:00:00Z"
-        },
+        "metadata": {"created_at": "2025-09-17T00:00:00Z", "updated_at": "2025-09-17T00:00:00Z"},
         "contact": {
             "name": "John Developer",
             "email": "john@example.com",
             "location": "San Francisco, CA",
-            "linkedin": "https://linkedin.com/in/johndeveloper"
+            "linkedin": "https://linkedin.com/in/johndeveloper",
         },
         "professional_summary": "Experienced software engineer with 6 years developing scalable backend systems. Expertise in Python, cloud infrastructure, and building high-performance APIs.",
         "experience": [
@@ -420,9 +442,9 @@ and opportunities for professional growth in a collaborative environment."""
                 "achievements": [
                     "Reduced API response time by 40% through optimization and caching",
                     "Designed and implemented microservices architecture supporting 10x growth",
-                    "Mentored 3 junior developers and led technical architecture discussions"
+                    "Mentored 3 junior developers and led technical architecture discussions",
                 ],
-                "technologies": ["Python", "FastAPI", "PostgreSQL", "Docker", "AWS"]
+                "technologies": ["Python", "FastAPI", "PostgreSQL", "Docker", "AWS"],
             }
         ],
         "education": [
@@ -431,21 +453,26 @@ and opportunities for professional growth in a collaborative environment."""
                 "institution": "UC Berkeley",
                 "location": "Berkeley, CA",
                 "graduation_date": "2018-05-15",
-                "honors": ["Magna Cum Laude", "Dean's List"]
+                "honors": ["Magna Cum Laude", "Dean's List"],
             }
         ],
         "skills": [
             {"name": "Python", "category": "technical", "proficiency": 5, "years_experience": 6},
             {"name": "FastAPI", "category": "technical", "proficiency": 4, "years_experience": 3},
-            {"name": "PostgreSQL", "category": "technical", "proficiency": 4, "years_experience": 4},
+            {
+                "name": "PostgreSQL",
+                "category": "technical",
+                "proficiency": 4,
+                "years_experience": 4,
+            },
             {"name": "AWS", "category": "technical", "proficiency": 3, "years_experience": 2},
-            {"name": "Docker", "category": "technical", "proficiency": 4, "years_experience": 3}
+            {"name": "Docker", "category": "technical", "proficiency": 4, "years_experience": 3},
         ],
         "projects": [],
         "publications": [],
         "awards": [],
         "volunteer": [],
-        "languages": []
+        "languages": [],
     }
 
     async def run_quickstart_validation():
@@ -453,8 +480,12 @@ and opportunities for professional growth in a collaborative environment."""
         test_instance = TestQuickstartScenario()
 
         try:
-            await test_instance.test_complete_quickstart_workflow(sample_job_posting, sample_user_profile)
-            await test_instance.test_quickstart_data_quality_validation(sample_job_posting, sample_user_profile)
+            await test_instance.test_complete_quickstart_workflow(
+                sample_job_posting, sample_user_profile
+            )
+            await test_instance.test_quickstart_data_quality_validation(
+                sample_job_posting, sample_user_profile
+            )
             await test_instance.test_quickstart_error_scenarios(sample_user_profile)
 
             print("\n🎉 ALL QUICKSTART VALIDATIONS PASSED! 🎉")
@@ -463,6 +494,7 @@ and opportunities for professional growth in a collaborative environment."""
         except Exception as e:
             print(f"\n❌ QUICKSTART VALIDATION FAILED: {e}")
             import traceback
+
             traceback.print_exc()
             return False
 

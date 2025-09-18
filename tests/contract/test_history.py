@@ -82,7 +82,9 @@ class TestResumeHistoryEndpoint:
         assert history_data["page"] == 2
 
     @pytest.mark.asyncio
-    async def test_get_resume_history_with_page_and_page_size(self, async_client: AsyncClient) -> None:
+    async def test_get_resume_history_with_page_and_page_size(
+        self, async_client: AsyncClient
+    ) -> None:
         """Test GET /resumes/history with both page and page_size parameters."""
         response = await async_client.get("/api/v1/resumes/history?page=2&page_size=3")
 
@@ -103,7 +105,7 @@ class TestResumeHistoryEndpoint:
         history_data = response.json()
 
         # Verify default values per OpenAPI spec
-        assert history_data["page"] == 1      # Default page
+        assert history_data["page"] == 1  # Default page
         assert history_data["page_size"] == 10  # Default page_size
 
     @pytest.mark.asyncio
@@ -125,7 +127,9 @@ class TestResumeHistoryEndpoint:
         assert response.status_code == 422  # Validation error
 
     @pytest.mark.asyncio
-    async def test_get_resume_history_invalid_parameter_types(self, async_client: AsyncClient) -> None:
+    async def test_get_resume_history_invalid_parameter_types(
+        self, async_client: AsyncClient
+    ) -> None:
         """Test GET /resumes/history handles invalid parameter types."""
         # Test non-integer page_size
         response = await async_client.get("/api/v1/resumes/history?page_size=abc")

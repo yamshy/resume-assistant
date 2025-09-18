@@ -11,17 +11,18 @@ Constitutional compliance:
 - Standard REST patterns
 """
 
+from enum import Enum
+from typing import Any
+
 from fastapi import APIRouter, HTTPException, status
 from pydantic import BaseModel
-from typing import Dict, Any, Optional
-from enum import Enum
 
-from models.approval import ReviewDecision
 from services.storage_service import create_storage_service
 
 
 class ApprovalDecision(str, Enum):
     """Approval decision options."""
+
     APPROVE = "approve"
     REJECT = "reject"
     REQUEST_CHANGES = "request_changes"
@@ -29,16 +30,18 @@ class ApprovalDecision(str, Enum):
 
 class ApprovalRequest(BaseModel):
     """Request model for approval decisions."""
+
     decision: ApprovalDecision
-    comments: Optional[str] = None
-    requested_changes: Optional[str] = None
+    comments: str | None = None
+    requested_changes: str | None = None
 
 
 class ApprovalResponse(BaseModel):
     """Response model for approval operations."""
+
     session_id: str
     decision: ApprovalDecision
-    export_path: Optional[str] = None
+    export_path: str | None = None
     message: str
     timestamp: str
 
@@ -73,8 +76,7 @@ async def approve_resume(session_id: str, request: ApprovalRequest) -> ApprovalR
         session_data = await storage_service.load_session_data(session_id)
         if session_data is None:
             raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail=f"Session {session_id} not found"
+                status_code=status.HTTP_404_NOT_FOUND, detail=f"Session {session_id} not found"
             )
 
         # Extract pipeline results
@@ -85,7 +87,7 @@ async def approve_resume(session_id: str, request: ApprovalRequest) -> ApprovalR
         if not tailored_resume or not job_analysis:
             raise HTTPException(
                 status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
-                detail="Session data is incomplete - missing resume or job analysis"
+                detail="Session data is incomplete - missing resume or job analysis",
             )
 
         export_path = None
@@ -98,7 +100,7 @@ async def approve_resume(session_id: str, request: ApprovalRequest) -> ApprovalR
                 tailored_resume=tailored_resume,
                 job_title=job_analysis.job_title,
                 company_name=job_analysis.company_name,
-                session_id=session_id
+                session_id=session_id,
             )
             message = f"Resume approved and exported to {export_path}"
 
@@ -118,19 +120,20 @@ async def approve_resume(session_id: str, request: ApprovalRequest) -> ApprovalR
             "comments": request.comments,
             "requested_changes": request.requested_changes,
             "decided_at": pipeline_results.get("timestamps", {}).get("completed_at"),
-            "export_path": export_path
+            "export_path": export_path,
         }
 
         # Save updated session data
         await storage_service.save_session_data(session_id, session_data)
 
         from datetime import datetime
+
         return ApprovalResponse(
             session_id=session_id,
             decision=request.decision,
             export_path=export_path,
             message=message,
-            timestamp=datetime.now().isoformat()
+            timestamp=datetime.now().isoformat(),
         )
 
     except HTTPException:
@@ -138,17 +141,17 @@ async def approve_resume(session_id: str, request: ApprovalRequest) -> ApprovalR
     except ValueError as e:
         raise HTTPException(
             status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
-            detail=f"Approval validation error: {str(e)}"
-        )
+            detail=f"Approval validation error: {str(e)}",
+        ) from e
     except Exception as e:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Approval processing error: {str(e)}"
-        )
+            detail=f"Approval processing error: {str(e)}",
+        ) from e
 
 
 @router.get("/{session_id}/status")
-async def get_approval_status(session_id: str) -> Dict[str, Any]:
+async def get_approval_status(session_id: str) -> dict[str, Any]:
     """
     Get approval status for a tailored resume session.
 
@@ -165,8 +168,7 @@ async def get_approval_status(session_id: str) -> Dict[str, Any]:
         session_data = await storage_service.load_session_data(session_id)
         if session_data is None:
             raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail=f"Session {session_id} not found"
+                status_code=status.HTTP_404_NOT_FOUND, detail=f"Session {session_id} not found"
             )
 
         # Check for existing approval decision
@@ -183,7 +185,7 @@ async def get_approval_status(session_id: str) -> Dict[str, Any]:
             "human_decision": approval_decision.get("decision") if approval_decision else None,
             "comments": approval_decision.get("comments") if approval_decision else None,
             "export_path": approval_decision.get("export_path") if approval_decision else None,
-            "decided_at": approval_decision.get("decided_at") if approval_decision else None
+            "decided_at": approval_decision.get("decided_at") if approval_decision else None,
         }
 
     except HTTPException:
@@ -191,8 +193,8 @@ async def get_approval_status(session_id: str) -> Dict[str, Any]:
     except Exception as e:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Failed to get approval status: {str(e)}"
-        )
+            detail=f"Failed to get approval status: {str(e)}",
+        ) from e
 
 
 __all__ = ["router", "ApprovalRequest", "ApprovalResponse", "ApprovalDecision"]

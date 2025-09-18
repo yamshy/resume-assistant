@@ -17,7 +17,7 @@ from typing import Any, TypeVar
 
 from pydantic_ai.exceptions import ModelRetry
 
-T = TypeVar('T')
+T = TypeVar("T")
 
 
 def exponential_backoff(attempt: int, base_delay: float = 0.5, max_delay: float = 5.0) -> float:
@@ -32,7 +32,7 @@ def exponential_backoff(attempt: int, base_delay: float = 0.5, max_delay: float 
     Returns:
         Delay in seconds with jitter
     """
-    delay = min(base_delay * (2 ** attempt), max_delay)
+    delay = min(base_delay * (2**attempt), max_delay)
     jitter = random.uniform(0.8, 1.2)  # ±20% jitter
     return delay * jitter
 
@@ -77,7 +77,7 @@ def configure_agent_retry(agent_name: str, max_attempts: int = 3, timeout: float
         "max_attempts": max_attempts,
         "timeout": timeout,
         "base_delay": 0.5,
-        "max_delay": 2.0  # Keep delays short for <30s chain target
+        "max_delay": 2.0,  # Keep delays short for <30s chain target
     }
 
 
@@ -111,6 +111,7 @@ def retry_agent_call(config: dict):
     Returns:
         Decorated function with retry logic
     """
+
     def decorator(func: Callable[..., T]) -> Callable[..., T]:
         @wraps(func)
         async def wrapper(*args, **kwargs) -> T:
@@ -130,9 +131,7 @@ def retry_agent_call(config: dict):
 
                     if attempt < config["max_attempts"] - 1:  # Don't delay on last attempt
                         delay = exponential_backoff(
-                            attempt,
-                            config["base_delay"],
-                            config["max_delay"]
+                            attempt, config["base_delay"], config["max_delay"]
                         )
                         await asyncio.sleep(delay)
 
@@ -140,6 +139,7 @@ def retry_agent_call(config: dict):
             raise last_error
 
         return wrapper
+
     return decorator
 
 
@@ -170,7 +170,7 @@ class RetryMetrics:
         return {
             "retry_counts": self.retry_counts.copy(),
             "success_after_retry": self.success_after_retry.copy(),
-            "total_retry_time": self.total_retry_time.copy()
+            "total_retry_time": self.total_retry_time.copy(),
         }
 
 

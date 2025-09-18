@@ -11,7 +11,6 @@ Constitutional compliance:
 import re
 import uuid
 from pathlib import Path
-from typing import List, Optional, Dict, Any, Tuple
 
 # Import will be resolved at runtime when used as part of the main application
 try:
@@ -25,7 +24,7 @@ except ImportError:
         UserProfile = None
 
 
-def validate_job_posting_text(text: str) -> Tuple[bool, Optional[str]]:
+def validate_job_posting_text(text: str) -> tuple[bool, str | None]:
     """Validate job posting text for minimum quality requirements.
 
     Args:
@@ -46,13 +45,13 @@ def validate_job_posting_text(text: str) -> Tuple[bool, Optional[str]]:
         return False, "Job posting text must be less than 50,000 characters"
 
     # Basic content quality checks
-    if cleaned_text.count('\n') < 2:
+    if cleaned_text.count("\n") < 2:
         return False, "Job posting appears to be too simple (needs structure)"
 
     return True, None
 
 
-def validate_session_id(session_id: str) -> Tuple[bool, Optional[str]]:
+def validate_session_id(session_id: str) -> tuple[bool, str | None]:
     """Validate session ID format (UUID v4).
 
     Args:
@@ -88,15 +87,35 @@ def sanitize_filename(filename: str, max_length: int = 200) -> str:
         return "untitled"
 
     # Remove/replace unsafe characters
-    sanitized = re.sub(r'[<>:"/\\|?*\x00-\x1f]', '_', filename.strip())
+    sanitized = re.sub(r'[<>:"/\\|?*\x00-\x1f]', "_", filename.strip())
 
     # Handle reserved names on Windows
-    reserved_names = {'CON', 'PRN', 'AUX', 'NUL', 'COM1', 'COM2', 'COM3',
-                     'COM4', 'COM5', 'COM6', 'COM7', 'COM8', 'COM9',
-                     'LPT1', 'LPT2', 'LPT3', 'LPT4', 'LPT5', 'LPT6',
-                     'LPT7', 'LPT8', 'LPT9'}
+    reserved_names = {
+        "CON",
+        "PRN",
+        "AUX",
+        "NUL",
+        "COM1",
+        "COM2",
+        "COM3",
+        "COM4",
+        "COM5",
+        "COM6",
+        "COM7",
+        "COM8",
+        "COM9",
+        "LPT1",
+        "LPT2",
+        "LPT3",
+        "LPT4",
+        "LPT5",
+        "LPT6",
+        "LPT7",
+        "LPT8",
+        "LPT9",
+    }
 
-    name_part = sanitized.split('.')[0].upper()
+    name_part = sanitized.split(".")[0].upper()
     if name_part in reserved_names:
         sanitized = f"file_{sanitized}"
 
@@ -105,7 +124,7 @@ def sanitize_filename(filename: str, max_length: int = 200) -> str:
     return sanitized if sanitized else "untitled"
 
 
-def validate_file_path(file_path: str, allowed_base_dirs: List[str]) -> Tuple[bool, Optional[str]]:
+def validate_file_path(file_path: str, allowed_base_dirs: list[str]) -> tuple[bool, str | None]:
     """Validate file path for security (path traversal prevention).
 
     Args:
@@ -136,7 +155,7 @@ def validate_file_path(file_path: str, allowed_base_dirs: List[str]) -> Tuple[bo
         return False, f"Invalid file path: {str(e)}"
 
 
-def check_profile_completeness(profile) -> Tuple[bool, List[str]]:
+def check_profile_completeness(profile) -> tuple[bool, list[str]]:
     """Check profile data completeness for resume generation.
 
     Args:
@@ -174,7 +193,9 @@ def check_profile_completeness(profile) -> Tuple[bool, List[str]]:
     return len(missing_fields) == 0, missing_fields
 
 
-def validate_text_length(text: str, min_length: int, max_length: int, field_name: str) -> Tuple[bool, Optional[str]]:
+def validate_text_length(
+    text: str, min_length: int, max_length: int, field_name: str
+) -> tuple[bool, str | None]:
     """Validate text field length constraints.
 
     Args:

@@ -13,14 +13,13 @@ Constitutional compliance:
 """
 
 from pydantic_ai import Agent
-from pydantic_ai.exceptions import ModelRetry
 
-from models.matching import MatchingResult, SkillMatch, ExperienceMatch
-from models.job_analysis import JobAnalysis, JobRequirement
+from models.job_analysis import JobAnalysis
+from models.matching import MatchingResult
 from models.profile import UserProfile
 
 
-def _create_profile_matching_agent(model='openai:gpt-4o'):
+def _create_profile_matching_agent(model="openai:gpt-4o"):
     """Create Profile Matching Agent with specified model and structured output."""
     agent = Agent(
         model,
@@ -45,9 +44,8 @@ def _create_profile_matching_agent(model='openai:gpt-4o'):
         For recommendations, provide specific, actionable advice for improving candidacy.
 
         Be thorough but efficient - you must complete analysis in under 5 seconds.
-        """
+        """,
     )
-
 
     return agent
 
@@ -69,7 +67,7 @@ class ProfileMatchingAgent:
         new_instance = ProfileMatchingAgent()
 
         # For testing, we need to pass the model directly
-        model = kwargs.get('model')
+        model = kwargs.get("model")
         if model is not None:
             # Create agent with the test model
             new_instance._agent = Agent(
@@ -95,7 +93,7 @@ class ProfileMatchingAgent:
                 For recommendations, provide specific, actionable advice for improving candidacy.
 
                 Be thorough but efficient - you must complete analysis in under 5 seconds.
-                """
+                """,
             )
         else:
             # Standard override without model change
@@ -130,12 +128,13 @@ class ProfileMatchingAgent:
 
         return result.output
 
-    def _prepare_analysis_context(self, user_profile: UserProfile, job_analysis: JobAnalysis) -> str:
+    def _prepare_analysis_context(
+        self, user_profile: UserProfile, job_analysis: JobAnalysis
+    ) -> str:
         """Prepare structured context for AI analysis."""
 
         # Extract user skills for easy comparison
-        user_skills = {skill.name.lower(): skill for skill in user_profile.skills}
-        user_skill_names = list(user_skills.keys())
+        # user_skills = {skill.name.lower(): skill for skill in user_profile.skills}
 
         # Extract job requirements
         required_skills = [req.skill for req in job_analysis.requirements if req.is_required]
@@ -160,7 +159,7 @@ USER EXPERIENCE ({len(user_profile.experience)} positions):
 {chr(10).join(experience_summary)}
 
 USER TECHNOLOGIES:
-{chr(10).join(set(tech for exp in user_profile.experience for tech in exp.technologies))}
+{chr(10).join({tech for exp in user_profile.experience for tech in exp.technologies})}
 
 JOB ANALYSIS:
 Company: {job_analysis.company_name}

@@ -21,8 +21,9 @@ import pytest
 # Project models (will fail until implemented)
 try:
     from agents.resume_generation_agent import ResumeGenerationAgent
-    from models.resume_optimization import TailoredResume
     from models.approval import ResumeSection
+    from models.job_analysis import JobAnalysis, JobRequirement, ResponsibilityLevel
+    from models.matching import ExperienceMatch, MatchingResult, SkillMatch
     from models.profile import (
         ContactInfo,
         Skill,
@@ -30,9 +31,7 @@ try:
         UserProfile,
         WorkExperience,
     )
-
-    from models.job_analysis import JobAnalysis, JobRequirement, ResponsibilityLevel
-    from models.matching import ExperienceMatch, MatchingResult, SkillMatch
+    from models.resume_optimization import TailoredResume
 except ImportError:
     # Expected to fail in TDD - agents and models don't exist yet
     pytest.skip("Resume Generation Agent and models not implemented yet", allow_module_level=True)
@@ -51,7 +50,7 @@ class TestResumeGenerationQuality:
                 name="Jane Smith",
                 email="jane.smith@email.com",
                 location="San Francisco, CA",
-                linkedin="https://linkedin.com/in/janesmith"
+                linkedin="https://linkedin.com/in/janesmith",
             ),
             professional_summary="Senior Python developer with 5 years of experience in web applications and API development.",
             experience=[
@@ -64,18 +63,38 @@ class TestResumeGenerationQuality:
                     description="Lead development of RESTful APIs and microservices using Python and FastAPI.",
                     achievements=[
                         "Reduced API response time by 40% through optimization",
-                        "Led team of 3 engineers in delivering major feature releases"
+                        "Led team of 3 engineers in delivering major feature releases",
                     ],
-                    technologies=["Python", "FastAPI", "PostgreSQL", "Docker", "AWS"]
+                    technologies=["Python", "FastAPI", "PostgreSQL", "Docker", "AWS"],
                 )
             ],
             education=[],
             skills=[
-                Skill(name="Python", category=SkillCategory.TECHNICAL, proficiency=5, years_experience=5),
-                Skill(name="FastAPI", category=SkillCategory.TECHNICAL, proficiency=4, years_experience=3),
-                Skill(name="PostgreSQL", category=SkillCategory.TECHNICAL, proficiency=4, years_experience=4),
-                Skill(name="Leadership", category=SkillCategory.SOFT, proficiency=4, years_experience=2)
-            ]
+                Skill(
+                    name="Python",
+                    category=SkillCategory.TECHNICAL,
+                    proficiency=5,
+                    years_experience=5,
+                ),
+                Skill(
+                    name="FastAPI",
+                    category=SkillCategory.TECHNICAL,
+                    proficiency=4,
+                    years_experience=3,
+                ),
+                Skill(
+                    name="PostgreSQL",
+                    category=SkillCategory.TECHNICAL,
+                    proficiency=4,
+                    years_experience=4,
+                ),
+                Skill(
+                    name="Leadership",
+                    category=SkillCategory.SOFT,
+                    proficiency=4,
+                    years_experience=2,
+                ),
+            ],
         )
 
     @pytest.fixture
@@ -88,7 +107,7 @@ class TestResumeGenerationQuality:
                 name="John Doe",
                 email="john.doe@email.com",
                 location="Austin, TX",
-                linkedin="https://linkedin.com/in/johndoe"
+                linkedin="https://linkedin.com/in/johndoe",
             ),
             professional_summary="Frontend developer transitioning to full-stack development.",
             experience=[
@@ -101,18 +120,38 @@ class TestResumeGenerationQuality:
                     description="Develop responsive web applications using React and JavaScript.",
                     achievements=[
                         "Built 10+ responsive web applications",
-                        "Improved user engagement by 25%"
+                        "Improved user engagement by 25%",
                     ],
-                    technologies=["JavaScript", "React", "CSS", "HTML"]
+                    technologies=["JavaScript", "React", "CSS", "HTML"],
                 )
             ],
             education=[],
             skills=[
-                Skill(name="JavaScript", category=SkillCategory.TECHNICAL, proficiency=4, years_experience=3),
-                Skill(name="React", category=SkillCategory.TECHNICAL, proficiency=4, years_experience=2),
-                Skill(name="Python", category=SkillCategory.TECHNICAL, proficiency=2, years_experience=1),
-                Skill(name="Problem Solving", category=SkillCategory.SOFT, proficiency=4, years_experience=3)
-            ]
+                Skill(
+                    name="JavaScript",
+                    category=SkillCategory.TECHNICAL,
+                    proficiency=4,
+                    years_experience=3,
+                ),
+                Skill(
+                    name="React",
+                    category=SkillCategory.TECHNICAL,
+                    proficiency=4,
+                    years_experience=2,
+                ),
+                Skill(
+                    name="Python",
+                    category=SkillCategory.TECHNICAL,
+                    proficiency=2,
+                    years_experience=1,
+                ),
+                Skill(
+                    name="Problem Solving",
+                    category=SkillCategory.SOFT,
+                    proficiency=4,
+                    years_experience=3,
+                ),
+            ],
         )
 
     @pytest.fixture
@@ -128,44 +167,46 @@ class TestResumeGenerationQuality:
                     importance=5,
                     category=SkillCategory.TECHNICAL,
                     is_required=True,
-                    context="5+ years of Python development experience required"
+                    context="5+ years of Python development experience required",
                 ),
                 JobRequirement(
                     skill="FastAPI",
                     importance=4,
                     category=SkillCategory.TECHNICAL,
                     is_required=True,
-                    context="Experience with FastAPI or similar frameworks"
+                    context="Experience with FastAPI or similar frameworks",
                 ),
                 JobRequirement(
                     skill="PostgreSQL",
                     importance=4,
                     category=SkillCategory.TECHNICAL,
                     is_required=True,
-                    context="Database design and optimization experience"
+                    context="Database design and optimization experience",
                 ),
                 JobRequirement(
                     skill="Leadership",
                     importance=3,
                     category=SkillCategory.SOFT,
                     is_required=False,
-                    context="Mentoring junior developers preferred"
-                )
+                    context="Mentoring junior developers preferred",
+                ),
             ],
             key_responsibilities=[
                 "Design and implement scalable backend services",
                 "Optimize database performance and queries",
                 "Mentor junior team members",
-                "Collaborate with frontend teams on API design"
+                "Collaborate with frontend teams on API design",
             ],
             company_culture="Fast-paced startup environment with focus on innovation",
             role_level=ResponsibilityLevel.SENIOR,
             industry="Technology",
-            analysis_timestamp="2025-09-18T12:00:00Z"
+            analysis_timestamp="2025-09-18T12:00:00Z",
         )
 
     @pytest.fixture
-    def high_match_result(self, high_match_profile: UserProfile, senior_backend_job: JobAnalysis) -> MatchingResult:
+    def high_match_result(
+        self, high_match_profile: UserProfile, senior_backend_job: JobAnalysis
+    ) -> MatchingResult:
         """High-match result for testing."""
         return MatchingResult(
             overall_match_score=0.85,
@@ -175,39 +216,41 @@ class TestResumeGenerationQuality:
                     job_importance=5,
                     user_proficiency=5,
                     match_score=1.0,
-                    evidence=["Senior Software Engineer with 5 years Python experience"]
+                    evidence=["Senior Software Engineer with 5 years Python experience"],
                 ),
                 SkillMatch(
                     skill_name="FastAPI",
                     job_importance=4,
                     user_proficiency=4,
                     match_score=0.8,
-                    evidence=["3 years FastAPI experience at TechCorp"]
+                    evidence=["3 years FastAPI experience at TechCorp"],
                 ),
                 SkillMatch(
                     skill_name="PostgreSQL",
                     job_importance=4,
                     user_proficiency=4,
                     match_score=0.8,
-                    evidence=["4 years database experience"]
-                )
+                    evidence=["4 years database experience"],
+                ),
             ],
             experience_matches=[
                 ExperienceMatch(
                     job_responsibility="Design and implement scalable backend services",
                     matching_experiences=["Lead development of RESTful APIs and microservices"],
-                    relevance_score=0.9
+                    relevance_score=0.9,
                 )
             ],
             missing_requirements=[],
             strength_areas=["Python expertise", "API development", "Performance optimization"],
             transferable_skills=["Leadership experience"],
             recommendations=["Emphasize team leadership experience"],
-            confidence_score=0.9
+            confidence_score=0.9,
         )
 
     @pytest.fixture
-    def low_match_result(self, low_match_profile: UserProfile, senior_backend_job: JobAnalysis) -> MatchingResult:
+    def low_match_result(
+        self, low_match_profile: UserProfile, senior_backend_job: JobAnalysis
+    ) -> MatchingResult:
         """Low-match result requiring skill emphasis."""
         return MatchingResult(
             overall_match_score=0.35,
@@ -217,22 +260,22 @@ class TestResumeGenerationQuality:
                     job_importance=5,
                     user_proficiency=2,
                     match_score=0.2,
-                    evidence=["1 year Python experience"]
+                    evidence=["1 year Python experience"],
                 ),
                 SkillMatch(
                     skill_name="FastAPI",
                     job_importance=4,
                     user_proficiency=0,
                     match_score=0.0,
-                    evidence=[]
+                    evidence=[],
                 ),
                 SkillMatch(
                     skill_name="JavaScript",
                     job_importance=1,
                     user_proficiency=4,
                     match_score=0.8,
-                    evidence=["3 years JavaScript development"]
-                )
+                    evidence=["3 years JavaScript development"],
+                ),
             ],
             experience_matches=[],
             missing_requirements=[
@@ -241,7 +284,7 @@ class TestResumeGenerationQuality:
                     importance=4,
                     category=SkillCategory.TECHNICAL,
                     is_required=True,
-                    context="Experience with FastAPI or similar frameworks"
+                    context="Experience with FastAPI or similar frameworks",
                 )
             ],
             strength_areas=["Frontend development", "User experience focus"],
@@ -249,9 +292,9 @@ class TestResumeGenerationQuality:
             recommendations=[
                 "Emphasize transferable programming skills",
                 "Highlight eagerness to learn backend technologies",
-                "Showcase problem-solving abilities"
+                "Showcase problem-solving abilities",
             ],
-            confidence_score=0.7
+            confidence_score=0.7,
         )
 
     @pytest.fixture
@@ -264,21 +307,25 @@ class TestResumeGenerationQuality:
         resume_agent,
         high_match_profile: UserProfile,
         senior_backend_job: JobAnalysis,
-        high_match_result: MatchingResult
+        high_match_result: MatchingResult,
     ):
         """Test high-match profile generating targeted resume content."""
         start_time = time.time()
 
-        result = await resume_agent.run({
-            "user_profile": high_match_profile.model_dump(),
-            "job_analysis": senior_backend_job.model_dump(),
-            "matching_result": high_match_result.model_dump()
-        })
+        result = await resume_agent.run(
+            {
+                "user_profile": high_match_profile.model_dump(),
+                "job_analysis": senior_backend_job.model_dump(),
+                "matching_result": high_match_result.model_dump(),
+            }
+        )
 
         execution_time = time.time() - start_time
 
         # Performance requirement: <5 minutes per updated business requirement
-        assert execution_time < 300.0, f"Resume generation took {execution_time:.2f}s, must be <5 minutes"
+        assert execution_time < 300.0, (
+            f"Resume generation took {execution_time:.2f}s, must be <5 minutes"
+        )
 
         tailored_resume = result
         assert isinstance(tailored_resume, TailoredResume)
@@ -293,21 +340,37 @@ class TestResumeGenerationQuality:
         assert len(optimizations) >= 2  # At least summary and experience sections
 
         # Keyword integration effectiveness
-        summary_opt = next((opt for opt in optimizations if opt.section == ResumeSection.SUMMARY), None)
+        summary_opt = next(
+            (opt for opt in optimizations if opt.section == ResumeSection.SUMMARY), None
+        )
         assert summary_opt is not None
         # Should include relevant technical keywords (flexible semantic matching)
         keywords_text = " ".join(summary_opt.keywords_added).lower()
-        backend_related = any(term in keywords_text for term in ["backend", "engineer", "api", "web", "application"])
-        assert backend_related, f"Expected backend-related keywords, got: {summary_opt.keywords_added}"
+        backend_related = any(
+            term in keywords_text for term in ["backend", "engineer", "api", "web", "application"]
+        )
+        assert backend_related, (
+            f"Expected backend-related keywords, got: {summary_opt.keywords_added}"
+        )
         # Note: May need prompt improvement to ensure specific technologies are included
 
         # Content accuracy - should emphasize strengths and experience
-        assert "5 years" in tailored_resume.full_resume_markdown or "5+ years" in tailored_resume.full_resume_markdown
+        assert (
+            "5 years" in tailored_resume.full_resume_markdown
+            or "5+ years" in tailored_resume.full_resume_markdown
+        )
         # Should include performance achievements (flexible matching)
-        performance_indicators = ["40%", "performance", "improved", "optimization", "response time", "api"]
+        performance_indicators = [
+            "40%",
+            "performance",
+            "improved",
+            "optimization",
+            "response time",
+            "api",
+        ]
         resume_lower = tailored_resume.full_resume_markdown.lower()
         performance_mentioned = any(term in resume_lower for term in performance_indicators)
-        assert performance_mentioned, f"Expected performance-related achievements in resume"
+        assert performance_mentioned, "Expected performance-related achievements in resume"
         # Note: May need prompt improvement to preserve specific quantified achievements
 
     async def test_low_match_profile_emphasizes_transferable_skills(
@@ -315,19 +378,23 @@ class TestResumeGenerationQuality:
         resume_agent,
         low_match_profile: UserProfile,
         senior_backend_job: JobAnalysis,
-        low_match_result: MatchingResult
+        low_match_result: MatchingResult,
     ):
         """Test low-match profile requiring skill emphasis and transferable skills."""
         start_time = time.time()
 
-        result = await resume_agent.run({
-            "user_profile": low_match_profile.model_dump(),
-            "job_analysis": senior_backend_job.model_dump(),
-            "matching_result": low_match_result.model_dump()
-        })
+        result = await resume_agent.run(
+            {
+                "user_profile": low_match_profile.model_dump(),
+                "job_analysis": senior_backend_job.model_dump(),
+                "matching_result": low_match_result.model_dump(),
+            }
+        )
 
         execution_time = time.time() - start_time
-        assert execution_time < 300.0, f"Resume generation took {execution_time:.2f}s, must be <5 minutes"
+        assert execution_time < 300.0, (
+            f"Resume generation took {execution_time:.2f}s, must be <5 minutes"
+        )
 
         tailored_resume = result
         assert isinstance(tailored_resume, TailoredResume)
@@ -336,30 +403,39 @@ class TestResumeGenerationQuality:
         assert 0.3 <= tailored_resume.estimated_match_score <= 0.5
 
         # Content optimization should emphasize transferable skills
-        summary_opt = next((opt for opt in tailored_resume.optimizations if opt.section == ResumeSection.SUMMARY), None)
+        summary_opt = next(
+            (opt for opt in tailored_resume.optimizations if opt.section == ResumeSection.SUMMARY),
+            None,
+        )
         assert summary_opt is not None
         assert summary_opt.match_improvement > 0
 
         # Should highlight programming fundamentals and learning ability
         resume_content = tailored_resume.full_resume_markdown.lower()
-        assert any(word in resume_content for word in ["programming", "development", "problem-solving"])
+        assert any(
+            word in resume_content for word in ["programming", "development", "problem-solving"]
+        )
 
         # Should mention willingness to learn or adaptability
-        assert any(phrase in resume_content for phrase in ["eager", "learning", "adapt", "transition"])
+        assert any(
+            phrase in resume_content for phrase in ["eager", "learning", "adapt", "transition"]
+        )
 
     async def test_resume_sections_optimization(
         self,
         resume_agent,
         high_match_profile: UserProfile,
         senior_backend_job: JobAnalysis,
-        high_match_result: MatchingResult
+        high_match_result: MatchingResult,
     ):
         """Test different resume sections are optimized correctly."""
-        result = await resume_agent.run({
-            "user_profile": high_match_profile.model_dump(),
-            "job_analysis": senior_backend_job.model_dump(),
-            "matching_result": high_match_result.model_dump()
-        })
+        result = await resume_agent.run(
+            {
+                "user_profile": high_match_profile.model_dump(),
+                "job_analysis": senior_backend_job.model_dump(),
+                "matching_result": high_match_result.model_dump(),
+            }
+        )
 
         tailored_resume = result
         optimizations = tailored_resume.optimizations
@@ -376,23 +452,29 @@ class TestResumeGenerationQuality:
             assert len(opt.keywords_added) > 0
 
         # Experience section should highlight relevant achievements
-        exp_opt = next((opt for opt in optimizations if opt.section == ResumeSection.EXPERIENCE), None)
+        exp_opt = next(
+            (opt for opt in optimizations if opt.section == ResumeSection.EXPERIENCE), None
+        )
         assert exp_opt is not None
-        assert "API" in exp_opt.optimized_content or "performance" in exp_opt.optimized_content.lower()
+        assert (
+            "API" in exp_opt.optimized_content or "performance" in exp_opt.optimized_content.lower()
+        )
 
     async def test_keyword_integration_effectiveness(
         self,
         resume_agent,
         high_match_profile: UserProfile,
         senior_backend_job: JobAnalysis,
-        high_match_result: MatchingResult
+        high_match_result: MatchingResult,
     ):
         """Test keyword integration effectiveness and natural placement."""
-        result = await resume_agent.run({
-            "user_profile": high_match_profile.model_dump(),
-            "job_analysis": senior_backend_job.model_dump(),
-            "matching_result": high_match_result.model_dump()
-        })
+        result = await resume_agent.run(
+            {
+                "user_profile": high_match_profile.model_dump(),
+                "job_analysis": senior_backend_job.model_dump(),
+                "matching_result": high_match_result.model_dump(),
+            }
+        )
 
         tailored_resume = result
 
@@ -401,7 +483,9 @@ class TestResumeGenerationQuality:
         resume_lower = tailored_resume.full_resume_markdown.lower()
 
         keyword_count = sum(1 for keyword in job_keywords if keyword in resume_lower)
-        assert keyword_count >= 3, f"Only {keyword_count} keywords found, expected at least 3 from: {job_keywords}"
+        assert keyword_count >= 3, (
+            f"Only {keyword_count} keywords found, expected at least 3 from: {job_keywords}"
+        )
 
         # Keywords should appear in optimization records
         all_keywords_added = []
@@ -420,14 +504,16 @@ class TestResumeGenerationQuality:
         resume_agent,
         high_match_profile: UserProfile,
         senior_backend_job: JobAnalysis,
-        high_match_result: MatchingResult
+        high_match_result: MatchingResult,
     ):
         """Test content accuracy and no hallucinations against source profile."""
-        result = await resume_agent.run({
-            "user_profile": high_match_profile.model_dump(),
-            "job_analysis": senior_backend_job.model_dump(),
-            "matching_result": high_match_result.model_dump()
-        })
+        result = await resume_agent.run(
+            {
+                "user_profile": high_match_profile.model_dump(),
+                "job_analysis": senior_backend_job.model_dump(),
+                "matching_result": high_match_result.model_dump(),
+            }
+        )
 
         tailored_resume = result
         resume_content = tailored_resume.full_resume_markdown
@@ -448,7 +534,7 @@ class TestResumeGenerationQuality:
         # Should not hallucinate technologies not in profile
         # Allow reasonable variations but check for major hallucinations
         assert "React" not in resume_content  # Not in backend profile
-        assert "Java" not in resume_content   # Not in profile
+        assert "Java" not in resume_content  # Not in profile
 
         # Summary of changes should be descriptive
         assert len(tailored_resume.summary_of_changes) > 20
@@ -458,7 +544,7 @@ class TestResumeGenerationQuality:
         resume_agent,
         high_match_profile: UserProfile,
         senior_backend_job: JobAnalysis,
-        high_match_result: MatchingResult
+        high_match_result: MatchingResult,
     ):
         """Test performance timing meets constitutional requirements."""
         # Test multiple runs to check consistency
@@ -467,11 +553,13 @@ class TestResumeGenerationQuality:
         for _ in range(3):
             start_time = time.time()
 
-            result = await resume_agent.run({
-                "user_profile": high_match_profile.model_dump(),
-                "job_analysis": senior_backend_job.model_dump(),
-                "matching_result": high_match_result.model_dump()
-            })
+            result = await resume_agent.run(
+                {
+                    "user_profile": high_match_profile.model_dump(),
+                    "job_analysis": senior_backend_job.model_dump(),
+                    "matching_result": high_match_result.model_dump(),
+                }
+            )
 
             execution_time = time.time() - start_time
             execution_times.append(execution_time)
@@ -491,24 +579,28 @@ class TestResumeGenerationQuality:
         resume_agent,
         high_match_profile: UserProfile,
         senior_backend_job: JobAnalysis,
-        high_match_result: MatchingResult
+        high_match_result: MatchingResult,
     ):
         """Test multiple format outputs if supported by agent."""
-        result = await resume_agent.run({
-            "user_profile": high_match_profile.model_dump(),
-            "job_analysis": senior_backend_job.model_dump(),
-            "matching_result": high_match_result.model_dump()
-        })
+        result = await resume_agent.run(
+            {
+                "user_profile": high_match_profile.model_dump(),
+                "job_analysis": senior_backend_job.model_dump(),
+                "matching_result": high_match_result.model_dump(),
+            }
+        )
 
         tailored_resume = result
 
         # Primary format should be Markdown as per spec
-        assert tailored_resume.full_resume_markdown.startswith("#") or tailored_resume.full_resume_markdown.startswith("##")
+        assert tailored_resume.full_resume_markdown.startswith(
+            "#"
+        ) or tailored_resume.full_resume_markdown.startswith("##")
 
         # Should be valid Markdown structure
         markdown_content = tailored_resume.full_resume_markdown
         assert "##" in markdown_content or "#" in markdown_content  # Headers
-        assert len(markdown_content.split('\n')) > 5  # Multi-line content
+        assert len(markdown_content.split("\n")) > 5  # Multi-line content
 
         # Content should be structured with clear sections
         content_lower = markdown_content.lower()
@@ -525,7 +617,9 @@ class TestResumeGenerationErrorHandling:
         """Real Resume Generation Agent for integration testing."""
         return ResumeGenerationAgent()
 
-    async def test_handles_empty_matching_result(self, resume_agent, high_match_profile: UserProfile, senior_backend_job: JobAnalysis):
+    async def test_handles_empty_matching_result(
+        self, resume_agent, high_match_profile: UserProfile, senior_backend_job: JobAnalysis
+    ):
         """Test handling of empty or minimal matching results."""
         minimal_matching = MatchingResult(
             overall_match_score=0.1,
@@ -535,41 +629,45 @@ class TestResumeGenerationErrorHandling:
             strength_areas=[],
             transferable_skills=[],
             recommendations=[],
-            confidence_score=0.5
+            confidence_score=0.5,
         )
 
         # Should still generate a resume, even with poor match
-        result = await resume_agent.run({
-            "user_profile": high_match_profile.model_dump(),
-            "job_analysis": senior_backend_job.model_dump(),
-            "matching_result": minimal_matching.model_dump()
-        })
+        result = await resume_agent.run(
+            {
+                "user_profile": high_match_profile.model_dump(),
+                "job_analysis": senior_backend_job.model_dump(),
+                "matching_result": minimal_matching.model_dump(),
+            }
+        )
 
         tailored_resume = result
         assert isinstance(tailored_resume, TailoredResume)
         assert len(tailored_resume.full_resume_markdown) > 100  # Should still generate content
 
-    async def test_handles_missing_profile_sections(self, resume_agent, senior_backend_job: JobAnalysis, high_match_result: MatchingResult):
+    async def test_handles_missing_profile_sections(
+        self, resume_agent, senior_backend_job: JobAnalysis, high_match_result: MatchingResult
+    ):
         """Test handling of profiles with missing sections."""
         minimal_profile = UserProfile(
             version="1.0",
             metadata={"created_at": "2025-09-18T00:00:00Z", "updated_at": "2025-09-18T00:00:00Z"},
             contact=ContactInfo(
-                name="Minimal User",
-                email="minimal@email.com",
-                location="Anywhere, USA"
+                name="Minimal User", email="minimal@email.com", location="Anywhere, USA"
             ),
             professional_summary="Recent graduate seeking opportunities.",
             experience=[],  # No experience
-            education=[],   # No education
-            skills=[]       # No skills
+            education=[],  # No education
+            skills=[],  # No skills
         )
 
-        result = await resume_agent.run({
-            "user_profile": minimal_profile.model_dump(),
-            "job_analysis": senior_backend_job.model_dump(),
-            "matching_result": high_match_result.model_dump()
-        })
+        result = await resume_agent.run(
+            {
+                "user_profile": minimal_profile.model_dump(),
+                "job_analysis": senior_backend_job.model_dump(),
+                "matching_result": high_match_result.model_dump(),
+            }
+        )
 
         tailored_resume = result
         assert isinstance(tailored_resume, TailoredResume)

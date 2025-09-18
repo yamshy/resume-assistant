@@ -5,20 +5,16 @@ No complex logic, focused on structured error responses and logging patterns.
 """
 
 import json
-import logging
 import sys
 from datetime import datetime
-from typing import Any, Dict, Optional, Union
+from typing import Any
 
 from fastapi import HTTPException, status
 
 
 def format_error_response(
-    error_code: str,
-    message: str,
-    details: Optional[Dict[str, Any]] = None,
-    status_code: int = 500
-) -> Dict[str, Any]:
+    error_code: str, message: str, details: dict[str, Any] | None = None, status_code: int = 500
+) -> dict[str, Any]:
     """Format standardized error response for API endpoints.
 
     Args:
@@ -35,7 +31,7 @@ def format_error_response(
             "code": error_code,
             "message": message,
             "status_code": status_code,
-            "timestamp": datetime.utcnow().isoformat() + "Z"
+            "timestamp": datetime.utcnow().isoformat() + "Z",
         }
     }
 
@@ -48,8 +44,8 @@ def format_error_response(
 def log_agent_error(
     agent_name: str,
     error: Exception,
-    input_data: Optional[Dict[str, Any]] = None,
-    context: Optional[Dict[str, Any]] = None
+    input_data: dict[str, Any] | None = None,
+    context: dict[str, Any] | None = None,
 ) -> None:
     """Log agent-specific failures with structured context.
 
@@ -78,10 +74,7 @@ def log_agent_error(
 
 
 def create_http_exception(
-    status_code: int,
-    error_code: str,
-    message: str,
-    details: Optional[Dict[str, Any]] = None
+    status_code: int, error_code: str, message: str, details: dict[str, Any] | None = None
 ) -> HTTPException:
     """Create HTTPException with standardized error format.
 
@@ -99,11 +92,7 @@ def create_http_exception(
 
 
 def log_api_request(
-    method: str,
-    path: str,
-    status_code: int,
-    duration_ms: float,
-    error: Optional[str] = None
+    method: str, path: str, status_code: int, duration_ms: float, error: str | None = None
 ) -> None:
     """Log API request/response for debugging and monitoring.
 
@@ -121,7 +110,7 @@ def log_api_request(
         "method": method,
         "path": path,
         "status_code": status_code,
-        "duration_ms": round(duration_ms, 2)
+        "duration_ms": round(duration_ms, 2),
     }
 
     if error:
@@ -130,7 +119,7 @@ def log_api_request(
     print(json.dumps(log_entry), file=sys.stderr)
 
 
-def sanitize_error_details(details: Dict[str, Any]) -> Dict[str, Any]:
+def sanitize_error_details(details: dict[str, Any]) -> dict[str, Any]:
     """Remove sensitive information from error details.
 
     Args:
@@ -140,9 +129,22 @@ def sanitize_error_details(details: Dict[str, Any]) -> Dict[str, Any]:
         Sanitized error details with sensitive data removed
     """
     sensitive_keys = {
-        "password", "token", "api_key", "secret", "auth", "authorization",
-        "jwt", "session", "cookie", "credentials", "private_key", "ssn",
-        "credit_card", "email", "phone", "address"
+        "password",
+        "token",
+        "api_key",
+        "secret",
+        "auth",
+        "authorization",
+        "jwt",
+        "session",
+        "cookie",
+        "credentials",
+        "private_key",
+        "ssn",
+        "credit_card",
+        "email",
+        "phone",
+        "address",
     }
 
     sanitized = {}
@@ -191,7 +193,7 @@ def agent_timeout_exception(agent_name: str) -> HTTPException:
     return create_http_exception(
         status.HTTP_504_GATEWAY_TIMEOUT,
         ErrorCodes.AGENT_TIMEOUT,
-        f"Agent '{agent_name}' timed out during execution"
+        f"Agent '{agent_name}' timed out during execution",
     )
 
 
@@ -200,7 +202,7 @@ def profile_not_found_exception() -> HTTPException:
     return create_http_exception(
         status.HTTP_404_NOT_FOUND,
         ErrorCodes.PROFILE_NOT_FOUND,
-        "User profile not found or not properly configured"
+        "User profile not found or not properly configured",
     )
 
 
@@ -209,5 +211,5 @@ def invalid_job_posting_exception(reason: str) -> HTTPException:
     return create_http_exception(
         status.HTTP_422_UNPROCESSABLE_ENTITY,
         ErrorCodes.INVALID_JOB_POSTING,
-        f"Invalid job posting format: {reason}"
+        f"Invalid job posting format: {reason}",
     )

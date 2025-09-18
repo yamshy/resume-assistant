@@ -129,7 +129,7 @@ async def test_put_profile_success(async_client: AsyncClient) -> None:
             "location": "San Francisco, CA",
             "phone": "+1-555-0123",
             "linkedin": "https://linkedin.com/in/johndoe",
-            "portfolio": "https://johndoe.dev"
+            "portfolio": "https://johndoe.dev",
         },
         "professional_summary": "Experienced software engineer with 5+ years in full-stack development.",
         "experience": [
@@ -140,11 +140,8 @@ async def test_put_profile_success(async_client: AsyncClient) -> None:
                 "start_date": "2022-01-15",
                 "end_date": None,
                 "description": "Lead development of web applications using Python and React.",
-                "achievements": [
-                    "Improved system performance by 40%",
-                    "Led team of 3 engineers"
-                ],
-                "technologies": ["Python", "React", "PostgreSQL"]
+                "achievements": ["Improved system performance by 40%", "Led team of 3 engineers"],
+                "technologies": ["Python", "React", "PostgreSQL"],
             }
         ],
         "education": [
@@ -155,30 +152,23 @@ async def test_put_profile_success(async_client: AsyncClient) -> None:
                 "graduation_date": "2019-05-15",
                 "gpa": 3.8,
                 "honors": ["Magna Cum Laude"],
-                "relevant_coursework": ["Data Structures", "Algorithms"]
+                "relevant_coursework": ["Data Structures", "Algorithms"],
             }
         ],
         "skills": [
-            {
-                "name": "Python",
-                "category": "technical",
-                "proficiency": 5,
-                "years_experience": 5
-            },
+            {"name": "Python", "category": "technical", "proficiency": 5, "years_experience": 5},
             {
                 "name": "Communication",
                 "category": "soft",
                 "proficiency": 4,
-                "years_experience": None
-            }
-        ]
+                "years_experience": None,
+            },
+        ],
     }
 
     # This test should FAIL initially - endpoint doesn't exist yet
     response = await async_client.put(
-        "/api/v1/profile",
-        json=profile_data,
-        headers={"Content-Type": "application/json"}
+        "/api/v1/profile", json=profile_data, headers={"Content-Type": "application/json"}
     )
 
     assert response.status_code == status.HTTP_200_OK
@@ -229,14 +219,12 @@ async def test_put_profile_validation_error(async_client: AsyncClient) -> None:
             "name": "John Doe"
             # Missing required 'email' and 'location' fields
         },
-        "professional_summary": "Brief summary"
+        "professional_summary": "Brief summary",
         # Missing required 'experience', 'education', 'skills' arrays
     }
 
     response = await async_client.put(
-        "/api/v1/profile",
-        json=invalid_profile_data,
-        headers={"Content-Type": "application/json"}
+        "/api/v1/profile", json=invalid_profile_data, headers={"Content-Type": "application/json"}
     )
 
     assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
@@ -245,7 +233,9 @@ async def test_put_profile_validation_error(async_client: AsyncClient) -> None:
     error_data = response.json()
 
     # Verify FastAPI's default validation error format
-    assert "detail" in error_data, f"Expected 'detail' field in validation error response, got: {error_data}"
+    assert "detail" in error_data, (
+        f"Expected 'detail' field in validation error response, got: {error_data}"
+    )
     assert isinstance(error_data["detail"], list)
     assert len(error_data["detail"]) > 0
 
@@ -269,9 +259,7 @@ async def test_put_profile_invalid_json(async_client: AsyncClient) -> None:
     This test verifies the endpoint handles malformed request bodies gracefully.
     """
     response = await async_client.put(
-        "/api/v1/profile",
-        content="{invalid json}",
-        headers={"Content-Type": "application/json"}
+        "/api/v1/profile", content="{invalid json}", headers={"Content-Type": "application/json"}
     )
 
     assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
@@ -280,7 +268,9 @@ async def test_put_profile_invalid_json(async_client: AsyncClient) -> None:
     error_data = response.json()
 
     # Verify FastAPI's default JSON decode error format
-    assert "detail" in error_data, f"Expected 'detail' field in JSON error response, got: {error_data}"
+    assert "detail" in error_data, (
+        f"Expected 'detail' field in JSON error response, got: {error_data}"
+    )
     assert isinstance(error_data["detail"], list)
     assert len(error_data["detail"]) > 0
 
@@ -300,21 +290,15 @@ async def test_put_profile_endpoint_implemented(async_client: AsyncClient) -> No
     """
     # Minimal valid profile data for testing endpoint existence
     minimal_profile = {
-        "contact": {
-            "name": "Test User",
-            "email": "test@example.com",
-            "location": "Test City"
-        },
+        "contact": {"name": "Test User", "email": "test@example.com", "location": "Test City"},
         "professional_summary": "Test summary",
         "experience": [],
         "education": [],
-        "skills": []
+        "skills": [],
     }
 
     response = await async_client.put(
-        "/api/v1/profile",
-        json=minimal_profile,
-        headers={"Content-Type": "application/json"}
+        "/api/v1/profile", json=minimal_profile, headers={"Content-Type": "application/json"}
     )
 
     # Should return 200 for successful profile update

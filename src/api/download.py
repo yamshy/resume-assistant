@@ -11,17 +11,19 @@ Constitutional compliance:
 - Standard REST patterns
 """
 
+from pathlib import Path
+from typing import Any
+
 from fastapi import APIRouter, HTTPException, status
 from fastapi.responses import FileResponse
 from pydantic import BaseModel
-from typing import Dict, Any, List
-from pathlib import Path
 
 from services.storage_service import create_storage_service
 
 
 class DownloadMetadata(BaseModel):
     """Metadata for downloadable resume."""
+
     exported_at: str
     job_title: str
     company_name: str
@@ -34,7 +36,8 @@ class DownloadMetadata(BaseModel):
 
 class DownloadListResponse(BaseModel):
     """Response model for download list."""
-    downloads: List[DownloadMetadata]
+
+    downloads: list[DownloadMetadata]
     total_count: int
     message: str
 
@@ -68,8 +71,7 @@ async def download_resume(session_id: str) -> FileResponse:
         session_data = await storage_service.load_session_data(session_id)
         if session_data is None:
             raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail=f"Session {session_id} not found"
+                status_code=status.HTTP_404_NOT_FOUND, detail=f"Session {session_id} not found"
             )
 
         # Check for approval decision with export path
@@ -77,22 +79,21 @@ async def download_resume(session_id: str) -> FileResponse:
         if not approval_decision:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
-                detail="Resume has not been approved for download"
+                detail="Resume has not been approved for download",
             )
 
         export_path = approval_decision.get("export_path")
         if not export_path:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
-                detail="No exported resume file found for this session"
+                detail="No exported resume file found for this session",
             )
 
         # Verify file exists
         file_path = Path(export_path)
         if not file_path.exists():
             raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail="Resume file no longer exists"
+                status_code=status.HTTP_404_NOT_FOUND, detail="Resume file no longer exists"
             )
 
         # Get job info for filename
@@ -102,27 +103,24 @@ async def download_resume(session_id: str) -> FileResponse:
         company_name = job_analysis.get("company_name", "Unknown")
 
         # Generate download filename
-        safe_job = "".join(c for c in job_title if c.isalnum() or c in (' ', '-', '_')).strip()
-        safe_company = "".join(c for c in company_name if c.isalnum() or c in (' ', '-', '_')).strip()
+        safe_job = "".join(c for c in job_title if c.isalnum() or c in (" ", "-", "_")).strip()
+        safe_company = "".join(
+            c for c in company_name if c.isalnum() or c in (" ", "-", "_")
+        ).strip()
         download_filename = f"{safe_company}_{safe_job}_Resume.md"
 
-        return FileResponse(
-            path=file_path,
-            filename=download_filename,
-            media_type="text/markdown"
-        )
+        return FileResponse(path=file_path, filename=download_filename, media_type="text/markdown")
 
     except HTTPException:
         raise
     except Exception as e:
         raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Download failed: {str(e)}"
-        )
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f"Download failed: {str(e)}"
+        ) from e
 
 
 @router.get("/{session_id}/download/metadata")
-async def get_download_metadata(session_id: str) -> Dict[str, Any]:
+async def get_download_metadata(session_id: str) -> dict[str, Any]:
     """
     Get metadata about downloadable resume for a session.
 
@@ -139,15 +137,14 @@ async def get_download_metadata(session_id: str) -> Dict[str, Any]:
         session_data = await storage_service.load_session_data(session_id)
         if session_data is None:
             raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail=f"Session {session_id} not found"
+                status_code=status.HTTP_404_NOT_FOUND, detail=f"Session {session_id} not found"
             )
 
         approval_decision = session_data.get("approval_decision")
         if not approval_decision or not approval_decision.get("export_path"):
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
-                detail="No exported resume available for download"
+                detail="No exported resume available for download",
             )
 
         # Get pipeline data
@@ -169,7 +166,7 @@ async def get_download_metadata(session_id: str) -> Dict[str, Any]:
             "file_exists": file_path.exists(),
             "exported_at": approval_decision.get("decided_at"),
             "optimizations_count": len(tailored_resume.get("content_optimizations", [])),
-            "estimated_match_score": tailored_resume.get("estimated_match_score")
+            "estimated_match_score": tailored_resume.get("estimated_match_score"),
         }
 
     except HTTPException:
@@ -177,8 +174,8 @@ async def get_download_metadata(session_id: str) -> Dict[str, Any]:
     except Exception as e:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Failed to get download metadata: {str(e)}"
-        )
+            detail=f"Failed to get download metadata: {str(e)}",
+        ) from e
 
 
 __all__ = ["router", "DownloadMetadata", "DownloadListResponse"]

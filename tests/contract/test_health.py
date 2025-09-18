@@ -5,9 +5,10 @@ This test verifies the health check endpoint follows the OpenAPI specification.
 Must initially fail as part of TDD - no endpoint implementation exists yet.
 """
 
-import pytest
-import httpx
 from datetime import datetime
+
+import httpx
+import pytest
 from fastapi.testclient import TestClient
 
 
@@ -18,6 +19,7 @@ def client():
     # This import will fail initially (TDD red phase)
     try:
         from app.main import app
+
         return TestClient(app)
     except ImportError:
         pytest.skip("FastAPI app not yet implemented - expected TDD failure")

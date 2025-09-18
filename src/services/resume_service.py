@@ -13,14 +13,13 @@ Constitutional compliance:
 
 import uuid
 from datetime import datetime
-from typing import Dict, Any
-
-from models.profile import UserProfile
-from models.job_analysis import JobAnalysis
-from models.matching import MatchingResult
-from models.resume_optimization import TailoredResume
+from typing import Any
 
 from agents.resume_generation_agent import create_resume_generation_agent
+from models.job_analysis import JobAnalysis
+from models.matching import MatchingResult
+from models.profile import UserProfile
+from models.resume_optimization import TailoredResume
 
 
 class ResumeGenerationService:
@@ -42,11 +41,8 @@ class ResumeGenerationService:
         return self._resume_agent
 
     async def generate_resume(
-        self,
-        user_profile: UserProfile,
-        job_analysis: JobAnalysis,
-        matching_result: MatchingResult
-    ) -> Dict[str, Any]:
+        self, user_profile: UserProfile, job_analysis: JobAnalysis, matching_result: MatchingResult
+    ) -> dict[str, Any]:
         """
         Generate tailored resume content from profile and job analysis.
 
@@ -74,7 +70,7 @@ class ResumeGenerationService:
             context_data = {
                 "user_profile": user_profile,
                 "job_analysis": job_analysis,
-                "matching_result": matching_result
+                "matching_result": matching_result,
             }
 
             # Generate tailored resume using the agent
@@ -95,10 +91,10 @@ class ResumeGenerationService:
                     "job_title": job_analysis.job_title,
                     "company_name": job_analysis.company_name,
                     "match_score": matching_result.overall_match_score,
-                    "confidence": matching_result.confidence_score
+                    "confidence": matching_result.confidence_score,
                 },
                 "created_at": start_time.isoformat(),
-                "completed_at": end_time.isoformat()
+                "completed_at": end_time.isoformat(),
             }
 
         except Exception as e:
@@ -107,11 +103,11 @@ class ResumeGenerationService:
                 "generation_id": generation_id,
                 "error": str(e),
                 "error_type": type(e).__name__,
-                "failed_at": datetime.now().isoformat()
+                "failed_at": datetime.now().isoformat(),
             }
             raise Exception(f"Resume generation failed: {error_info}") from e
 
-    async def validate_resume_content(self, tailored_resume: TailoredResume) -> Dict[str, Any]:
+    async def validate_resume_content(self, tailored_resume: TailoredResume) -> dict[str, Any]:
         """
         Validate generated resume content for basic quality checks.
 
@@ -127,12 +123,7 @@ class ResumeGenerationService:
         if not tailored_resume:
             raise ValueError("Resume content is required for validation")
 
-        validation_result = {
-            "is_valid": True,
-            "issues": [],
-            "warnings": [],
-            "content_stats": {}
-        }
+        validation_result = {"is_valid": True, "issues": [], "warnings": [], "content_stats": {}}
 
         # Basic content validation
         if not tailored_resume.resume_content.strip():
@@ -142,7 +133,9 @@ class ResumeGenerationService:
         # Check for minimum content length
         content_length = len(tailored_resume.resume_content)
         if content_length < 100:
-            validation_result["warnings"].append(f"Resume content is very short ({content_length} characters)")
+            validation_result["warnings"].append(
+                f"Resume content is very short ({content_length} characters)"
+            )
 
         # Validate optimizations exist
         if not tailored_resume.content_optimizations:
@@ -153,7 +146,7 @@ class ResumeGenerationService:
             "character_count": content_length,
             "word_count": len(tailored_resume.resume_content.split()),
             "optimization_count": len(tailored_resume.content_optimizations),
-            "estimated_match_score": tailored_resume.estimated_match_score
+            "estimated_match_score": tailored_resume.estimated_match_score,
         }
 
         return validation_result

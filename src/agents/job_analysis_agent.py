@@ -6,12 +6,10 @@ job requirements, company information, and other relevant data for resume tailor
 Follows agent-chain architecture with structured output and retry logic for robustness.
 """
 
-from datetime import datetime
 from pydantic_ai import Agent
 from pydantic_ai.exceptions import ModelRetry
 
-from models.job_analysis import JobAnalysis, JobRequirement, ResponsibilityLevel
-from models.profile import SkillCategory
+from models.job_analysis import JobAnalysis
 
 
 class JobAnalysisAgent:
@@ -30,7 +28,7 @@ class JobAnalysisAgent:
         """Get or create the agent instance."""
         if self._agent is None:
             self._agent = Agent(
-                'openai:gpt-4o',
+                "openai:gpt-4o",
                 output_type=JobAnalysis,
                 instructions="""
 You are an expert job posting analyst. Your task is to analyze raw job posting text
@@ -60,7 +58,7 @@ For role level assessment:
 
 Be accurate and comprehensive. If information is unclear or missing,
 use reasonable inference based on context.
-                """
+                """,
             )
         return self._agent
 
@@ -70,7 +68,7 @@ use reasonable inference based on context.
         new_instance = JobAnalysisAgent()
 
         # For testing, we need to pass the model directly
-        model = kwargs.get('model')
+        model = kwargs.get("model")
         if model is not None:
             # Create agent with the test model
             new_instance._agent = Agent(
@@ -104,7 +102,7 @@ For role level assessment:
 
 Be accurate and comprehensive. If information is unclear or missing,
 use reasonable inference based on context.
-                """
+                """,
             )
         else:
             # Standard override without model change
@@ -165,8 +163,9 @@ use reasonable inference based on context.
             analysis.location = "Not specified"
 
         # Set analysis timestamp if not already set
-        if not hasattr(analysis, 'analysis_timestamp') or not analysis.analysis_timestamp:
+        if not hasattr(analysis, "analysis_timestamp") or not analysis.analysis_timestamp:
             from datetime import datetime
+
             analysis.analysis_timestamp = datetime.now().isoformat()
 
         # Validate requirements
@@ -204,4 +203,4 @@ def create_job_analysis_agent() -> JobAnalysisAgent:
 
 
 # Export the main classes for testing and usage
-__all__ = ['JobAnalysisAgent', 'create_job_analysis_agent']
+__all__ = ["JobAnalysisAgent", "create_job_analysis_agent"]

@@ -6,22 +6,14 @@ against job requirements with proper scoring and performance timing.
 
 These tests are designed to FAIL initially (TDD) until the Profile Matching Agent is implemented.
 """
-import time
-# Removed datetime import - using string dates per UserProfile model
-from typing import List
 
+import time
+from datetime import date
+
+# Removed datetime import - using string dates per UserProfile model
 import pytest
 from pydantic_ai.models.test import TestModel
 
-from models.profile import (
-    ContactInfo,
-    UserProfile,
-    WorkExperience,
-    Education,
-    Skill,
-    SkillCategory,
-    Project,
-)
 from models.job_analysis import (
     JobAnalysis,
     JobRequirement,
@@ -29,8 +21,15 @@ from models.job_analysis import (
 )
 from models.matching import (
     MatchingResult,
-    SkillMatch,
-    ExperienceMatch,
+)
+from models.profile import (
+    ContactInfo,
+    Education,
+    Project,
+    Skill,
+    SkillCategory,
+    UserProfile,
+    WorkExperience,
 )
 
 
@@ -87,12 +86,25 @@ def high_match_profile() -> UserProfile:
             )
         ],
         skills=[
-            Skill(name="Python", category=SkillCategory.TECHNICAL, proficiency=5, years_experience=8),
-            Skill(name="React", category=SkillCategory.TECHNICAL, proficiency=4, years_experience=6),
+            Skill(
+                name="Python", category=SkillCategory.TECHNICAL, proficiency=5, years_experience=8
+            ),
+            Skill(
+                name="React", category=SkillCategory.TECHNICAL, proficiency=4, years_experience=6
+            ),
             Skill(name="AWS", category=SkillCategory.TECHNICAL, proficiency=4, years_experience=5),
-            Skill(name="Docker", category=SkillCategory.TECHNICAL, proficiency=4, years_experience=4),
-            Skill(name="PostgreSQL", category=SkillCategory.TECHNICAL, proficiency=4, years_experience=6),
-            Skill(name="Leadership", category=SkillCategory.SOFT, proficiency=4, years_experience=3),
+            Skill(
+                name="Docker", category=SkillCategory.TECHNICAL, proficiency=4, years_experience=4
+            ),
+            Skill(
+                name="PostgreSQL",
+                category=SkillCategory.TECHNICAL,
+                proficiency=4,
+                years_experience=6,
+            ),
+            Skill(
+                name="Leadership", category=SkillCategory.SOFT, proficiency=4, years_experience=3
+            ),
         ],
         projects=[
             Project(
@@ -101,7 +113,10 @@ def high_match_profile() -> UserProfile:
                 technologies=["Python", "AWS", "Docker", "Kubernetes"],
                 start_date="2023-01-01",
                 end_date=date(2023, 6, 1),
-                achievements=["Reduced deployment time by 50%", "Improved system reliability to 99.9%"],
+                achievements=[
+                    "Reduced deployment time by 50%",
+                    "Improved system reliability to 99.9%",
+                ],
             )
         ],
     )
@@ -154,11 +169,20 @@ def medium_match_profile() -> UserProfile:
             )
         ],
         skills=[
-            Skill(name="JavaScript", category=SkillCategory.TECHNICAL, proficiency=4, years_experience=4),
-            Skill(name="React", category=SkillCategory.TECHNICAL, proficiency=4, years_experience=3),
+            Skill(
+                name="JavaScript",
+                category=SkillCategory.TECHNICAL,
+                proficiency=4,
+                years_experience=4,
+            ),
+            Skill(
+                name="React", category=SkillCategory.TECHNICAL, proficiency=4, years_experience=3
+            ),
             Skill(name="HTML", category=SkillCategory.TECHNICAL, proficiency=4, years_experience=4),
             Skill(name="CSS", category=SkillCategory.TECHNICAL, proficiency=4, years_experience=4),
-            Skill(name="Node.js", category=SkillCategory.TECHNICAL, proficiency=3, years_experience=2),
+            Skill(
+                name="Node.js", category=SkillCategory.TECHNICAL, proficiency=3, years_experience=2
+            ),
             Skill(name="PHP", category=SkillCategory.TECHNICAL, proficiency=3, years_experience=1),
         ],
     )
@@ -201,10 +225,22 @@ def low_match_profile() -> UserProfile:
             )
         ],
         skills=[
-            Skill(name="Digital Marketing", category=SkillCategory.SOFT, proficiency=5, years_experience=6),
+            Skill(
+                name="Digital Marketing",
+                category=SkillCategory.SOFT,
+                proficiency=5,
+                years_experience=6,
+            ),
             Skill(name="Analytics", category=SkillCategory.SOFT, proficiency=4, years_experience=5),
-            Skill(name="Project Management", category=SkillCategory.SOFT, proficiency=4, years_experience=4),
-            Skill(name="Python", category=SkillCategory.TECHNICAL, proficiency=2, years_experience=0),
+            Skill(
+                name="Project Management",
+                category=SkillCategory.SOFT,
+                proficiency=4,
+                years_experience=4,
+            ),
+            Skill(
+                name="Python", category=SkillCategory.TECHNICAL, proficiency=2, years_experience=0
+            ),
             Skill(name="SQL", category=SkillCategory.TECHNICAL, proficiency=2, years_experience=1),
         ],
         projects=[
@@ -310,7 +346,9 @@ def empty_profile() -> UserProfile:
 class TestProfileMatchingAgentAccuracy:
     """Test Profile Matching Agent accuracy across different scenarios."""
 
-    async def test_high_match_profile_accuracy(self, high_match_profile, senior_python_job_analysis):
+    async def test_high_match_profile_accuracy(
+        self, high_match_profile, senior_python_job_analysis
+    ):
         """Test high-match profile (>80% skill overlap) produces accurate matching results."""
         # This test will FAIL until Profile Matching Agent is implemented
         from src.agents.profile_matching import ProfileMatchingAgent
@@ -349,12 +387,16 @@ class TestProfileMatchingAgentAccuracy:
         assert python_match.user_proficiency == 5, "Should detect user's Python proficiency"
 
         # Should have minimal missing requirements
-        assert len(result.output.missing_requirements) <= 2, "High-match should have few missing requirements"
+        assert len(result.output.missing_requirements) <= 2, (
+            "High-match should have few missing requirements"
+        )
 
         # Should identify strength areas
         assert len(result.output.strength_areas) > 0, "Should identify user strengths"
 
-    async def test_medium_match_profile_accuracy(self, medium_match_profile, senior_python_job_analysis):
+    async def test_medium_match_profile_accuracy(
+        self, medium_match_profile, senior_python_job_analysis
+    ):
         """Test medium-match profile (50-80% skill overlap) produces moderate matching results."""
         # This test will FAIL until Profile Matching Agent is implemented
         from src.agents.profile_matching import ProfileMatchingAgent
@@ -412,20 +454,27 @@ class TestProfileMatchingAgentAccuracy:
         assert result.output.overall_match_score < 0.5, "Low-match profile should score <0.5"
 
         # Should have lower confidence for career change scenarios
-        assert result.output.confidence_score > 0.5, "Should still have reasonable confidence in analysis"
+        assert result.output.confidence_score > 0.5, (
+            "Should still have reasonable confidence in analysis"
+        )
 
         # Should identify most requirements as missing
-        assert len(result.output.missing_requirements) >= 4, "Should identify most requirements as missing"
+        assert len(result.output.missing_requirements) >= 4, (
+            "Should identify most requirements as missing"
+        )
 
         # Should provide career transition recommendations
         assert len(result.output.recommendations) > 0, "Should provide improvement recommendations"
 
         # Should identify transferable soft skills
         transferable = result.output.transferable_skills
-        assert any("project" in skill.lower() or "management" in skill.lower() for skill in transferable), \
-            "Should identify transferable management skills"
+        assert any(
+            "project" in skill.lower() or "management" in skill.lower() for skill in transferable
+        ), "Should identify transferable management skills"
 
-    async def test_transferable_skills_identification(self, low_match_profile, senior_python_job_analysis):
+    async def test_transferable_skills_identification(
+        self, low_match_profile, senior_python_job_analysis
+    ):
         """Test accurate identification of transferable skills for career transitions."""
         # This test will FAIL until Profile Matching Agent is implemented
         from src.agents.profile_matching import ProfileMatchingAgent
@@ -443,12 +492,14 @@ class TestProfileMatchingAgentAccuracy:
         assert len(transferable) > 0, "Should identify transferable skills"
 
         # Analytics experience should transfer to data analysis
-        assert any("analytics" in skill.lower() for skill in transferable), \
+        assert any("analytics" in skill.lower() for skill in transferable), (
             "Should identify analytics as transferable"
+        )
 
         # Project management should transfer to technical leadership
-        assert any("project" in skill.lower() or "management" in skill.lower() for skill in transferable), \
-            "Should identify project management as transferable"
+        assert any(
+            "project" in skill.lower() or "management" in skill.lower() for skill in transferable
+        ), "Should identify project management as transferable"
 
     async def test_edge_case_empty_profile(self, empty_profile, senior_python_job_analysis):
         """Test handling of empty profile edge case."""
@@ -470,13 +521,18 @@ class TestProfileMatchingAgentAccuracy:
         assert result.output.confidence_score < 0.7, "Empty profile should have lower confidence"
 
         # All requirements should be missing
-        assert len(result.output.missing_requirements) == len(senior_python_job_analysis.requirements), \
-            "All requirements should be missing for empty profile"
+        assert len(result.output.missing_requirements) == len(
+            senior_python_job_analysis.requirements
+        ), "All requirements should be missing for empty profile"
 
         # Should provide basic recommendations
-        assert len(result.output.recommendations) > 0, "Should provide recommendations for skill development"
+        assert len(result.output.recommendations) > 0, (
+            "Should provide recommendations for skill development"
+        )
 
-    async def test_experience_matching_accuracy(self, high_match_profile, senior_python_job_analysis):
+    async def test_experience_matching_accuracy(
+        self, high_match_profile, senior_python_job_analysis
+    ):
         """Test accurate matching of work experience against job responsibilities."""
         # This test will FAIL until Profile Matching Agent is implemented
         from src.agents.profile_matching import ProfileMatchingAgent
@@ -495,7 +551,8 @@ class TestProfileMatchingAgentAccuracy:
 
         # Should match leadership experience
         leadership_match = any(
-            "lead" in match.job_responsibility.lower() or "mentor" in match.job_responsibility.lower()
+            "lead" in match.job_responsibility.lower()
+            or "mentor" in match.job_responsibility.lower()
             for match in exp_matches
         )
         assert leadership_match, "Should match leadership experience"
@@ -508,7 +565,9 @@ class TestProfileMatchingAgentAccuracy:
 class TestProfileMatchingAgentPerformance:
     """Test Profile Matching Agent performance requirements."""
 
-    async def test_performance_timing_requirement(self, high_match_profile, senior_python_job_analysis):
+    async def test_performance_timing_requirement(
+        self, high_match_profile, senior_python_job_analysis
+    ):
         """Test that profile matching completes within 5 second constitutional requirement."""
         # This test will FAIL until Profile Matching Agent is implemented
         from src.agents.profile_matching import ProfileMatchingAgent
@@ -606,7 +665,9 @@ class TestProfileMatchingAgentPerformance:
 
         # Even with large profile, must meet performance requirement
         execution_time = end_time - start_time
-        assert execution_time < 5.0, f"Large profile execution time {execution_time:.2f}s exceeds 5 second requirement"
+        assert execution_time < 5.0, (
+            f"Large profile execution time {execution_time:.2f}s exceeds 5 second requirement"
+        )
 
         # Should still produce valid results
         assert isinstance(result.output, MatchingResult)
@@ -667,7 +728,9 @@ class TestProfileMatchingAgentErrorHandling:
         assert isinstance(result.output, MatchingResult)
 
         # Should have lower confidence due to conflicting information
-        assert result.output.confidence_score < 0.8, "Should have lower confidence for conflicting data"
+        assert result.output.confidence_score < 0.8, (
+            "Should have lower confidence for conflicting data"
+        )
 
         # Should still provide reasonable match score based on available evidence
         assert 0 <= result.output.overall_match_score <= 1
@@ -709,7 +772,9 @@ class TestProfileMatchingAgentErrorHandling:
         assert isinstance(result.output, MatchingResult)
 
         # High-skilled profile should match well with minimal requirements
-        assert result.output.overall_match_score > 0.7, "Skilled profile should match minimal requirements well"
+        assert result.output.overall_match_score > 0.7, (
+            "Skilled profile should match minimal requirements well"
+        )
 
         # Should have reasonable confidence
         assert result.output.confidence_score > 0.6, "Should have reasonable confidence"

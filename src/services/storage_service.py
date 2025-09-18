@@ -12,14 +12,11 @@ Constitutional compliance:
 """
 
 import json
-import uuid
 from datetime import datetime
 from pathlib import Path
-from typing import Dict, List, Optional, Any
+from typing import Any
 
 from models.resume_optimization import TailoredResume
-from models.validation import ValidationResult
-from models.approval import ApprovalWorkflow
 
 
 class StorageService:
@@ -30,7 +27,7 @@ class StorageService:
     final resume exports with proper file organization.
     """
 
-    def __init__(self, base_path: Optional[str] = None):
+    def __init__(self, base_path: str | None = None):
         """Initialize storage service with base directory."""
         if base_path:
             self.base_dir = Path(base_path)
@@ -47,7 +44,7 @@ class StorageService:
         self.sessions_dir.mkdir(parents=True, exist_ok=True)
         self.exports_dir.mkdir(parents=True, exist_ok=True)
 
-    async def save_session_data(self, session_id: str, pipeline_data: Dict[str, Any]) -> str:
+    async def save_session_data(self, session_id: str, pipeline_data: dict[str, Any]) -> str:
         """
         Save complete pipeline data for a session.
 
@@ -68,13 +65,13 @@ class StorageService:
             session_data = {
                 "session_id": session_id,
                 "saved_at": datetime.now().isoformat(),
-                "pipeline_data": pipeline_data
+                "pipeline_data": pipeline_data,
             }
 
             # Write atomically using temp file
-            temp_file = session_file.with_suffix('.tmp')
+            temp_file = session_file.with_suffix(".tmp")
 
-            with open(temp_file, 'w', encoding='utf-8') as f:
+            with open(temp_file, "w", encoding="utf-8") as f:
                 json.dump(session_data, f, indent=2, ensure_ascii=False, default=str)
 
             # Atomic move to final location
@@ -87,9 +84,9 @@ class StorageService:
             temp_file = self.sessions_dir / f"{session_id}.json.tmp"
             if temp_file.exists():
                 temp_file.unlink()
-            raise ValueError(f"Failed to save session data: {e}")
+            raise ValueError(f"Failed to save session data: {e}") from e
 
-    async def load_session_data(self, session_id: str) -> Optional[Dict[str, Any]]:
+    async def load_session_data(self, session_id: str) -> dict[str, Any] | None:
         """
         Load pipeline data for a session.
 
@@ -108,22 +105,22 @@ class StorageService:
             return None
 
         try:
-            with open(session_file, 'r', encoding='utf-8') as f:
+            with open(session_file, encoding="utf-8") as f:
                 session_data = json.load(f)
 
             return session_data.get("pipeline_data")
 
         except json.JSONDecodeError as e:
-            raise ValueError(f"Session file corrupted: {e}")
+            raise ValueError(f"Session file corrupted: {e}") from e
         except Exception as e:
-            raise ValueError(f"Failed to load session: {e}")
+            raise ValueError(f"Failed to load session: {e}") from e
 
     async def export_resume(
         self,
         tailored_resume: TailoredResume,
         job_title: str,
         company_name: str,
-        session_id: Optional[str] = None
+        session_id: str | None = None,
     ) -> str:
         """
         Export final resume to markdown file.
@@ -143,17 +140,21 @@ class StorageService:
         try:
             # Generate safe filename
             timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-            safe_job = "".join(c for c in job_title if c.isalnum() or c in (' ', '-', '_')).strip()
-            safe_company = "".join(c for c in company_name if c.isalnum() or c in (' ', '-', '_')).strip()
+            safe_job = "".join(c for c in job_title if c.isalnum() or c in (" ", "-", "_")).strip()
+            safe_company = "".join(
+                c for c in company_name if c.isalnum() or c in (" ", "-", "_")
+            ).strip()
 
             filename = f"{timestamp}_{safe_company}_{safe_job}.md"
             export_file = self.exports_dir / filename
 
             # Generate markdown content
-            markdown_content = self._generate_markdown_resume(tailored_resume, job_title, company_name)
+            markdown_content = self._generate_markdown_resume(
+                tailored_resume, job_title, company_name
+            )
 
             # Write resume file
-            with open(export_file, 'w', encoding='utf-8') as f:
+            with open(export_file, "w", encoding="utf-8") as f:
                 f.write(markdown_content)
 
             # Save metadata file
@@ -163,19 +164,19 @@ class StorageService:
                 "company_name": company_name,
                 "session_id": session_id,
                 "resume_file": filename,
-                "optimizations_count": len(tailored_resume.content_optimizations)
+                "optimizations_count": len(tailored_resume.content_optimizations),
             }
 
-            metadata_file = export_file.with_suffix('.meta.json')
-            with open(metadata_file, 'w', encoding='utf-8') as f:
+            metadata_file = export_file.with_suffix(".meta.json")
+            with open(metadata_file, "w", encoding="utf-8") as f:
                 json.dump(metadata, f, indent=2, ensure_ascii=False)
 
             return str(export_file)
 
         except Exception as e:
-            raise ValueError(f"Failed to export resume: {e}")
+            raise ValueError(f"Failed to export resume: {e}") from e
 
-    async def list_exports(self) -> List[Dict[str, Any]]:
+    async def list_exports(self) -> list[dict[str, Any]]:
         """
         List all exported resumes with metadata.
 
@@ -186,7 +187,7 @@ class StorageService:
 
         for metadata_file in self.exports_dir.glob("*.meta.json"):
             try:
-                with open(metadata_file, 'r', encoding='utf-8') as f:
+                with open(metadata_file, encoding="utf-8") as f:
                     metadata = json.load(f)
 
                 # Check if resume file still exists
@@ -226,13 +227,10 @@ class StorageService:
             session_file.unlink()
             return True
         except Exception as e:
-            raise ValueError(f"Failed to delete session: {e}")
+            raise ValueError(f"Failed to delete session: {e}") from e
 
     def _generate_markdown_resume(
-        self,
-        tailored_resume: TailoredResume,
-        job_title: str,
-        company_name: str
+        self, tailored_resume: TailoredResume, job_title: str, company_name: str
     ) -> str:
         """Generate markdown content from tailored resume."""
 
@@ -255,13 +253,15 @@ class StorageService:
             optimizations += f"**{opt.section}**: {opt.rationale}\n\n"
 
         # Estimated match score
-        footer = f"\n---\n\n*Estimated Job Match Score: {tailored_resume.estimated_match_score:.1%}*\n"
+        footer = (
+            f"\n---\n\n*Estimated Job Match Score: {tailored_resume.estimated_match_score:.1%}*\n"
+        )
 
         return header + content + optimizations + footer
 
 
 # Factory function for service creation
-def create_storage_service(base_path: Optional[str] = None) -> StorageService:
+def create_storage_service(base_path: str | None = None) -> StorageService:
     """
     Create a new Storage Service instance.
 

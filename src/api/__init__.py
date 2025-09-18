@@ -11,12 +11,4 @@ Contains all FastAPI route handlers organized by functionality:
 - history: Resume history and metadata
 """
 
-__all__ = [
-    "health",
-    "profile",
-    "jobs",
-    "resumes",
-    "approval",
-    "download",
-    "history"
-]
+__all__ = ["health", "profile", "jobs", "resumes", "approval", "download", "history"]

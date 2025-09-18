@@ -10,18 +10,17 @@ Constitutional compliance:
 - 0.6-0.8: default to human review for safety
 """
 
-from datetime import datetime, timedelta
-from typing import Any, Dict
 import uuid
+from datetime import datetime, timedelta
+from typing import Any
 
+from pydantic import ValidationError
 from pydantic_ai import Agent, RunContext
 from pydantic_ai.exceptions import ModelRetry
-from pydantic import ValidationError
 
 from models.approval import ApprovalRequest
-from models.validation import ValidationResult
 from models.resume_optimization import TailoredResume
-
+from models.validation import ValidationResult
 
 # Agent instructions implementing constitutional thresholds
 HUMAN_INTERFACE_INSTRUCTIONS = """
@@ -68,9 +67,7 @@ def create_human_interface_agent() -> Agent[ApprovalRequest]:
     """Create the Human Interface Agent with GPT-4o-mini model."""
 
     agent = Agent(
-        'openai:gpt-4o-mini',
-        output_type=ApprovalRequest,
-        instructions=HUMAN_INTERFACE_INSTRUCTIONS
+        "openai:gpt-4o-mini", output_type=ApprovalRequest, instructions=HUMAN_INTERFACE_INSTRUCTIONS
     )
 
     @agent.tool
@@ -98,7 +95,7 @@ async def create_approval_request(
     validation_result: ValidationResult,
     tailored_resume: TailoredResume,
     confidence_threshold_auto: float = 0.8,
-    confidence_threshold_review: float = 0.6
+    confidence_threshold_review: float = 0.6,
 ) -> ApprovalRequest:
     """
     Create approval request based on validation results and constitutional thresholds.
@@ -144,15 +141,15 @@ async def create_approval_request(
                 "company_name": tailored_resume.company_name,
                 "summary_of_changes": tailored_resume.summary_of_changes,
                 "estimated_match_score": tailored_resume.estimated_match_score,
-                "generation_timestamp": tailored_resume.generation_timestamp
+                "generation_timestamp": tailored_resume.generation_timestamp,
             },
             "confidence_threshold_auto": confidence_threshold_auto,
             "confidence_threshold_review": confidence_threshold_review,
             "constitutional_rules": {
                 "auto_approve_above": confidence_threshold_auto,
                 "human_review_below": confidence_threshold_review,
-                "default_to_review": True
-            }
+                "default_to_review": True,
+            },
         }
 
         # Run agent with structured input
@@ -160,9 +157,9 @@ async def create_approval_request(
         return result.output
 
     except ValidationError as e:
-        raise ModelRetry(f"Failed to create valid approval request: {e}")
+        raise ModelRetry(f"Failed to create valid approval request: {e}") from e
     except Exception as e:
-        raise ModelRetry(f"Agent execution failed: {e}")
+        raise ModelRetry(f"Agent execution failed: {e}") from e
 
 
 # Agent class for compatibility with test expectations
@@ -192,13 +189,16 @@ class HumanInterfaceAgent:
                 has_validation_issues = len(validation_result.get("issues", [])) > 0
 
                 # Handle different threshold parameter names
-                confidence_threshold_auto = input_data.get("confidence_threshold_auto",
-                                                         input_data.get("confidence_threshold", 0.8))
+                confidence_threshold_auto = input_data.get(
+                    "confidence_threshold_auto", input_data.get("confidence_threshold", 0.8)
+                )
                 confidence_threshold_review = input_data.get("confidence_threshold_review", 0.6)
 
                 # Determine approval based on constitutional thresholds
                 # >0.8 auto-approve, <0.6 require human review, 0.6-0.8 default to human review
-                auto_approve = confidence_score >= confidence_threshold_auto and not has_validation_issues
+                auto_approve = (
+                    confidence_score >= confidence_threshold_auto and not has_validation_issues
+                )
                 requires_review = not auto_approve
 
                 # Build review reasons based on specific conditions
@@ -223,7 +223,9 @@ class HumanInterfaceAgent:
                     confidence_score=confidence_score,
                     risk_factors=risk_factors,
                     auto_approve_eligible=auto_approve,
-                    review_deadline=None if auto_approve else str(int(datetime.now().timestamp() + 3600))
+                    review_deadline=None
+                    if auto_approve
+                    else str(int(datetime.now().timestamp() + 3600)),
                 )
 
                 # Configure TestModel with custom output - create fresh each time
@@ -231,7 +233,7 @@ class HumanInterfaceAgent:
                 agent = Agent(
                     test_model,
                     output_type=ApprovalRequest,
-                    instructions=HUMAN_INTERFACE_INSTRUCTIONS
+                    instructions=HUMAN_INTERFACE_INSTRUCTIONS,
                 )
                 return await agent.run(input_data)
             else:
@@ -240,7 +242,7 @@ class HumanInterfaceAgent:
                     self._agent = Agent(
                         self._model,
                         output_type=ApprovalRequest,
-                        instructions=HUMAN_INTERFACE_INSTRUCTIONS
+                        instructions=HUMAN_INTERFACE_INSTRUCTIONS,
                     )
                 return await self._agent.run(input_data)
         else:
@@ -250,8 +252,4 @@ class HumanInterfaceAgent:
             return await self._agent.run(input_data)
 
 
-__all__ = [
-    "create_human_interface_agent",
-    "create_approval_request",
-    "HumanInterfaceAgent"
-]
+__all__ = ["create_human_interface_agent", "create_approval_request", "HumanInterfaceAgent"]

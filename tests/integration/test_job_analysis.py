@@ -18,7 +18,7 @@ from pydantic_ai.models.test import TestModel
 # These imports will fail until the agent is implemented - this is expected for TDD
 try:
     from agents.job_analysis_agent import JobAnalysisAgent
-    from models.job_analysis import JobAnalysis, JobRequirement, ResponsibilityLevel
+    from models.job_analysis import JobAnalysis, ResponsibilityLevel
 except ImportError:
     # Expected to fail in TDD - agents and models don't exist yet
     pytest.skip("Job Analysis Agent and models not implemented yet", allow_module_level=True)
@@ -179,7 +179,9 @@ class TestJobAnalysisAgentPerformance:
 
         # Validate extracted requirements
         assert len(result.requirements) >= 5
-        python_req = next((req for req in result.requirements if "python" in req.skill.lower()), None)
+        python_req = next(
+            (req for req in result.requirements if "python" in req.skill.lower()), None
+        )
         assert python_req is not None
         assert python_req.is_required is True
         assert python_req.importance >= 4
@@ -198,7 +200,9 @@ class TestJobAnalysisAgentPerformance:
         execution_time = time.time() - start_time
 
         # Performance requirement must still be met for complex postings
-        assert execution_time < 5.0, f"Complex analysis took {execution_time:.2f}s, exceeds 5s limit"
+        assert execution_time < 5.0, (
+            f"Complex analysis took {execution_time:.2f}s, exceeds 5s limit"
+        )
 
         # Validate complex extraction
         assert isinstance(result, JobAnalysis)
@@ -232,7 +236,9 @@ class TestJobAnalysisAgentPerformance:
         execution_time = time.time() - start_time
 
         # Performance requirement applies even to minimal postings
-        assert execution_time < 5.0, f"Minimal analysis took {execution_time:.2f}s, exceeds 5s limit"
+        assert execution_time < 5.0, (
+            f"Minimal analysis took {execution_time:.2f}s, exceeds 5s limit"
+        )
 
         # Should still extract basic information
         assert isinstance(result, JobAnalysis)
@@ -240,7 +246,9 @@ class TestJobAnalysisAgentPerformance:
         assert len(result.requirements) >= 1
 
         # Should handle missing information gracefully
-        python_req = next((req for req in result.requirements if "python" in req.skill.lower()), None)
+        python_req = next(
+            (req for req in result.requirements if "python" in req.skill.lower()), None
+        )
         assert python_req is not None
 
     @pytest.mark.asyncio
@@ -253,11 +261,15 @@ class TestJobAnalysisAgentPerformance:
         execution_time = time.time() - start_time
 
         # Performance requirement must be maintained even for malformed input
-        assert execution_time < 5.0, f"Malformed analysis took {execution_time:.2f}s, exceeds 5s limit"
+        assert execution_time < 5.0, (
+            f"Malformed analysis took {execution_time:.2f}s, exceeds 5s limit"
+        )
 
         # Should normalize and extract meaningful data despite poor formatting
         assert isinstance(result, JobAnalysis)
-        assert "mega corp" in result.company_name.lower() or "megacorp" in result.company_name.lower()
+        assert (
+            "mega corp" in result.company_name.lower() or "megacorp" in result.company_name.lower()
+        )
         assert "new york" in result.location.lower() or "remote" in result.location.lower()
 
         # Should still extract technical requirements
@@ -275,7 +287,7 @@ class TestJobAnalysisAgentPerformance:
             Requirements: Python, FastAPI, PostgreSQL
             Location: San Francisco, CA
             Salary: $100k-$140k""",
-            self.complex_job_posting.__wrapped__(self)  # Get fixture value directly
+            self.complex_job_posting.__wrapped__(self),  # Get fixture value directly
         ]
 
         execution_times = []
@@ -293,7 +305,7 @@ class TestJobAnalysisAgentPerformance:
         # Performance should be relatively consistent (variance < 3x)
         min_time = min(execution_times)
         max_time = max(execution_times)
-        variance_ratio = max_time / min_time if min_time > 0 else float('inf')
+        variance_ratio = max_time / min_time if min_time > 0 else float("inf")
 
         assert variance_ratio < 3.0, f"Performance variance too high: {variance_ratio:.2f}x"
 
@@ -328,7 +340,9 @@ class TestJobAnalysisAgentPerformance:
         # Should either return minimal JobAnalysis or raise appropriate error
         if isinstance(result, JobAnalysis):
             # If it attempts to analyze, should have very low confidence
-            assert len(result.requirements) == 0 or all(req.importance <= 2 for req in result.requirements)
+            assert len(result.requirements) == 0 or all(
+                req.importance <= 2 for req in result.requirements
+            )
 
     @pytest.mark.asyncio
     async def test_batch_processing_performance(self, job_analysis_agent):
@@ -336,7 +350,7 @@ class TestJobAnalysisAgentPerformance:
         job_postings = [
             "Python Developer - Entry Level",
             "Senior Backend Engineer - 5+ years Python, FastAPI",
-            "Full Stack Developer - React, Node.js, PostgreSQL"
+            "Full Stack Developer - React, Node.js, PostgreSQL",
         ]
 
         start_time = time.time()
@@ -350,8 +364,9 @@ class TestJobAnalysisAgentPerformance:
 
         # Batch processing should scale linearly, not exponentially
         expected_max_time = len(job_postings) * 5.0  # 5s per posting
-        assert total_execution_time < expected_max_time, \
+        assert total_execution_time < expected_max_time, (
             f"Batch processing took {total_execution_time:.2f}s for {len(job_postings)} postings"
+        )
 
         # All results should be valid
         assert len(results) == len(job_postings)
@@ -396,11 +411,15 @@ class TestJobAnalysisAgentAccuracy:
 
         # Required skills should have importance 4-5
         for req in required_skills:
-            assert req.importance >= 4, f"Required skill '{req.skill}' has low importance: {req.importance}"
+            assert req.importance >= 4, (
+                f"Required skill '{req.skill}' has low importance: {req.importance}"
+            )
 
         # Preferred skills should have importance 1-3
         for req in preferred_skills:
-            assert req.importance <= 3, f"Preferred skill '{req.skill}' has high importance: {req.importance}"
+            assert req.importance <= 3, (
+                f"Preferred skill '{req.skill}' has high importance: {req.importance}"
+            )
 
     @pytest.mark.asyncio
     async def test_salary_extraction_accuracy(self, job_analysis_agent):
@@ -458,5 +477,6 @@ class TestJobAnalysisAgentAccuracy:
 
             result = await job_analysis_agent.run(full_posting)
 
-            assert result.role_level == expected_level, \
+            assert result.role_level == expected_level, (
                 f"Expected {expected_level} for '{job_description}', got {result.role_level}"
+            )

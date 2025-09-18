@@ -4,9 +4,8 @@ Example usage of retry utilities with pydanticAI agents.
 This demonstrates how to integrate retry logic following constitutional patterns.
 """
 
-from pydantic_ai import Agent
-from pydantic_ai.exceptions import ModelRetry
 from pydantic import BaseModel
+from pydantic_ai import Agent
 
 from .retry import configure_agent_retry, retry_agent_call
 
@@ -18,9 +17,9 @@ class ExampleOutput(BaseModel):
 
 # Example agent setup
 example_agent = Agent(
-    'openai:gpt-4o',
+    "openai:gpt-4o",
     output_type=ExampleOutput,
-    instructions="Example agent for demonstration purposes"
+    instructions="Example agent for demonstration purposes",
 )
 
 
@@ -28,7 +27,7 @@ example_agent = Agent(
 retry_config = configure_agent_retry(
     agent_name="example_agent",
     max_attempts=3,  # Constitutional limit: 1-3 attempts
-    timeout=5.0      # <5 seconds per agent target
+    timeout=5.0,  # <5 seconds per agent target
 )
 
 

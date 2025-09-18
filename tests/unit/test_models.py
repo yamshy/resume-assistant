@@ -5,45 +5,43 @@ Tests all pydantic models for validation, serialization, and agent chain compati
 Constitutional compliance: Focus on data integrity across the agent chain.
 """
 
+from typing import Any
+
 import pytest
-from typing import Dict, Any
 from pydantic import ValidationError
 
 # Import all models from main models package (which re-exports from src)
 from models import (
-    # Profile models
     ContactInfo,
-    WorkExperience,
     Education,
-    SkillCategory,
-    Skill,
     Project,
-    Publication,
-    Award,
-    VolunteerWork,
-    Language,
+    Skill,
+    SkillCategory,
     UserProfile,
+    WorkExperience,
 )
 
 # Import job analysis models
 from models.job_analysis import (
+    JobAnalysis,
     JobRequirement,
     ResponsibilityLevel,
-    JobAnalysis,
+)
+
+# Import approval models from src
+from src.models.approval import (
+    ApprovalRequest,
+    ApprovalStatus,
+    ApprovalWorkflow,
+    ResumeSection,
+    ReviewDecision,
 )
 
 # Import matching models from src
 from src.models.matching import (
-    SkillMatch,
     ExperienceMatch,
     MatchingResult,
-)
-
-# Import validation models from src
-from src.models.validation import (
-    ValidationIssue,
-    ValidationWarning,
-    ValidationResult,
+    SkillMatch,
 )
 
 # Import resume optimization models from src
@@ -52,19 +50,17 @@ from src.models.resume_optimization import (
     TailoredResume,
 )
 
-# Import approval models from src
-from src.models.approval import (
-    ResumeSection,
-    ApprovalStatus,
-    ReviewDecision,
-    ApprovalRequest,
-    ApprovalWorkflow,
+# Import validation models from src
+from src.models.validation import (
+    ValidationIssue,
+    ValidationResult,
+    ValidationWarning,
 )
 
 
 # Test Fixtures for reusable test data
 @pytest.fixture
-def valid_contact_info() -> Dict[str, Any]:
+def valid_contact_info() -> dict[str, Any]:
     """Valid contact information data."""
     return {
         "name": "John Doe",
@@ -72,12 +68,12 @@ def valid_contact_info() -> Dict[str, Any]:
         "phone": "+1-555-0123",
         "location": "San Francisco, CA",
         "linkedin": "https://linkedin.com/in/johndoe",
-        "portfolio": "https://johndoe.dev"
+        "portfolio": "https://johndoe.dev",
     }
 
 
 @pytest.fixture
-def valid_work_experience() -> Dict[str, Any]:
+def valid_work_experience() -> dict[str, Any]:
     """Valid work experience data."""
     return {
         "position": "Senior Software Engineer",
@@ -86,16 +82,13 @@ def valid_work_experience() -> Dict[str, Any]:
         "start_date": "2020-01-15",
         "end_date": "2023-06-30",
         "description": "Led development of microservices architecture",
-        "achievements": [
-            "Reduced API response time by 40%",
-            "Mentored 5 junior developers"
-        ],
-        "technologies": ["Python", "FastAPI", "PostgreSQL"]
+        "achievements": ["Reduced API response time by 40%", "Mentored 5 junior developers"],
+        "technologies": ["Python", "FastAPI", "PostgreSQL"],
     }
 
 
 @pytest.fixture
-def valid_education() -> Dict[str, Any]:
+def valid_education() -> dict[str, Any]:
     """Valid education data."""
     return {
         "degree": "Bachelor of Science in Computer Science",
@@ -104,30 +97,29 @@ def valid_education() -> Dict[str, Any]:
         "graduation_date": "2019-06-15",
         "gpa": 3.8,
         "honors": ["Magna Cum Laude", "Dean's List"],
-        "relevant_coursework": ["Data Structures", "Algorithms", "Machine Learning"]
+        "relevant_coursework": ["Data Structures", "Algorithms", "Machine Learning"],
     }
 
 
 @pytest.fixture
-def valid_skill() -> Dict[str, Any]:
+def valid_skill() -> dict[str, Any]:
     """Valid skill data."""
     return {
         "name": "Python",
         "category": SkillCategory.TECHNICAL,
         "proficiency": 4,
-        "years_experience": 5
+        "years_experience": 5,
     }
 
 
 @pytest.fixture
-def valid_user_profile(valid_contact_info, valid_work_experience, valid_education, valid_skill) -> Dict[str, Any]:
+def valid_user_profile(
+    valid_contact_info, valid_work_experience, valid_education, valid_skill
+) -> dict[str, Any]:
     """Valid complete user profile data."""
     return {
         "version": "1.0",
-        "metadata": {
-            "created_at": "2024-01-01T00:00:00Z",
-            "updated_at": "2024-01-15T12:00:00Z"
-        },
+        "metadata": {"created_at": "2024-01-01T00:00:00Z", "updated_at": "2024-01-15T12:00:00Z"},
         "contact": valid_contact_info,
         "professional_summary": "Experienced software engineer with expertise in backend development",
         "experience": [valid_work_experience],
@@ -137,24 +129,24 @@ def valid_user_profile(valid_contact_info, valid_work_experience, valid_educatio
         "publications": [],
         "awards": [],
         "volunteer": [],
-        "languages": []
+        "languages": [],
     }
 
 
 @pytest.fixture
-def valid_job_requirement() -> Dict[str, Any]:
+def valid_job_requirement() -> dict[str, Any]:
     """Valid job requirement data."""
     return {
         "skill": "Python",
         "importance": 4,
         "category": SkillCategory.TECHNICAL,
         "is_required": True,
-        "context": "Required for backend development tasks"
+        "context": "Required for backend development tasks",
     }
 
 
 @pytest.fixture
-def valid_job_analysis(valid_job_requirement) -> Dict[str, Any]:
+def valid_job_analysis(valid_job_requirement) -> dict[str, Any]:
     """Valid job analysis data."""
     return {
         "company_name": "Tech Startup Inc",
@@ -165,7 +157,7 @@ def valid_job_analysis(valid_job_requirement) -> Dict[str, Any]:
         "requirements": [valid_job_requirement],
         "key_responsibilities": [
             "Develop and maintain backend services",
-            "Optimize database performance"
+            "Optimize database performance",
         ],
         "company_culture": "Fast-paced startup environment with emphasis on innovation",
         "role_level": ResponsibilityLevel.SENIOR,
@@ -173,7 +165,7 @@ def valid_job_analysis(valid_job_requirement) -> Dict[str, Any]:
         "salary_range": "$120,000 - $160,000",
         "benefits": ["Health insurance", "401k matching", "Flexible PTO"],
         "preferred_qualifications": ["AWS experience", "Docker knowledge"],
-        "analysis_timestamp": "2025-09-18T12:00:00Z"
+        "analysis_timestamp": "2025-09-18T12:00:00Z",
     }
 
 
@@ -206,21 +198,13 @@ class TestContactInfo:
     def test_email_validation(self):
         """Test email format validation."""
         with pytest.raises(ValidationError) as exc_info:
-            ContactInfo(
-                name="John Doe",
-                email="invalid-email",
-                location="SF, CA"
-            )
+            ContactInfo(name="John Doe", email="invalid-email", location="SF, CA")
 
         assert "email" in str(exc_info.value).lower()
 
     def test_optional_fields(self):
         """Test that optional fields work correctly."""
-        contact = ContactInfo(
-            name="Jane Doe",
-            email="jane@example.com",
-            location="NYC, NY"
-        )
+        contact = ContactInfo(name="Jane Doe", email="jane@example.com", location="NYC, NY")
         assert contact.phone is None
         assert contact.linkedin is None
         assert contact.portfolio is None
@@ -276,7 +260,7 @@ class TestWorkExperience:
     def test_json_serialization(self, valid_work_experience):
         """Test JSON serialization with date handling."""
         experience = WorkExperience(**valid_work_experience)
-        json_data = experience.model_dump(mode='json')
+        json_data = experience.model_dump(mode="json")
 
         # Dates should be serialized as strings
         assert isinstance(json_data["start_date"], str)
@@ -380,8 +364,8 @@ class TestProject:
             "url": "https://github.com/user/resume-assistant",
             "achievements": [
                 "Reduced resume creation time by 80%",
-                "Achieved 95% user satisfaction rating"
-            ]
+                "Achieved 95% user satisfaction rating",
+            ],
         }
         project = Project(**project_data)
         assert project.name == "Resume Assistant"
@@ -395,7 +379,7 @@ class TestProject:
             "description": "Contributing to open source",
             "technologies": ["Python"],
             "start_date": "2024-01-01",
-            "achievements": ["100+ commits"]
+            "achievements": ["100+ commits"],
         }
         project = Project(**project_data)
         assert project.end_date is None
@@ -440,7 +424,7 @@ class TestUserProfile:
     def test_comprehensive_json_serialization(self, valid_user_profile):
         """Test complete JSON serialization of user profile."""
         profile = UserProfile(**valid_user_profile)
-        json_data = profile.model_dump(mode='json')
+        json_data = profile.model_dump(mode="json")
 
         # Verify structure
         assert "contact" in json_data
@@ -545,7 +529,7 @@ class TestSkillMatch:
             "job_importance": 5,
             "user_proficiency": 4,
             "match_score": 0.8,
-            "evidence": ["5 years experience", "Used in recent projects"]
+            "evidence": ["5 years experience", "Used in recent projects"],
         }
         match = SkillMatch(**match_data)
         assert match.skill_name == "Python"
@@ -561,7 +545,7 @@ class TestSkillMatch:
             "job_importance": 5,
             "user_proficiency": 4,
             "match_score": 1.0,  # Valid upper bound
-            "evidence": ["Evidence"]
+            "evidence": ["Evidence"],
         }
         match = SkillMatch(**match_data)
         assert match.match_score == 1.0
@@ -578,7 +562,7 @@ class TestSkillMatch:
             "job_importance": 5,
             "user_proficiency": 0,  # Valid - skill not found
             "match_score": 0.0,
-            "evidence": []
+            "evidence": [],
         }
         match = SkillMatch(**match_data)
         assert match.user_proficiency == 0
@@ -598,9 +582,9 @@ class TestExperienceMatch:
             "job_responsibility": "Lead backend development",
             "matching_experiences": [
                 "Led team of 5 developers at Tech Corp",
-                "Architected microservices at Previous Company"
+                "Architected microservices at Previous Company",
             ],
-            "relevance_score": 0.9
+            "relevance_score": 0.9,
         }
         match = ExperienceMatch(**match_data)
         assert match.job_responsibility == "Lead backend development"
@@ -612,7 +596,7 @@ class TestExperienceMatch:
         match_data = {
             "job_responsibility": "Development",
             "matching_experiences": ["Experience"],
-            "relevance_score": 0.0  # Valid lower bound
+            "relevance_score": 0.0,  # Valid lower bound
         }
         match = ExperienceMatch(**match_data)
         assert match.relevance_score == 0.0
@@ -633,13 +617,13 @@ class TestMatchingResult:
             job_importance=5,
             user_proficiency=4,
             match_score=0.8,
-            evidence=["5 years experience"]
+            evidence=["5 years experience"],
         )
 
         experience_match = ExperienceMatch(
             job_responsibility="Backend development",
             matching_experiences=["Python backend at Tech Corp"],
-            relevance_score=0.9
+            relevance_score=0.9,
         )
 
         result_data = {
@@ -650,7 +634,7 @@ class TestMatchingResult:
             "strength_areas": ["Python expertise", "Leadership experience"],
             "transferable_skills": ["Problem solving", "Team collaboration"],
             "recommendations": ["Learn Docker", "Get AWS certification"],
-            "confidence_score": 0.9
+            "confidence_score": 0.9,
         }
 
         result = MatchingResult(**result_data)
@@ -670,7 +654,7 @@ class TestMatchingResult:
             "strength_areas": [],
             "transferable_skills": [],
             "recommendations": [],
-            "confidence_score": 0.8
+            "confidence_score": 0.8,
         }
 
         result = MatchingResult(**minimal_data)
@@ -695,7 +679,7 @@ class TestValidationIssue:
             "description": "Work experience dates overlap",
             "location": "Experience section, entry 2",
             "suggestion": "Verify and correct employment dates",
-            "error_type": "date_conflict"
+            "error_type": "date_conflict",
         }
         issue = ValidationIssue(**issue_data)
         assert issue.severity == "high"
@@ -717,7 +701,7 @@ class TestValidationWarning:
             "description": "Inconsistent date formatting",
             "location": "Education section",
             "suggestion": "Use consistent MM/YYYY format",
-            "warning_type": "formatting_inconsistency"
+            "warning_type": "formatting_inconsistency",
         }
         warning = ValidationWarning(**warning_data)
         assert warning.severity == "medium"
@@ -736,7 +720,7 @@ class TestValidationResult:
             description="Minor discrepancy",
             location="Skills section",
             suggestion="Verify skill level",
-            error_type="skill_mismatch"
+            error_type="skill_mismatch",
         )
 
         warning = ValidationWarning(
@@ -745,7 +729,7 @@ class TestValidationResult:
             description="Long sentence",
             location="Summary",
             suggestion="Break into shorter sentences",
-            warning_type="readability"
+            warning_type="readability",
         )
 
         result_data = {
@@ -759,7 +743,7 @@ class TestValidationResult:
             "validation_timestamp": "2024-01-15T12:00:00Z",
             "confidence": 0.95,
             "errors": [],
-            "warnings": [warning.model_dump()]
+            "warnings": [warning.model_dump()],
         }
 
         result = ValidationResult(**result_data)
@@ -782,7 +766,7 @@ class TestValidationResult:
             "validation_timestamp": "2024-01-15T12:00:00Z",
             "confidence": 0.7,
             "errors": [],
-            "warnings": []
+            "warnings": [],
         }
 
         result = ValidationResult(**minimal_data)
@@ -807,7 +791,7 @@ class TestContentOptimization:
             "optimized_content": "Developed Python microservices using FastAPI for high-traffic fintech applications",
             "optimization_reason": "Added specific technologies and domain context to match job requirements",
             "keywords_added": ["Python", "FastAPI", "microservices", "fintech"],
-            "match_improvement": 0.3
+            "match_improvement": 0.3,
         }
         optimization = ContentOptimization(**optimization_data)
         assert optimization.section == ResumeSection.EXPERIENCE
@@ -823,7 +807,7 @@ class TestContentOptimization:
             "optimized_content": "Optimized",
             "optimization_reason": "Reason",
             "keywords_added": [],
-            "match_improvement": 1.0  # Valid upper bound
+            "match_improvement": 1.0,  # Valid upper bound
         }
         optimization = ContentOptimization(**optimization_data)
         assert optimization.match_improvement == 1.0
@@ -845,7 +829,7 @@ class TestTailoredResume:
             optimized_content="Senior Python engineer with fintech experience",
             optimization_reason="Added seniority and domain expertise",
             keywords_added=["Senior", "Python", "fintech"],
-            match_improvement=0.4
+            match_improvement=0.4,
         )
 
         resume_data = {
@@ -855,7 +839,7 @@ class TestTailoredResume:
             "full_resume_markdown": "# John Doe\n\n## Summary\nSenior Python engineer...",
             "summary_of_changes": "Enhanced summary with relevant keywords and experience",
             "estimated_match_score": 0.88,
-            "generation_timestamp": "2024-01-15T12:00:00Z"
+            "generation_timestamp": "2024-01-15T12:00:00Z",
         }
 
         resume = TailoredResume(**resume_data)
@@ -873,7 +857,7 @@ class TestTailoredResume:
             "full_resume_markdown": "# Resume",
             "summary_of_changes": "Changes",
             "estimated_match_score": 0.0,  # Valid lower bound
-            "generation_timestamp": "2024-01-15T12:00:00Z"
+            "generation_timestamp": "2024-01-15T12:00:00Z",
         }
 
         resume = TailoredResume(**minimal_data)
@@ -920,10 +904,10 @@ class TestReviewDecision:
             "feedback": "Please strengthen the technical skills section",
             "requested_modifications": [
                 "Add more specific Python frameworks",
-                "Include cloud platform experience"
+                "Include cloud platform experience",
             ],
             "approved_sections": [ResumeSection.SUMMARY, ResumeSection.EXPERIENCE],
-            "rejected_sections": [ResumeSection.SKILLS]
+            "rejected_sections": [ResumeSection.SKILLS],
         }
         decision = ReviewDecision(**decision_data)
         assert decision.decision == ApprovalStatus.NEEDS_REVISION
@@ -953,7 +937,7 @@ class TestApprovalRequest:
             "confidence_score": 0.65,
             "risk_factors": ["Potential skill overstatement", "Date inconsistency"],
             "auto_approve_eligible": False,
-            "review_deadline": "2024-01-20T12:00:00Z"
+            "review_deadline": "2024-01-20T12:00:00Z",
         }
         request = ApprovalRequest(**request_data)
         assert request.resume_id == "resume_123"
@@ -971,7 +955,7 @@ class TestApprovalRequest:
             "review_reasons": [],
             "confidence_score": 1.0,  # Valid upper bound
             "risk_factors": [],
-            "auto_approve_eligible": True
+            "auto_approve_eligible": True,
         }
         request = ApprovalRequest(**request_data)
         assert request.confidence_score == 1.0
@@ -989,7 +973,7 @@ class TestApprovalRequest:
             "review_reasons": [],
             "confidence_score": 0.9,
             "risk_factors": [],
-            "auto_approve_eligible": True
+            "auto_approve_eligible": True,
         }
         request = ApprovalRequest(**request_data)
         assert request.review_deadline is None
@@ -1006,7 +990,7 @@ class TestApprovalWorkflow:
             review_reasons=["Quality check needed"],
             confidence_score=0.75,
             risk_factors=["New user profile"],
-            auto_approve_eligible=False
+            auto_approve_eligible=False,
         )
 
         decision = ReviewDecision(
@@ -1014,7 +998,7 @@ class TestApprovalWorkflow:
             feedback="Looks good!",
             requested_modifications=[],
             approved_sections=[ResumeSection.SUMMARY],
-            rejected_sections=[]
+            rejected_sections=[],
         )
 
         workflow_data = {
@@ -1024,7 +1008,7 @@ class TestApprovalWorkflow:
             "final_resume": "# Final Resume\n\nApproved content...",
             "workflow_status": ApprovalStatus.APPROVED,
             "created_at": "2024-01-15T10:00:00Z",
-            "completed_at": "2024-01-15T14:00:00Z"
+            "completed_at": "2024-01-15T14:00:00Z",
         }
 
         workflow = ApprovalWorkflow(**workflow_data)
@@ -1042,13 +1026,10 @@ class TestApprovalWorkflow:
             review_reasons=[],
             confidence_score=0.9,
             risk_factors=[],
-            auto_approve_eligible=True
+            auto_approve_eligible=True,
         )
 
-        workflow_data = {
-            "request": request.model_dump(),
-            "created_at": "2024-01-15T10:00:00Z"
-        }
+        workflow_data = {"request": request.model_dump(), "created_at": "2024-01-15T10:00:00Z"}
 
         workflow = ApprovalWorkflow(**workflow_data)
         assert workflow.decision is None
@@ -1079,8 +1060,7 @@ class TestCrossModelCompatibility:
         for req in job_requirements:
             # Find matching skills in user profile
             user_skill = next(
-                (skill for skill in profile.skills if skill.name.lower() == req.skill.lower()),
-                None
+                (skill for skill in profile.skills if skill.name.lower() == req.skill.lower()), None
             )
 
             skill_match = SkillMatch(
@@ -1088,7 +1068,7 @@ class TestCrossModelCompatibility:
                 job_importance=req.importance,
                 user_proficiency=user_skill.proficiency if user_skill else 0,
                 match_score=0.8 if user_skill else 0.0,
-                evidence=[f"Found in user profile"] if user_skill else []
+                evidence=["Found in user profile"] if user_skill else [],
             )
             skill_matches.append(skill_match)
 
@@ -1101,7 +1081,7 @@ class TestCrossModelCompatibility:
             strength_areas=[],
             transferable_skills=[],
             recommendations=[],
-            confidence_score=0.8
+            confidence_score=0.8,
         )
 
         assert matching_result.overall_match_score == 0.7
@@ -1115,7 +1095,7 @@ class TestCrossModelCompatibility:
             job_importance=5,
             user_proficiency=4,
             match_score=0.8,
-            evidence=["5 years experience"]
+            evidence=["5 years experience"],
         )
 
         matching_result = MatchingResult(
@@ -1126,7 +1106,7 @@ class TestCrossModelCompatibility:
             strength_areas=["Python expertise"],
             transferable_skills=[],
             recommendations=["Highlight Python projects"],
-            confidence_score=0.85
+            confidence_score=0.85,
         )
 
         # Use matching results to create resume optimizations
@@ -1138,7 +1118,7 @@ class TestCrossModelCompatibility:
                 optimized_content=f"Expert-level {strength}: 5+ years developing scalable applications",
                 optimization_reason=f"Emphasized {strength} based on matching analysis",
                 keywords_added=[strength.split()[0]],  # Extract main keyword
-                match_improvement=0.2
+                match_improvement=0.2,
             )
             optimizations.append(optimization)
 
@@ -1150,7 +1130,7 @@ class TestCrossModelCompatibility:
             full_resume_markdown="# Optimized Resume Content",
             summary_of_changes="Enhanced skills section based on matching analysis",
             estimated_match_score=matching_result.overall_match_score + 0.1,
-            generation_timestamp="2024-01-15T12:00:00Z"
+            generation_timestamp="2024-01-15T12:00:00Z",
         )
 
         assert tailored_resume.estimated_match_score == 0.85
@@ -1165,7 +1145,7 @@ class TestCrossModelCompatibility:
             optimized_content="Senior Python engineer with 5+ years experience",
             optimization_reason="Added seniority and experience details",
             keywords_added=["Senior", "Python", "5+ years"],
-            match_improvement=0.3
+            match_improvement=0.3,
         )
 
         resume = TailoredResume(
@@ -1175,7 +1155,7 @@ class TestCrossModelCompatibility:
             full_resume_markdown="# Resume\n\n## Summary\nSenior Python engineer...",
             summary_of_changes="Enhanced with relevant keywords",
             estimated_match_score=0.82,
-            generation_timestamp="2024-01-15T12:00:00Z"
+            generation_timestamp="2024-01-15T12:00:00Z",
         )
 
         # Validate the resume content
@@ -1191,7 +1171,7 @@ class TestCrossModelCompatibility:
                     description="Too many keywords added to section",
                     location=f"{opt.section.value} section",
                     suggestion="Reduce keyword density for natural flow",
-                    error_type="keyword_stuffing"
+                    error_type="keyword_stuffing",
                 )
                 validation_issues.append(issue)
 
@@ -1207,7 +1187,7 @@ class TestCrossModelCompatibility:
             validation_timestamp="2024-01-15T12:30:00Z",
             confidence=0.9,
             errors=[],
-            warnings=[]
+            warnings=[],
         )
 
         assert validation_result.is_valid is True
@@ -1227,12 +1207,14 @@ class TestCrossModelCompatibility:
             validation_timestamp="2024-01-15T12:00:00Z",
             confidence=0.87,
             errors=[],
-            warnings=[]
+            warnings=[],
         )
 
         # Determine approval eligibility based on validation
         requires_review = validation_result.confidence < 0.9 or not validation_result.is_valid
-        auto_approve_eligible = validation_result.overall_quality_score > 0.8 and validation_result.confidence > 0.85
+        auto_approve_eligible = (
+            validation_result.overall_quality_score > 0.8 and validation_result.confidence > 0.85
+        )
 
         # Create approval request
         approval_request = ApprovalRequest(
@@ -1241,14 +1223,14 @@ class TestCrossModelCompatibility:
             review_reasons=["Confidence score below 0.9"] if requires_review else [],
             confidence_score=validation_result.confidence,
             risk_factors=["Minor validation issues"] if validation_result.issues else [],
-            auto_approve_eligible=auto_approve_eligible
+            auto_approve_eligible=auto_approve_eligible,
         )
 
         # Create approval workflow
         workflow = ApprovalWorkflow(
             request=approval_request.model_dump(),
             workflow_status=ApprovalStatus.PENDING if requires_review else ApprovalStatus.APPROVED,
-            created_at="2024-01-15T12:00:00Z"
+            created_at="2024-01-15T12:00:00Z",
         )
 
         assert workflow.request.confidence_score == validation_result.confidence
@@ -1264,7 +1246,7 @@ class TestSerializationPatterns:
         profile = UserProfile(**valid_user_profile)
 
         # Serialize to JSON
-        json_data = profile.model_dump(mode='json')
+        json_data = profile.model_dump(mode="json")
 
         # Verify JSON structure
         assert isinstance(json_data, dict)
@@ -1289,12 +1271,8 @@ class TestSerializationPatterns:
     def test_enum_serialization_patterns(self):
         """Test enum serialization across different models."""
         # Test SkillCategory enum
-        skill = Skill(
-            name="Python",
-            category=SkillCategory.TECHNICAL,
-            proficiency=4
-        )
-        json_data = skill.model_dump(mode='json')
+        skill = Skill(name="Python", category=SkillCategory.TECHNICAL, proficiency=4)
+        json_data = skill.model_dump(mode="json")
         assert json_data["category"] == "technical"
 
         skill_restored = Skill.model_validate(json_data)
@@ -1310,9 +1288,9 @@ class TestSerializationPatterns:
             company_culture="Great culture",
             role_level=ResponsibilityLevel.SENIOR,
             industry="Tech",
-            analysis_timestamp="2024-01-15T12:00:00Z"
+            analysis_timestamp="2024-01-15T12:00:00Z",
         )
-        json_data = analysis.model_dump(mode='json')
+        json_data = analysis.model_dump(mode="json")
         assert json_data["role_level"] == "senior"
 
         analysis_restored = JobAnalysis.model_validate(json_data)
@@ -1323,7 +1301,7 @@ class TestSerializationPatterns:
         analysis = JobAnalysis(**valid_job_analysis)
 
         # Serialize with nested models
-        json_data = analysis.model_dump(mode='json')
+        json_data = analysis.model_dump(mode="json")
 
         # Verify nested structure
         assert isinstance(json_data["requirements"], list)
@@ -1350,11 +1328,11 @@ class TestSerializationPatterns:
         contact = ContactInfo(
             name="Test User",
             email="test@example.com",
-            location="Test City"
+            location="Test City",
             # phone, linkedin, portfolio are None
         )
 
-        json_data = contact.model_dump(mode='json')
+        json_data = contact.model_dump(mode="json")
 
         # Optional fields should be included with null values in JSON mode
         assert json_data["phone"] is None
@@ -1377,10 +1355,10 @@ class TestSerializationPatterns:
             start_date="2020-01-01",
             description="Development work",
             achievements=["Achievement 1", "Achievement 2"],
-            technologies=["Python", "FastAPI"]
+            technologies=["Python", "FastAPI"],
         )
 
-        json_data = experience.model_dump(mode='json')
+        json_data = experience.model_dump(mode="json")
 
         # Verify list serialization
         assert isinstance(json_data["achievements"], list)
@@ -1406,12 +1384,12 @@ class TestEdgeCasesAndBoundaryConditions:
             "contact": {
                 "name": "A",  # Minimum name
                 "email": "a@b.co",  # Minimum valid email
-                "location": "X"  # Minimum location
+                "location": "X",  # Minimum location
             },
             "professional_summary": "X",  # Minimum summary
             "experience": [],  # Empty but required
-            "education": [],   # Empty but required
-            "skills": []       # Empty but required
+            "education": [],  # Empty but required
+            "skills": [],  # Empty but required
         }
 
         profile = UserProfile(**minimal_profile)
@@ -1430,13 +1408,13 @@ class TestEdgeCasesAndBoundaryConditions:
             start_date="2020-01-01",
             description=long_description,
             achievements=["Achievement 1"],
-            technologies=["Python"]
+            technologies=["Python"],
         )
 
         assert len(experience.description) == 5000
 
         # Test serialization with long strings
-        json_data = experience.model_dump(mode='json')
+        json_data = experience.model_dump(mode="json")
         assert len(json_data["description"]) == 5000
 
     def test_boundary_score_values(self):
@@ -1447,7 +1425,7 @@ class TestEdgeCasesAndBoundaryConditions:
             job_importance=1,
             user_proficiency=0,
             match_score=0.0,
-            evidence=[]
+            evidence=[],
         )
         assert skill_match.match_score == 0.0
 
@@ -1463,7 +1441,7 @@ class TestEdgeCasesAndBoundaryConditions:
             validation_timestamp="2024-01-15T12:00:00Z",
             confidence=1.0,
             errors=[],
-            warnings=[]
+            warnings=[],
         )
         assert validation_result.accuracy_score == 1.0
         assert validation_result.confidence == 1.0
@@ -1482,7 +1460,7 @@ class TestEdgeCasesAndBoundaryConditions:
             industry="Industry",
             benefits=[],  # Empty benefits
             preferred_qualifications=[],  # Empty qualifications
-            analysis_timestamp="2024-01-15T12:00:00Z"
+            analysis_timestamp="2024-01-15T12:00:00Z",
         )
 
         assert len(analysis.requirements) == 0
@@ -1498,7 +1476,7 @@ class TestEdgeCasesAndBoundaryConditions:
             strength_areas=[],
             transferable_skills=[],
             recommendations=[],
-            confidence_score=0.5
+            confidence_score=0.5,
         )
 
         assert len(matching_result.skill_matches) == 0
@@ -1511,7 +1489,7 @@ class TestEdgeCasesAndBoundaryConditions:
             degree="Bachelor's",
             institution="University",
             location="City",
-            graduation_date="1970-01-01"
+            graduation_date="1970-01-01",
         )
         assert old_education.graduation_date.year == 1970
 
@@ -1521,7 +1499,7 @@ class TestEdgeCasesAndBoundaryConditions:
             description="Planned project",
             technologies=["TBD"],
             start_date="2030-01-01",
-            achievements=[]
+            achievements=[],
         )
         assert future_project.start_date.year == 2030
 
@@ -1533,7 +1511,7 @@ class TestEdgeCasesAndBoundaryConditions:
             start_date="2024-01-01",
             end_date="2024-01-01",
             description="One-day contract",
-            achievements=[]
+            achievements=[],
         )
         assert one_day_experience.start_date == one_day_experience.end_date
 
@@ -1541,9 +1519,7 @@ class TestEdgeCasesAndBoundaryConditions:
         """Test models with unicode and special characters."""
         # Unicode in names and descriptions
         contact = ContactInfo(
-            name="José María Ñoño",
-            email="jose@example.com",
-            location="São Paulo, Brasil"
+            name="José María Ñoño", email="jose@example.com", location="São Paulo, Brasil"
         )
         assert "José" in contact.name
         assert "São Paulo" in contact.location
@@ -1554,7 +1530,7 @@ class TestEdgeCasesAndBoundaryConditions:
             description="End-to-end ML pipeline with 99.9% uptime & <100ms latency",
             technologies=["Python 3.11+", "TensorFlow 2.x"],
             start_date="2024-01-01",
-            achievements=["Reduced costs by $50,000+"]
+            achievements=["Reduced costs by $50,000+"],
         )
         assert "/" in project.name
         assert "&" in project.description
@@ -1571,7 +1547,7 @@ class TestEdgeCasesAndBoundaryConditions:
             end_date="2020-12-31",
             description="Managed marketing campaigns for retail products",
             achievements=["Increased sales by 25%", "Led team of 8"],
-            technologies=["Google Analytics", "Salesforce"]
+            technologies=["Google Analytics", "Salesforce"],
         )
 
         experience_2 = WorkExperience(
@@ -1581,7 +1557,7 @@ class TestEdgeCasesAndBoundaryConditions:
             start_date="2021-01-01",
             description="Transitioned to software development",
             achievements=["Completed coding bootcamp", "Built 3 web applications"],
-            technologies=["JavaScript", "React", "Node.js"]
+            technologies=["JavaScript", "React", "Node.js"],
         )
 
         # Career change profile
@@ -1591,7 +1567,7 @@ class TestEdgeCasesAndBoundaryConditions:
             "contact": {
                 "name": "Career Changer",
                 "email": "changer@example.com",
-                "location": "San Francisco, CA"
+                "location": "San Francisco, CA",
             },
             "professional_summary": "Marketing professional transitioning to software development",
             "experience": [experience_1.model_dump(), experience_2.model_dump()],
@@ -1601,15 +1577,15 @@ class TestEdgeCasesAndBoundaryConditions:
                     "name": "JavaScript",
                     "category": SkillCategory.TECHNICAL,
                     "proficiency": 3,
-                    "years_experience": 2
+                    "years_experience": 2,
                 },
                 {
                     "name": "Project Management",
                     "category": SkillCategory.SOFT,
                     "proficiency": 5,
-                    "years_experience": 8
-                }
-            ]
+                    "years_experience": 8,
+                },
+            ],
         }
 
         profile = UserProfile(**profile_data)
@@ -1618,7 +1594,7 @@ class TestEdgeCasesAndBoundaryConditions:
         assert profile.experience[0].company != profile.experience[1].company  # Different companies
 
         # JSON serialization should work
-        json_data = profile.model_dump(mode='json')
+        json_data = profile.model_dump(mode="json")
         profile_restored = UserProfile.model_validate(json_data)
         assert len(profile_restored.experience) == 2
 

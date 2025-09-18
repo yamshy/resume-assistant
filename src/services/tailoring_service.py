@@ -17,20 +17,13 @@ Constitutional compliance:
 
 import uuid
 from datetime import datetime
-from typing import Dict, Optional
 
-from models.profile import UserProfile
-from models.job_analysis import JobAnalysis
-from models.matching import MatchingResult
-from models.resume_optimization import TailoredResume
-from models.validation import ValidationResult
-from models.approval import ApprovalWorkflow, ReviewDecision
-
+from agents.human_interface_agent import create_human_interface_agent
 from agents.job_analysis_agent import create_job_analysis_agent
 from agents.profile_matching import create_profile_matching_agent
 from agents.resume_generation_agent import create_resume_generation_agent
 from agents.validation_agent import create_validation_agent
-from agents.human_interface_agent import create_human_interface_agent
+from models.profile import UserProfile
 
 
 class ResumeTailoringService:
@@ -81,10 +74,8 @@ class ResumeTailoringService:
         return self._human_interface_agent
 
     async def tailor_resume(
-        self,
-        user_profile: UserProfile,
-        job_posting_text: str
-    ) -> Dict[str, any]:
+        self, user_profile: UserProfile, job_posting_text: str
+    ) -> dict[str, any]:
         """
         Execute complete resume tailoring pipeline through all 5 agents.
 
@@ -115,7 +106,7 @@ class ResumeTailoringService:
             context_data = {
                 "user_profile": user_profile,
                 "job_analysis": job_analysis,
-                "matching_result": matching_result
+                "matching_result": matching_result,
             }
             tailored_resume = await resume_generation_agent.run(context_data)
 
@@ -135,10 +126,10 @@ class ResumeTailoringService:
                     "company_name": tailored_resume.company_name,
                     "summary_of_changes": tailored_resume.summary_of_changes,
                     "estimated_match_score": tailored_resume.estimated_match_score,
-                    "generation_timestamp": tailored_resume.generation_timestamp
+                    "generation_timestamp": tailored_resume.generation_timestamp,
                 },
                 "confidence_threshold_auto": 0.8,
-                "confidence_threshold_review": 0.6
+                "confidence_threshold_review": 0.6,
             }
             approval_result = await human_interface_agent.run(approval_input)
             approval_request = approval_result.output
@@ -156,18 +147,19 @@ class ResumeTailoringService:
                     "matching_result": matching_result,
                     "tailored_resume": tailored_resume,
                     "validation_result": validation_result,
-                    "approval_workflow": approval_request
+                    "approval_workflow": approval_request,
                 },
                 "final_status": {
                     "requires_human_review": approval_request.requires_human_review,
-                    "auto_approved": approval_request.auto_approve_eligible and not approval_request.requires_human_review,
+                    "auto_approved": approval_request.auto_approve_eligible
+                    and not approval_request.requires_human_review,
                     "estimated_match_score": tailored_resume.estimated_match_score,
-                    "validation_confidence": validation_result.confidence
+                    "validation_confidence": validation_result.confidence,
                 },
                 "timestamps": {
                     "started_at": start_time.isoformat(),
-                    "completed_at": end_time.isoformat()
-                }
+                    "completed_at": end_time.isoformat(),
+                },
             }
 
         except Exception as e:
@@ -176,13 +168,13 @@ class ResumeTailoringService:
                 "session_id": session_id,
                 "error": str(e),
                 "error_type": type(e).__name__,
-                "failed_at": datetime.now().isoformat()
+                "failed_at": datetime.now().isoformat(),
             }
 
             # Re-raise with context
             raise Exception(f"Resume tailoring pipeline failed: {error_info}") from e
 
-    async def get_pipeline_status(self, session_id: str) -> Dict[str, str]:
+    async def get_pipeline_status(self, session_id: str) -> dict[str, str]:
         """
         Get status information for the pipeline.
 
@@ -200,9 +192,9 @@ class ResumeTailoringService:
                 "profile_matching": self._profile_matching_agent is not None,
                 "resume_generation": self._resume_generation_agent is not None,
                 "validation": self._validation_agent is not None,
-                "human_interface": self._human_interface_agent is not None
+                "human_interface": self._human_interface_agent is not None,
             },
-            "checked_at": datetime.now().isoformat()
+            "checked_at": datetime.now().isoformat(),
         }
 
 

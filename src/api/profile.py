@@ -14,7 +14,6 @@ Constitutional compliance:
 from fastapi import APIRouter, HTTPException, status
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel
-from datetime import datetime
 
 from models.profile import UserProfile
 from services.profile_service import create_profile_service
@@ -22,6 +21,7 @@ from services.profile_service import create_profile_service
 
 class ErrorResponse(BaseModel):
     """Error response model for API errors."""
+
     error: str
     timestamp: str
 
@@ -50,10 +50,7 @@ async def get_profile() -> UserProfile:
         profile = await profile_service.load_profile()
 
         if profile is None:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail="Profile not found"
-            )
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Profile not found")
 
         return profile
 
@@ -61,14 +58,13 @@ async def get_profile() -> UserProfile:
         raise
     except ValueError as e:
         raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail=f"Profile file error: {str(e)}"
-        )
+            status_code=status.HTTP_400_BAD_REQUEST, detail=f"Profile file error: {str(e)}"
+        ) from e
     except Exception as e:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Failed to load profile: {str(e)}"
-        )
+            detail=f"Failed to load profile: {str(e)}",
+        ) from e
 
 
 @router.put("", response_model=UserProfile)
@@ -96,14 +92,13 @@ async def update_profile(profile: UserProfile) -> UserProfile:
 
     except ValueError as e:
         raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail=f"Profile validation error: {str(e)}"
-        )
+            status_code=status.HTTP_400_BAD_REQUEST, detail=f"Profile validation error: {str(e)}"
+        ) from e
     except Exception as e:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Failed to save profile: {str(e)}"
-        )
+            detail=f"Failed to save profile: {str(e)}",
+        ) from e
 
 
 @router.delete("")
@@ -123,28 +118,21 @@ async def delete_profile():
         deleted = await profile_service.delete_profile()
 
         if not deleted:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail="Profile not found"
-            )
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Profile not found")
 
-        return JSONResponse(
-            status_code=status.HTTP_204_NO_CONTENT,
-            content=None
-        )
+        return JSONResponse(status_code=status.HTTP_204_NO_CONTENT, content=None)
 
     except HTTPException:
         raise
     except ValueError as e:
         raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail=f"Profile deletion error: {str(e)}"
-        )
+            status_code=status.HTTP_400_BAD_REQUEST, detail=f"Profile deletion error: {str(e)}"
+        ) from e
     except Exception as e:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Failed to delete profile: {str(e)}"
-        )
+            detail=f"Failed to delete profile: {str(e)}",
+        ) from e
 
 
 __all__ = ["router", "ErrorResponse"]

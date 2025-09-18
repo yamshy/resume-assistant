@@ -7,12 +7,11 @@ structured output and retry logic for robustness.
 """
 
 from datetime import datetime
+
 from pydantic_ai import Agent
 from pydantic_ai.exceptions import ModelRetry
 
-from models.validation import ValidationResult, ValidationIssue, ValidationWarning
-from models.resume_optimization import TailoredResume
-from models.profile import UserProfile
+from models.validation import ValidationResult, ValidationWarning
 
 
 class ValidationAgent:
@@ -31,7 +30,7 @@ class ValidationAgent:
         """Get or create the agent instance."""
         if self._agent is None:
             self._agent = Agent(
-                'openai:gpt-4o-mini',
+                "openai:gpt-4o-mini",
                 output_type=ValidationResult,
                 instructions="""
 You are a Resume Validation Agent responsible for verifying the accuracy and quality of tailored resumes against source user profile data.
@@ -61,7 +60,7 @@ Issue severity levels:
 - low: Suggestions for improvement
 
 Always provide specific, actionable feedback for improvement.
-                """
+                """,
             )
         return self._agent
 
@@ -71,7 +70,7 @@ Always provide specific, actionable feedback for improvement.
         new_instance = ValidationAgent()
 
         # For testing, we need to pass the model directly
-        model = kwargs.get('model')
+        model = kwargs.get("model")
         if model is not None:
             # Create agent with the test model
             new_instance._agent = Agent(
@@ -105,7 +104,7 @@ Issue severity levels:
 - low: Suggestions for improvement
 
 Always provide specific, actionable feedback for improvement.
-                """
+                """,
             )
         else:
             # Standard override without model change
@@ -146,18 +145,20 @@ Always provide specific, actionable feedback for improvement.
                 result.output.validation_timestamp = datetime.now().isoformat()
 
             # Ensure confidence field is set
-            if not hasattr(result.output, 'confidence') or result.output.confidence is None:
+            if not hasattr(result.output, "confidence") or result.output.confidence is None:
                 result.output.confidence = result.output.overall_quality_score
 
             # Ensure errors and warnings are populated (split from issues)
-            if not hasattr(result.output, 'errors') or result.output.errors is None:
+            if not hasattr(result.output, "errors") or result.output.errors is None:
                 result.output.errors = []
-            if not hasattr(result.output, 'warnings') or result.output.warnings is None:
+            if not hasattr(result.output, "warnings") or result.output.warnings is None:
                 result.output.warnings = []
 
             # Split issues into errors and warnings based on severity
             for issue in result.output.issues:
-                if issue.severity in ['critical', 'high'] or issue.severity == 'a':  # 'a' for TestModel
+                if (
+                    issue.severity in ["critical", "high"] or issue.severity == "a"
+                ):  # 'a' for TestModel
                     result.output.errors.append(issue)
                 else:
                     # Convert to warning format
@@ -167,7 +168,9 @@ Always provide specific, actionable feedback for improvement.
                         description=issue.description,
                         location=issue.location,
                         suggestion=issue.suggestion,
-                        warning_type=issue.error_type if hasattr(issue, 'error_type') else 'general'
+                        warning_type=issue.error_type
+                        if hasattr(issue, "error_type")
+                        else "general",
                     )
                     result.output.warnings.append(warning)
 
@@ -177,7 +180,9 @@ Always provide specific, actionable feedback for improvement.
             return result.output
 
         except Exception as e:
-            raise ModelRetry(f"Validation failed: {str(e)}. Please retry with valid scores and complete analysis.")
+            raise ModelRetry(
+                f"Validation failed: {str(e)}. Please retry with valid scores and complete analysis."
+            ) from e
 
     def _build_validation_prompt(self, resume_data: dict, source_profile: dict) -> str:
         """Build comprehensive validation prompt comparing resume to source profile."""
@@ -206,23 +211,23 @@ Provide detailed validation results with specific issues and actionable suggesti
         formatted = []
 
         # Personal information
-        if 'personal_info' in profile_data:
+        if "personal_info" in profile_data:
             formatted.append(f"PERSONAL INFO: {profile_data['personal_info']}")
 
         # Work history
-        if 'work_history' in profile_data:
+        if "work_history" in profile_data:
             formatted.append(f"WORK HISTORY: {profile_data['work_history']}")
-        elif 'experience' in profile_data:
+        elif "experience" in profile_data:
             formatted.append(f"WORK EXPERIENCE: {profile_data['experience']}")
 
         # Education
-        if 'education' in profile_data:
+        if "education" in profile_data:
             formatted.append(f"EDUCATION: {profile_data['education']}")
 
         # Skills
-        if 'technical_skills' in profile_data:
+        if "technical_skills" in profile_data:
             formatted.append(f"TECHNICAL SKILLS: {profile_data['technical_skills']}")
-        elif 'skills' in profile_data:
+        elif "skills" in profile_data:
             formatted.append(f"SKILLS: {profile_data['skills']}")
 
         return "\n".join(formatted)
@@ -240,10 +245,7 @@ Provide detailed validation results with specific issues and actionable suggesti
         """Validate that all scores are within valid ranges."""
 
         # Check if this is a TestModel response (dummy data with single characters)
-        is_test_model = (
-            len(result.validation_timestamp) == 1 and
-            result.validation_timestamp == 'a'
-        )
+        is_test_model = len(result.validation_timestamp) == 1 and result.validation_timestamp == "a"
 
         # Skip strict validation for TestModel responses
         if is_test_model:
@@ -254,7 +256,7 @@ Provide detailed validation results with specific issues and actionable suggesti
             result.readability_score,
             result.keyword_optimization_score,
             result.overall_quality_score,
-            result.confidence
+            result.confidence,
         ]
 
         for score in scores:
@@ -262,10 +264,12 @@ Provide detailed validation results with specific issues and actionable suggesti
                 raise ModelRetry(f"Invalid score {score}. All scores must be between 0.0 and 1.0.")
 
         # Verify issues have valid severity levels
-        valid_severities = {'low', 'medium', 'high', 'critical'}
+        valid_severities = {"low", "medium", "high", "critical"}
         for issue in result.issues:
             if issue.severity not in valid_severities:
-                raise ModelRetry(f"Invalid severity '{issue.severity}'. Must be one of: {valid_severities}")
+                raise ModelRetry(
+                    f"Invalid severity '{issue.severity}'. Must be one of: {valid_severities}"
+                )
 
 
 # Public interface function for agent creation
@@ -280,4 +284,4 @@ def create_validation_agent() -> ValidationAgent:
 
 
 # Export the main classes for testing and usage
-__all__ = ['ValidationAgent', 'ValidationResult', 'create_validation_agent']
+__all__ = ["ValidationAgent", "ValidationResult", "create_validation_agent"]

@@ -11,6 +11,7 @@ from pydantic import BaseModel, Field
 
 class ResumeSection(str, Enum):
     """Resume sections that can be optimized."""
+
     SUMMARY = "summary"
     EXPERIENCE = "experience"
     SKILLS = "skills"
@@ -21,6 +22,7 @@ class ResumeSection(str, Enum):
 
 class ApprovalStatus(str, Enum):
     """Status of approval workflow."""
+
     PENDING = "pending"
     APPROVED = "approved"
     REJECTED = "rejected"
@@ -29,6 +31,7 @@ class ApprovalStatus(str, Enum):
 
 class ReviewDecision(BaseModel):
     """User approval decision with feedback."""
+
     decision: ApprovalStatus = Field(description="User's decision")
     feedback: str | None = Field(default=None, description="User feedback on changes")
     requested_modifications: list[str] = Field(default=[], description="Specific changes requested")
@@ -38,6 +41,7 @@ class ReviewDecision(BaseModel):
 
 class ApprovalRequest(BaseModel):
     """Request for human review."""
+
     resume_id: str = Field(description="Unique identifier for this resume version")
     requires_human_review: bool = Field(description="Whether human review is required")
     review_reasons: list[str] = Field(description="Why human review is needed")
@@ -49,6 +53,7 @@ class ApprovalRequest(BaseModel):
 
 class ApprovalWorkflow(BaseModel):
     """Complete approval workflow state."""
+
     request: ApprovalRequest = Field(description="Initial approval request")
     decision: ReviewDecision | None = Field(default=None, description="User decision")
     iterations: int = Field(default=1, description="Number of revision cycles")
