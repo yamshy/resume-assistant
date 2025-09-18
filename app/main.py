@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from app.api.v1.routers import health
+from app.api.v1.routers import approval, download, health, jobs, profile, resumes
 from app.core.errors import install_error_handlers
 from app.core.settings import get_settings
 
@@ -23,7 +23,12 @@ def create_application() -> FastAPI:
         allow_headers=["*"],
     )
 
-    app.include_router(health.router, prefix="/api/v1")
+    app.include_router(health.router)
+    app.include_router(profile.router)
+    app.include_router(jobs.router)
+    app.include_router(resumes.router)
+    app.include_router(approval.router)
+    app.include_router(download.router)
 
     install_error_handlers(app)
 
