@@ -161,7 +161,8 @@ class TestResumeGenerationQuality:
             ],
             company_culture="Fast-paced startup environment with focus on innovation",
             role_level=ResponsibilityLevel.SENIOR,
-            industry="Technology"
+            industry="Technology",
+            analysis_timestamp="2025-09-18T12:00:00Z"
         )
 
     @pytest.fixture

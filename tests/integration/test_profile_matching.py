@@ -285,6 +285,7 @@ def senior_python_job_analysis() -> JobAnalysis:
         salary_range="$150,000 - $200,000",
         benefits=["Health insurance", "401k matching", "Equity", "Flexible PTO"],
         preferred_qualifications=["Computer Science degree", "Startup experience"],
+        analysis_timestamp="2025-09-18T12:00:00Z",
     )
 
 
@@ -693,6 +694,7 @@ class TestProfileMatchingAgentErrorHandling:
             company_culture="Flexible",
             role_level=ResponsibilityLevel.JUNIOR,
             industry="Technology",
+            analysis_timestamp="2025-09-18T12:00:00Z",
         )
 
         agent = ProfileMatchingAgent()

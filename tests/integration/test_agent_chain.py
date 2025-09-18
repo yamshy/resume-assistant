@@ -527,22 +527,3 @@ class TestAgentChainIntegration:
 
             # Log timing data for monitoring
             print(f"Agent performance timings: {agent_timings}")
-
-    def test_agent_imports_fail_as_expected(self):
-        """Verify that agent imports fail as expected in TDD red phase.
-
-        This test demonstrates that we're in the proper TDD state where
-        agents don't exist yet and imports fail with ModuleNotFoundError.
-        """
-        # Test that all 5 agents don't exist yet
-        expected_agents = [
-            "src.agents.job_analysis_agent",
-            "src.agents.profile_matching_agent",
-            "src.agents.resume_generation_agent",
-            "src.agents.validation_agent",
-            "src.agents.human_interface_agent"
-        ]
-
-        for agent_module in expected_agents:
-            with pytest.raises(ModuleNotFoundError, match=f"No module named '{agent_module}'"):
-                __import__(agent_module)

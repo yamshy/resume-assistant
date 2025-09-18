@@ -37,7 +37,7 @@ async def health_check() -> HealthResponse:
         HealthResponse: Status and timestamp
     """
     return HealthResponse(
-        status="healthy",
+        status="ok",
         timestamp=datetime.now().isoformat()
     )
 
