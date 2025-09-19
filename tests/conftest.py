@@ -1,45 +1,26 @@
-from collections.abc import AsyncGenerator
-from unittest.mock import patch
+"""Common fixtures for the test suite."""
 
-import pytest
+from __future__ import annotations
+
+import os
+from collections.abc import AsyncGenerator
+
 import pytest_asyncio
-from fastapi.testclient import TestClient
 from httpx import ASGITransport, AsyncClient
 
-from app.main import app
+os.environ.setdefault("DATABASE_URL", "sqlite+aiosqlite:///./test.db")
+os.environ.setdefault("REDIS_URL", "memory://")
 
-
-@pytest.fixture
-def client() -> TestClient:
-    return TestClient(app)
+from app.core import close_cache, close_db, init_cache, init_db
+from app.main import app  # noqa: E402  # import after setting env vars
 
 
 @pytest_asyncio.fixture
 async def async_client() -> AsyncGenerator[AsyncClient]:
-    async with AsyncClient(
-        transport=ASGITransport(app=app),
-        base_url="http://test",
-    ) as ac:
+    await init_db()
+    await init_cache()
+    transport = ASGITransport(app=app)
+    async with AsyncClient(transport=transport, base_url="http://test") as ac:
         yield ac
-
-
-@pytest.fixture
-def mock_agent():
-    with patch("resume_core.agents.base_agent.Agent.run") as mock_run:
-        mock_run.return_value = {
-            "analysis": "Mocked analysis result",
-            "confidence": 0.95,
-        }
-        yield mock_run
-
-
-@pytest.fixture
-def mock_agent_async():
-    async def mock_run(self, text: str):
-        return {
-            "analysis": f"Analyzed: {text}",
-            "confidence": 0.90,
-        }
-
-    with patch("resume_core.agents.base_agent.Agent.run", new=mock_run):
-        yield
+    await close_cache()
+    await close_db()

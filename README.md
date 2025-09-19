@@ -1,107 +1,89 @@
-# Resume Assistant Template
+# Resume Tailoring API
 
-Minimal FastAPI + pydanticAI template with TDD workflow and src layout.
+Production-ready FastAPI service for ingesting resumes, building verified profiles, and
+generating tailored resumes with human-in-the-loop verification.
+
+## Features
+
+- **Resume ingestion**: Parse PDF, DOCX, or text resumes into a consolidated master profile.
+- **Deduplication and validation**: Merge overlapping experiences and tag low-confidence items for review.
+- **Tailored generation**: Produce resumes aligned to job postings using only verified data.
+- **Semantic cache**: Reuse previous generations for similar job descriptions to cut inference costs.
+- **Human verification**: Workflow for approving, editing, or rejecting low-confidence claims.
+- **Async-first architecture**: All pipelines run asynchronously with Redis caching and PostgreSQL (SQLite fallback for tests).
+- **Observability**: Prometheus metrics and structured logging via `structlog`.
 
 ## Quickstart
 
 ### Prerequisites
 
-- Python 3.13+
-- uv (Python package manager)
+- Python 3.12+
+- [uv](https://github.com/astral-sh/uv)
 
 ### Setup
 
-1. Clone the repository:
 ```bash
-git clone <repo-url>
-cd resume-assistant-template
-```
-
-2. Install dependencies:
-```bash
-uv sync --dev
-```
-
-3. Copy environment variables:
-```bash
+uv sync --frozen --all-extras
 cp .env.example .env
 ```
 
-## Commands
-
-### Development
+### Local Development
 
 ```bash
-# Install development dependencies
-uv sync --dev
+# Run API with hot reload
+uv run uvicorn app.main:app --reload
 
-# Run tests
-uv run pytest -q
+# Execute tests
+uv run pytest
 
-# Format code
-uv run ruff format .
+# Run code quality checks
+uv run ruff check
+uv run mypy app
 
-# Check linting
-uv run ruff check .
-
-# Run development server
-uv run uvicorn app.main:app --host 0.0.0.0 --port 8080 --reload
-
-# Use CLI
-uv run resume-assistant --help
+# Smoke test the pipeline with dummy data
+uv run python -m scripts.demo_pipeline
 ```
 
-### Testing
+### Docker
 
 ```bash
-# Run all tests
-uv run pytest -q
-
-# Run with verbose output
-uv run pytest -v
-
-# Run specific test file
-uv run pytest tests/unit/test_health.py
+cd docker
+docker compose up --build
 ```
 
-### Production
+### Key Environment Variables
 
-```bash
-# Run with uvicorn
-uv run uvicorn app.main:app --host 0.0.0.0 --port 8080
+See `.env.example` for the full list. Important variables include:
 
-# Run with CLI
-uv run resume-assistant --host 0.0.0.0 --port 8080
-```
+- `DATABASE_URL` – Async SQLAlchemy connection string (Postgres in production).
+- `REDIS_URL` – Redis connection URL or `memory://` for tests.
+- `OPENAI_API_KEY` / `ANTHROPIC_API_KEY` – Optional API keys for advanced generation.
+- `SECRET_KEY` – Secret used for signing tokens.
+
+## Testing Strategy
+
+- Unit tests cover parsing, validation, and service logic.
+- Integration tests exercise the full API flow end-to-end.
+- GitHub Actions workflow runs linting, type checking, pytest with coverage, and security scanning.
 
 ## Project Structure
 
 ```
-.
-├── app/                    # FastAPI application
-│   ├── api/               # API routes
-│   ├── core/              # Core application config
-│   └── main.py            # Application entry point
-├── src/resume_core/       # Library package
-│   ├── agents/            # AI agent implementations
-│   └── services/          # Business logic services
-├── tests/                 # Test suite
-│   ├── unit/              # Unit tests
-│   └── integration/       # Integration tests
-└── pyproject.toml         # Project configuration
+app/
+├── api/           # FastAPI routers and dependencies
+├── agents/        # Parsing, deduplication, generation, validation agents
+├── config.py      # Pydantic settings
+├── core/          # Database, cache, and security helpers
+├── models/        # Pydantic schemas and ORM models
+├── prompts/       # Prompt templates for LLM integrations
+└── services/      # Application services and repositories
 ```
 
-## API Endpoints
+## Production Checklist
 
-- `GET /api/v1/health` - Health check endpoint
-
-## Environment Variables
-
-- `OPENAI_API_KEY` - OpenAI API key (optional, mocked in tests)
-- `ENV` - Environment (dev/staging/prod)
-- `MODEL_NAME` - AI model to use (default: gpt-4o)
-- `DEBUG` - Debug mode (true/false)
-
-## License
-
-MIT
+- Configure environment variables and secrets securely
+- Run Alembic migrations against production database
+- Enable HTTPS and proper CORS configuration
+- Configure monitoring (Prometheus/Grafana) and alerting
+- Set up log aggregation and backup strategy
+- Review rate-limiting, authentication, and tracing requirements

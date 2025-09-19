@@ -1,57 +1,52 @@
+from contextlib import asynccontextmanager
+
+import structlog
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from prometheus_client import make_asgi_app
 
-from app.api.v1.routers import health
-from app.core.errors import install_error_handlers
-from app.core.settings import get_settings
+from app.api.v1 import generation, ingestion, verification
+from app.config import get_settings
+from app.core.cache import close_cache, init_cache
+from app.core.database import close_db, init_db
+
+logger = structlog.get_logger()
 
 
-def create_application() -> FastAPI:
+@asynccontextmanager
+async def lifespan(app: FastAPI):
     settings = get_settings()
-
-    app = FastAPI(
-        title=settings.APP_NAME,
-        version=settings.VERSION,
-        debug=settings.DEBUG,
-    )
-
-    app.add_middleware(
-        CORSMiddleware,
-        allow_origins=["*"],
-        allow_credentials=True,
-        allow_methods=["*"],
-        allow_headers=["*"],
-    )
-
-    app.include_router(health.router, prefix="/api/v1")
-
-    install_error_handlers(app)
-
-    return app
+    logger.info("startup.begin", env=settings.app_env)
+    await init_db()
+    await init_cache()
+    logger.info("startup.complete")
+    yield
+    logger.info("shutdown.begin")
+    await close_db()
+    await close_cache()
+    logger.info("shutdown.complete")
 
 
-app = create_application()
+app = FastAPI(title="Resume Tailoring API", version="1.0.0", lifespan=lifespan)
+
+settings = get_settings()
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+metrics_app = make_asgi_app()
+app.mount("/metrics", metrics_app)
+
+app.include_router(ingestion.router, prefix="/api/v1/ingest", tags=["ingestion"])
+app.include_router(generation.router, prefix="/api/v1/generate", tags=["generation"])
+app.include_router(verification.router, prefix="/api/v1/verify", tags=["verification"])
 
 
-def cli() -> None:
-    import argparse
-
-    parser = argparse.ArgumentParser(description="Resume Assistant CLI")
-    parser.add_argument("--host", default="0.0.0.0", help="Host to bind to (default: 0.0.0.0)")
-    parser.add_argument("--port", type=int, default=8080, help="Port to bind to (default: 8080)")
-    parser.add_argument("--reload", action="store_true", help="Enable auto-reload for development")
-
-    args = parser.parse_args()
-
-    import uvicorn
-
-    uvicorn.run(
-        "app.main:app",
-        host=args.host,
-        port=args.port,
-        reload=args.reload,
-    )
-
-
-if __name__ == "__main__":
-    cli()
+@app.get("/health")
+async def health_check() -> dict[str, str]:
+    return {"status": "healthy"}

@@ -1,68 +1,59 @@
 [project]
-name = "resume-assistant-template"
-version = "0.1.0"
-description = "A minimal FastAPI + pydanticAI template for resume assistant"
+name = "resume-tailoring-api"
+version = "1.0.0"
+description = "AI-powered resume tailoring service"
 readme = "README.md"
-requires-python = ">=3.13"
+requires-python = ">=3.12"
 dependencies = [
-    "fastapi>=0.116.2",
-    "pydantic>=2.11.9",
-    "pydantic-ai>=1.0.8",
-    "pydantic-settings>=2.10.1",
-    "python-dotenv>=1.1.1",
-    "uvicorn[standard]>=0.35.0",
+    "fastapi==0.116.2",
+    "fastapi-cli==0.0.7",
+    "uvicorn[standard]==0.34.0",
+    "pydantic==2.10.3",
+    "pydantic-settings==2.7.0",
+    "openai==1.59.5",
+    "anthropic==0.42.0",
+    "langchain==0.3.14",
+    "langchain-openai==0.2.13",
+    "sentence-transformers==3.3.1",
+    "redis==5.2.1",
+    "sqlalchemy==2.0.36",
+    "alembic==1.14.0",
+    "pgvector==0.3.6",
+    "asyncpg==0.30.0",
+    "pypdf==5.1.0",
+    "python-docx==1.1.2",
+    "python-multipart==0.0.20",
+    "prometheus-client==0.21.1",
+    "structlog==24.4.0",
+    "greenlet==3.1.1",
+    "aiosqlite==0.20.0",
 ]
 
-[dependency-groups]
-dev = [
-    "anyio>=4.10.0",
-    "httpx>=0.28.1",
-    "pytest>=8.4.2",
-    "pytest-asyncio>=1.2.0",
-    "ruff>=0.13.0",
-    "typing-extensions>=4.15.0",
+[tool.uv]
+dev-dependencies = [
+    "pytest==8.3.5",
+    "pytest-asyncio==0.25.0",
+    "pytest-cov==6.0.0",
+    "httpx==0.28.1",
+    "ruff==0.8.6",
+    "mypy==1.14.0",
+    "pre-commit==4.0.1",
 ]
-
-[project.scripts]
-resume-assistant = "app.main:cli"
 
 [tool.ruff]
 line-length = 100
-target-version = "py313"
-exclude = [
-    ".git",
-    "__pycache__",
-    ".venv",
-    "venv",
-    "build",
-    "dist",
-]
+target-version = "py312"
 
 [tool.ruff.lint]
-select = [
-    "E",  # pycodestyle errors
-    "W",  # pycodestyle warnings
-    "F",  # pyflakes
-    "I",  # isort
-    "B",  # flake8-bugbear
-    "C4", # flake8-comprehensions
-    "UP", # pyupgrade
-]
-ignore = [
-    "E501",  # line too long (handled by formatter)
-    "B008",  # do not perform function calls in argument defaults
-]
+select = ["E", "F", "I", "N", "W", "B", "UP", "C90", "RUF"]
+ignore = ["E501"]
 
-[tool.ruff.lint.isort]
-known-first-party = ["resume_core", "app"]
-
-[tool.ruff.format]
-quote-style = "double"
-indent-style = "space"
-docstring-code-format = true
+[tool.mypy]
+python_version = "3.12"
+warn_return_any = true
+warn_unused_configs = true
+ignore_missing_imports = true
 
 [tool.pytest.ini_options]
-addopts = "-q"
 testpaths = ["tests"]
-pythonpath = [".", "src"]
 asyncio_mode = "auto"
