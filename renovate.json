@@ -3,7 +3,13 @@
   "extends": [
     "config:recommended"
   ],
-  "assignees": [
-    "yamshy"
+  "packageRules": [
+    {
+      "matchUpdateTypes": [
+        "minor",
+        "patch"
+      ],
+      "automerge": true
+    }
   ]
 }
