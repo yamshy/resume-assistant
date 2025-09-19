@@ -27,7 +27,7 @@ jobs:
       - name: Install dependencies
         run: uv sync --dev
       - name: Run Ruff
-        run: uv run ruff check
+        run: uv run --extra dev ruff check
 
   type-check:
     name: Mypy type check
@@ -42,7 +42,7 @@ jobs:
       - name: Install dependencies
         run: uv sync --dev
       - name: Run mypy
-        run: uv run mypy app
+        run: uv run --extra dev mypy app
 
   tests:
     name: Pytest

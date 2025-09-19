@@ -4,16 +4,21 @@ from __future__ import annotations
 
 import os
 import re
+from types import ModuleType
 from typing import Any, Dict
 
 from fastapi import BackgroundTasks, FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
 
+redis_async: ModuleType | None
+
 try:  # pragma: no cover - optional for tests
-    import redis.asyncio as redis_async
+    import redis.asyncio as redis_async_module
 except Exception:  # pragma: no cover
     redis_async = None
+else:
+    redis_async = redis_async_module
 
 from .cache import SemanticCache
 from .embeddings import SemanticEmbedder

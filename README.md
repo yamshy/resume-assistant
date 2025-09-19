@@ -51,11 +51,11 @@ The tests focus on schema validation, routing logic, semantic caching, generator
 The CI pipeline enforces static analysis before merges. Run them locally with:
 
 ```bash
-uv run ruff check
-uv run mypy app
+uv run --extra dev ruff check
+uv run --extra dev mypy app
 ```
 
-These checks catch import errors, ensure typed interfaces stay consistent, and keep the codebase ready for production deployments.
+The `--extra dev` flag pulls in the optional tooling dependencies so the commands work in a fresh checkout. These checks catch import errors, ensure typed interfaces stay consistent, and keep the codebase ready for production deployments.
 
 ## Extensibility
 - Swap `TemplateResumeLLM` in `app/llm.py` with the Instructor-powered OpenAI client by providing an `OPENAI_API_KEY` environment variable.
