@@ -1,0 +1,20 @@
+version: "1.0"
+last_updated: "2024-01-15"
+
+experiences:
+  - id: exp_001
+    company: "Tech Corp"
+    role: "Senior Python Developer"
+    start_date: "2020-01"
+    end_date: "2024-01"
+    description: "Built microservices for internal platforms"
+    skills_used: ["Python", "FastAPI", "Docker"]
+    source: "original"
+    confidence: 1.0
+
+skills:
+  technical:
+    - name: "Python"
+      years: 6
+      level: "expert"
+      source: "original"
