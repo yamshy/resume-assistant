@@ -100,8 +100,12 @@ async def download_resume(session_id: str) -> FileResponse:
         # Get job info for filename
         pipeline_results = session_data.get("pipeline_results", {})
         job_analysis = pipeline_results.get("job_analysis", {})
-        job_title = job_analysis.get("job_title", "Resume")
-        company_name = job_analysis.get("company_name", "Unknown")
+        if hasattr(job_analysis, "job_title"):
+            job_title = getattr(job_analysis, "job_title", "Resume")
+            company_name = getattr(job_analysis, "company_name", "Unknown")
+        else:
+            job_title = job_analysis.get("job_title", "Resume")
+            company_name = job_analysis.get("company_name", "Unknown")
 
         # Generate download filename
         download_filename = f"{sanitize_filename(company_name)}_{sanitize_filename(job_title)}_Resume.md"
@@ -154,16 +158,34 @@ async def get_download_metadata(session_id: str) -> dict[str, Any]:
         file_path = Path(export_path)
         file_size = file_path.stat().st_size if file_path.exists() else 0
 
+        # Handle models vs dicts
+        if hasattr(job_analysis, "job_title"):
+            job_title = getattr(job_analysis, "job_title", None)
+            company_name = getattr(job_analysis, "company_name", None)
+        else:
+            job_title = job_analysis.get("job_title")
+            company_name = job_analysis.get("company_name")
+
+        if hasattr(tailored_resume, "optimizations"):
+            optimizations_count = len(getattr(tailored_resume, "optimizations", []))
+            estimated_match_score = getattr(tailored_resume, "estimated_match_score", None)
+        else:
+            # Fallback for dict-shaped data
+            optimizations_count = len(
+                tailored_resume.get("optimizations", tailored_resume.get("content_optimizations", []))
+            )
+            estimated_match_score = tailored_resume.get("estimated_match_score")
+
         return {
             "session_id": session_id,
-            "job_title": job_analysis.get("job_title"),
-            "company_name": job_analysis.get("company_name"),
+            "job_title": job_title,
+            "company_name": company_name,
             "export_path": export_path,
             "file_size": file_size,
             "file_exists": file_path.exists(),
             "exported_at": approval_decision.get("decided_at"),
-            "optimizations_count": len(tailored_resume.get("content_optimizations", [])),
-            "estimated_match_score": tailored_resume.get("estimated_match_score"),
+            "optimizations_count": optimizations_count,
+            "estimated_match_score": estimated_match_score,
         }
 
     except HTTPException:

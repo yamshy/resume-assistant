@@ -119,7 +119,9 @@ async def approve_resume(session_id: str, request: ApprovalRequest) -> ApprovalR
             "decision": request.decision.value,
             "comments": request.comments,
             "requested_changes": request.requested_changes,
-            "decided_at": pipeline_results.get("timestamps", {}).get("completed_at"),
+            "decided_at": session_data.get("timestamps", {}).get("completed_at")
+            if isinstance(session_data, dict)
+            else None,
             "export_path": export_path,
         }
 

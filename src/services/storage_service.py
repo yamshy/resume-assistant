@@ -163,7 +163,7 @@ class StorageService:
                 "company_name": company_name,
                 "session_id": session_id,
                 "resume_file": filename,
-                "optimizations_count": len(tailored_resume.content_optimizations),
+                "optimizations_count": len(getattr(tailored_resume, "optimizations", [])),
             }
 
             metadata_file = export_file.with_suffix(".meta.json")
@@ -243,20 +243,22 @@ class StorageService:
 
 """
 
-        # Main resume content
-        content = tailored_resume.resume_content
+        # Main resume content (use the correct field from our model)
+        content = getattr(tailored_resume, "full_resume_markdown", "")
 
         # Optimization notes section
-        optimizations = "\n---\n\n## Optimization Notes\n\n"
-        for opt in tailored_resume.content_optimizations:
-            optimizations += f"**{opt.section}**: {opt.rationale}\n\n"
+        optimizations_section = "\n---\n\n## Optimization Notes\n\n"
+        for opt in getattr(tailored_resume, "optimizations", []):
+            section_name = getattr(opt.section, "value", str(opt.section))
+            reason = getattr(opt, "optimization_reason", "")
+            optimizations_section += f"**{section_name}**: {reason}\n\n"
 
         # Estimated match score
         footer = (
             f"\n---\n\n*Estimated Job Match Score: {tailored_resume.estimated_match_score:.1%}*\n"
         )
 
-        return header + content + optimizations + footer
+        return header + content + optimizations_section + footer
 
 
 # Factory function for service creation

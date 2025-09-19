@@ -126,26 +126,28 @@ class ResumeGenerationService:
         validation_result = {"is_valid": True, "issues": [], "warnings": [], "content_stats": {}}
 
         # Basic content validation
-        if not tailored_resume.resume_content.strip():
+        content_text = getattr(tailored_resume, "full_resume_markdown", "")
+        if not content_text.strip():
             validation_result["is_valid"] = False
             validation_result["issues"].append("Resume content is empty")
 
         # Check for minimum content length
-        content_length = len(tailored_resume.resume_content)
+        content_length = len(content_text)
         if content_length < 100:
             validation_result["warnings"].append(
                 f"Resume content is very short ({content_length} characters)"
             )
 
         # Validate optimizations exist
-        if not tailored_resume.content_optimizations:
+        optimizations = getattr(tailored_resume, "optimizations", [])
+        if not optimizations:
             validation_result["warnings"].append("No content optimizations provided")
 
         # Content statistics
         validation_result["content_stats"] = {
             "character_count": content_length,
-            "word_count": len(tailored_resume.resume_content.split()),
-            "optimization_count": len(tailored_resume.content_optimizations),
+            "word_count": len(content_text.split()),
+            "optimization_count": len(optimizations),
             "estimated_match_score": tailored_resume.estimated_match_score,
         }
 
