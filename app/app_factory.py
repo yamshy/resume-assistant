@@ -5,7 +5,7 @@ from __future__ import annotations
 import os
 import re
 from types import ModuleType
-from typing import Any, Dict
+from typing import Any, Dict, Literal
 
 from fastapi import BackgroundTasks, FastAPI
 from fastapi.middleware.cors import CORSMiddleware
@@ -39,6 +39,22 @@ class GenerateRequest(BaseModel):
 
 class ValidateRequest(BaseModel):
     resume_text: str = Field(..., min_length=50)
+
+
+class ChatMessage(BaseModel):
+    role: Literal["system", "user", "assistant"]
+    content: str = Field(..., min_length=1)
+    metadata: Dict[str, Any] | None = None
+
+
+class ChatRequest(BaseModel):
+    messages: list[ChatMessage] = Field(..., min_length=1)
+    session: Dict[str, Any] | None = None
+
+
+class ChatResponse(BaseModel):
+    reply: ChatMessage
+    session: Dict[str, Any]
 
 
 def create_app() -> FastAPI:
@@ -112,6 +128,15 @@ def create_app() -> FastAPI:
             "keyword_density": calculate_keyword_density(text),
             "readability": calculate_readability_score(text),
         }
+
+    @app.post("/chat", response_model=ChatResponse)
+    async def chat_turn(request: ChatRequest) -> ChatResponse:
+        reply_payload, session_state = await generator.chat(
+            [message.model_dump() for message in request.messages],
+            request.session,
+        )
+        reply = ChatMessage(**reply_payload)
+        return ChatResponse(reply=reply, session=session_state)
 
     @app.get("/health")
     async def healthcheck() -> Dict[str, str]:
