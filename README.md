@@ -57,6 +57,11 @@ uv run --extra dev mypy app
 
 The `--extra dev` flag pulls in the optional tooling dependencies so the commands work in a fresh checkout. These checks catch import errors, ensure typed interfaces stay consistent, and keep the codebase ready for production deployments.
 
+## Contributing
+- Use [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/) for all commit messages so automated release tooling can infer semantic meaning. Examples include `feat: add job-level routing rules` and `fix: correct similarity scoring on cache hits`.
+- Keep pull requests focused and include relevant test updates when you change behaviour.
+- Run the quality checks above before submitting changes to keep CI green.
+
 ## Extensibility
 - Swap `TemplateResumeLLM` in `app/llm.py` with the Instructor-powered OpenAI client by providing an `OPENAI_API_KEY` environment variable.
 - Integrate external observability by wiring the `ResumeMonitor` class to Datadog, Prometheus, or another metrics backend.

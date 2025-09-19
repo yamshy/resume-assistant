@@ -62,6 +62,13 @@ def create_app() -> FastAPI:
                 content="Tailor the professional summary to the job posting while staying truthful to the profile.",
                 metadata={"source": "guidelines"},
             ),
+            VectorDocument(
+                content=(
+                    "Reference process improvements such as adopting Conventional Commits and automated releases "
+                    "when they demonstrate engineering rigor."
+                ),
+                metadata={"source": "workflow"},
+            ),
         ]
     )
 
