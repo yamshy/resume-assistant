@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import logging
-from typing import Optional
+from typing import Protocol, cast
 
 from langsmith import traceable
 
@@ -12,28 +12,38 @@ from .router import ModelRouter
 logger = logging.getLogger(__name__)
 
 
+class StatsClient(Protocol):
+    def gauge(self, metric: str, value: float, *args, **kwargs) -> None: ...
+
+    def histogram(self, metric: str, value: float, *args, **kwargs) -> None: ...
+
+    def increment(self, metric: str, *args, **kwargs) -> None: ...
+
+
 class _NullStatsD:
-    def gauge(self, *_, **__):
+    def gauge(self, metric: str, value: float, *args, **kwargs) -> None:  # pragma: no cover - trivial stub
         pass
 
-    def histogram(self, *_, **__):
+    def histogram(self, metric: str, value: float, *args, **kwargs) -> None:  # pragma: no cover - trivial stub
         pass
 
-    def increment(self, *_, **__):
+    def increment(self, metric: str, *args, **kwargs) -> None:  # pragma: no cover - trivial stub
         pass
 
 
 try:  # pragma: no cover - optional dependency
-    from datadog import statsd as datadog_statsd
+    from datadog import statsd as datadog_statsd  # type: ignore[import-untyped]
 except Exception:  # pragma: no cover - fallback for local runs
     datadog_statsd = _NullStatsD()
+
+datadog_statsd = cast(StatsClient, datadog_statsd)
 
 
 class ResumeMonitor:
     """Track generation cost and quality metrics."""
 
-    def __init__(self, stats_client: Optional[object] = None) -> None:
-        self.stats = stats_client or datadog_statsd
+    def __init__(self, stats_client: StatsClient | None = None) -> None:
+        self.stats: StatsClient = stats_client or datadog_statsd
 
     @traceable(name="resume.generation")
     async def track_generation(

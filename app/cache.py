@@ -2,10 +2,10 @@
 
 from __future__ import annotations
 
+import hashlib
 import json
 from datetime import datetime, timedelta
 from typing import Optional
-import hashlib
 
 from .embeddings import SemanticEmbedder
 from .models import Resume

@@ -52,15 +52,9 @@ class ClaimValidator:
         if isinstance(value, str):
             return [value]
         if isinstance(value, dict):
-            results: List[str] = []
-            for nested in value.values():
-                results.extend(self._stringify(nested))
-            return results
+            return [snippet for nested in value.values() for snippet in self._stringify(nested)]
         if isinstance(value, list):
-            results: List[str] = []
-            for item in value:
-                results.extend(self._stringify(item))
-            return results
+            return [snippet for item in value for snippet in self._stringify(item)]
         return [str(value)]
 
     @staticmethod

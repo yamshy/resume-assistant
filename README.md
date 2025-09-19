@@ -47,6 +47,16 @@ uv run pytest
 
 The tests focus on schema validation, routing logic, semantic caching, generator orchestration, and API contract verification.
 
+## Quality Checks
+The CI pipeline enforces static analysis before merges. Run them locally with:
+
+```bash
+uv run ruff check
+uv run mypy app
+```
+
+These checks catch import errors, ensure typed interfaces stay consistent, and keep the codebase ready for production deployments.
+
 ## Extensibility
 - Swap `TemplateResumeLLM` in `app/llm.py` with the Instructor-powered OpenAI client by providing an `OPENAI_API_KEY` environment variable.
 - Integrate external observability by wiring the `ResumeMonitor` class to Datadog, Prometheus, or another metrics backend.
