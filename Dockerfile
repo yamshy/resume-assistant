@@ -1,22 +1,14 @@
 FROM python:3.13-slim
-
 WORKDIR /app
 
-# Install uv
-RUN pip install --no-cache-dir uv
+RUN pip install uv
 
-# Copy project files
-COPY pyproject.toml uv.lock .
-COPY src/ ./src/
-COPY app/ ./app/
-COPY tests/ ./tests/
-COPY pytest.ini .
+COPY pyproject.toml uv.lock ./
+RUN uv sync --frozen
 
-# Install dependencies
-RUN uv sync --dev --system
+COPY app ./app
 
-# Expose port
-EXPOSE 8080
+RUN useradd -m appuser && chown -R appuser /app
+USER appuser
 
-# Run the application
-CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8080"]
+CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0"]
