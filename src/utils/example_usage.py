@@ -43,7 +43,7 @@ async def run_example_agent(input_data: str) -> ExampleOutput:
     - Retry attempt limits
     """
     result = await example_agent.run(input_data)
-    return result.data
+    return result.output
 
 
 # Usage in agent chain

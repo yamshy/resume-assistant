@@ -45,6 +45,32 @@ class StorageService:
         self.sessions_dir.mkdir(parents=True, exist_ok=True)
         self.exports_dir.mkdir(parents=True, exist_ok=True)
 
+    def _to_jsonable(self, obj: Any) -> Any:
+        """Recursively convert pydantic models and other objects to JSON-serializable structures."""
+        # pydantic BaseModel (v2)
+        if hasattr(obj, "model_dump"):
+            try:
+                return obj.model_dump(mode="json")
+            except Exception:
+                # Fallback to plain dict
+                return obj.model_dump()
+        # Mapping
+        if isinstance(obj, dict):
+            return {k: self._to_jsonable(v) for k, v in obj.items()}
+        # Iterable collections
+        if isinstance(obj, (list, tuple, set)):
+            return [self._to_jsonable(v) for v in obj]
+        # Enum
+        try:
+            import enum
+
+            if isinstance(obj, enum.Enum):
+                return obj.value
+        except Exception:
+            pass
+        # Default - assume already serializable
+        return obj
+
     async def save_session_data(self, session_id: str, pipeline_data: dict[str, Any]) -> str:
         """
         Save complete pipeline data for a session.
@@ -62,18 +88,21 @@ class StorageService:
         try:
             session_file = self.sessions_dir / f"{session_id}.json"
 
+            # Convert pipeline_data to JSON-serializable form
+            serializable_pipeline = self._to_jsonable(pipeline_data)
+
             # Add metadata
             session_data = {
                 "session_id": session_id,
                 "saved_at": datetime.now().isoformat(),
-                "pipeline_data": pipeline_data,
+                "pipeline_data": serializable_pipeline,
             }
 
             # Write atomically using temp file
             temp_file = session_file.with_suffix(".tmp")
 
             with open(temp_file, "w", encoding="utf-8") as f:
-                json.dump(session_data, f, indent=2, ensure_ascii=False, default=str)
+                json.dump(session_data, f, indent=2, ensure_ascii=False)
 
             # Atomic move to final location
             temp_file.replace(session_file)

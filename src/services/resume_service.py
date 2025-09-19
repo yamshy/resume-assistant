@@ -75,8 +75,7 @@ class ResumeGenerationService:
 
             # Generate tailored resume using the agent
             resume_agent = self._get_resume_agent()
-            result = await resume_agent.run(context_data)
-            tailored_resume = result.output
+            tailored_resume = await resume_agent.run(context_data)
 
             # Calculate generation time
             end_time = datetime.now()
