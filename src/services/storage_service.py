@@ -17,6 +17,7 @@ from pathlib import Path
 from typing import Any
 
 from models.resume_optimization import TailoredResume
+from utils.validation import sanitize_filename
 
 
 class StorageService:
@@ -140,10 +141,8 @@ class StorageService:
         try:
             # Generate safe filename
             timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-            safe_job = "".join(c for c in job_title if c.isalnum() or c in (" ", "-", "_")).strip()
-            safe_company = "".join(
-                c for c in company_name if c.isalnum() or c in (" ", "-", "_")
-            ).strip()
+            safe_job = sanitize_filename(job_title)
+            safe_company = sanitize_filename(company_name)
 
             filename = f"{timestamp}_{safe_company}_{safe_job}.md"
             export_file = self.exports_dir / filename

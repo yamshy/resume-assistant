@@ -19,6 +19,7 @@ from fastapi.responses import FileResponse
 from pydantic import BaseModel
 
 from services.storage_service import create_storage_service
+from utils.validation import sanitize_filename
 
 
 class DownloadMetadata(BaseModel):
@@ -103,11 +104,7 @@ async def download_resume(session_id: str) -> FileResponse:
         company_name = job_analysis.get("company_name", "Unknown")
 
         # Generate download filename
-        safe_job = "".join(c for c in job_title if c.isalnum() or c in (" ", "-", "_")).strip()
-        safe_company = "".join(
-            c for c in company_name if c.isalnum() or c in (" ", "-", "_")
-        ).strip()
-        download_filename = f"{safe_company}_{safe_job}_Resume.md"
+        download_filename = f"{sanitize_filename(company_name)}_{sanitize_filename(job_title)}_Resume.md"
 
         return FileResponse(path=file_path, filename=download_filename, media_type="text/markdown")
 
