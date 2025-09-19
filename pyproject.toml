@@ -1,7 +1,31 @@
 [project]
 name = "resume-assistant"
 version = "0.1.0"
-description = "Add your description here"
+description = "Production-ready AI resume tailoring service"
 readme = "README.md"
-requires-python = ">=3.13"
-dependencies = []
+requires-python = ">=3.12"
+dependencies = [
+    "fastapi[standard]==0.116.2",
+    "instructor==1.7.0",
+    "openai==1.59.4",
+    "anthropic==0.42.0",
+    "pydantic==2.10.0",
+    "redis==5.2.1",
+    "python-multipart==0.0.20",
+    "langsmith==0.2.7",
+    "tiktoken==0.8.0",
+    "pyyaml==6.0.2",
+    "pytest==8.4.1",
+    "pytest-asyncio==0.24.0"
+]
+
+[project.optional-dependencies]
+dev = [
+    "fakeredis==2.23.2"
+]
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+filterwarnings = [
+    "ignore::DeprecationWarning"
+]
