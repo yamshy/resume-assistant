@@ -1,7 +1,0 @@
-corrections:
-  - original: "worked on"
-    corrected_to: "architected and implemented"
-    context: "When describing system design"
-  - original: "team of developers"
-    corrected_to: "cross-functional team of 8"
-    context: "Be specific about team size"
