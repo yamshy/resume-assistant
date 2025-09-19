@@ -57,3 +57,29 @@ def test_validate_endpoint_scores_resume():
     data = response.json()
     assert 0 <= data["ats_compatibility"] <= 1
     assert 0 <= data["keyword_density"] <= 1
+
+
+def test_chat_endpoint_returns_grounded_response():
+    client = build_client()
+    payload = {
+        "messages": [
+            {"role": "user", "content": "How can I talk about achievements?"},
+        ]
+    }
+
+    response = client.post("/chat", json=payload)
+
+    assert response.status_code == 200
+    data = response.json()
+    assert data["reply"]["role"] == "assistant"
+    assert "resume playbook" in data["reply"]["content"].lower()
+    assert data["reply"].get("metadata", {}).get("grounding")
+    assert data["session"]["turns"] == 1
+
+
+def test_chat_endpoint_requires_messages():
+    client = build_client()
+
+    response = client.post("/chat", json={"messages": []})
+
+    assert response.status_code == 422
