@@ -2,11 +2,11 @@
 
 from __future__ import annotations
 
+import re
 from datetime import date
 from typing import Any, Dict, List, Optional
-import re
 
-from pydantic import BaseModel, Field, EmailStr, field_validator, model_validator
+from pydantic import BaseModel, EmailStr, Field, field_validator, model_validator
 
 
 def _ensure_metric(text: str) -> bool:

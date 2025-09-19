@@ -64,7 +64,7 @@ class ModelRouter:
             return int(years)
 
         experiences = profile.get("experience") or profile.get("experiences")
-        total = 0
+        total = 0.0
         if isinstance(experiences, list):
             for entry in experiences:
                 if not isinstance(entry, dict):

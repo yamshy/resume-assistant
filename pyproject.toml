@@ -21,7 +21,9 @@ dependencies = [
 
 [project.optional-dependencies]
 dev = [
-    "fakeredis==2.23.2"
+    "fakeredis==2.23.2",
+    "ruff==0.6.9",
+    "mypy==1.13.0"
 ]
 
 [tool.pytest.ini_options]
@@ -29,3 +31,19 @@ asyncio_mode = "auto"
 filterwarnings = [
     "ignore::DeprecationWarning"
 ]
+pythonpath = ["."]
+
+[tool.ruff]
+target-version = "py312"
+
+[tool.ruff.lint]
+select = ["F", "I"]
+
+[tool.ruff.format]
+preview = true
+
+[tool.mypy]
+python_version = "3.12"
+strict = false
+warn_unused_configs = true
+ignore_missing_imports = true
