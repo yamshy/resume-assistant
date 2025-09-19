@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Resume Assistant Chat</title>
+    <link rel="stylesheet" href="/static/styles.css" />
+  </head>
+  <body>
+    <div class="chat-container">
+      <header class="chat-header">
+        <h1>Resume Assistant</h1>
+        <p class="chat-subtitle">
+          Chat with the AI assistant about tailoring your resume.
+        </p>
+      </header>
+      <main id="chat-log" class="chat-log" aria-live="polite"></main>
+      <form id="chat-form" class="chat-form" autocomplete="off">
+        <label class="sr-only" for="message-input">Type your message</label>
+        <input
+          id="message-input"
+          name="message"
+          class="chat-input"
+          placeholder="Ask for resume tips or paste a job description..."
+          required
+        />
+        <button type="submit" class="chat-submit">Send</button>
+      </form>
+    </div>
+    <script src="/static/chat.js" type="module"></script>
+  </body>
+</html>

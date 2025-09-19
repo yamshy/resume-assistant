@@ -25,12 +25,19 @@ uv sync
 uv run uvicorn main:app --reload
 ```
 
-The service exposes two endpoints:
+The service exposes three primary endpoints:
 
 - `POST /generate` – Accepts a job posting and user profile, returning a structured resume with metadata, citations, and confidence scores.
 - `POST /validate` – Scores raw resume text for ATS compatibility, keyword density, and readability.
+- `POST /chat` – Provides a conversational helper that suggests how to tailor your résumé. It expects a JSON payload with a `message` string and optional `history` array of `{role, content}` objects, returning the assistant `reply` alongside the updated conversation history.
 
 A helper `GET /health` endpoint returns a simple status payload.
+
+### Using the Chat UI
+
+The FastAPI app also serves a lightweight web chat interface that talks to the `/chat` endpoint. Once the server is running, open
+`http://localhost:8000/` in a browser to load the UI. Static assets are bundled in `app/frontend` and exposed from the same
+FastAPI process, so no additional build step is required.
 
 ### Docker Compose
 A production-friendly stack is available via Docker Compose:
