@@ -1,16 +1,15 @@
 [project]
-name = "resume-assistant-template"
+name = "resume-assistant"
 version = "0.1.0"
-description = "A minimal FastAPI + pydanticAI template for resume assistant"
+description = "Personal resume service with growing memory"
 readme = "README.md"
-requires-python = ">=3.13"
+requires-python = ">=3.12"
 dependencies = [
-    "fastapi>=0.116.2",
-    "pydantic>=2.11.9",
-    "pydantic-ai>=1.0.8",
-    "pydantic-settings>=2.10.1",
-    "python-dotenv>=1.1.1",
-    "uvicorn[standard]>=0.35.0",
+    "fastapi[standard]==0.116.2",
+    "openai==1.59.9",
+    "anthropic==0.42.0",
+    "pyyaml==6.0.2",
+    "pydantic==2.10.0",
 ]
 
 [dependency-groups]
@@ -23,12 +22,9 @@ dev = [
     "typing-extensions>=4.15.0",
 ]
 
-[project.scripts]
-resume-assistant = "app.main:cli"
-
 [tool.ruff]
 line-length = 100
-target-version = "py313"
+target-version = "py312"
 exclude = [
     ".git",
     "__pycache__",
@@ -54,7 +50,7 @@ ignore = [
 ]
 
 [tool.ruff.lint.isort]
-known-first-party = ["resume_core", "app"]
+known-first-party = ["app"]
 
 [tool.ruff.format]
 quote-style = "double"
@@ -64,5 +60,5 @@ docstring-code-format = true
 [tool.pytest.ini_options]
 addopts = "-q"
 testpaths = ["tests"]
-pythonpath = [".", "src"]
+pythonpath = ["."]
 asyncio_mode = "auto"
