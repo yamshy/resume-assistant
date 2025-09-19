@@ -21,7 +21,7 @@ dependencies = [
 
 [project.optional-dependencies]
 dev = [
-    "fakeredis==2.23.2",
+    "fakeredis==2.31.1",
     "ruff==0.6.9",
     "mypy==1.13.0"
 ]

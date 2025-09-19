@@ -1,5 +1,5 @@
 version = 1
-revision = 2
+revision = 3
 requires-python = ">=3.12"
 resolution-markers = [
     "python_full_version >= '3.13'",
@@ -244,15 +244,15 @@ wheels = [
 
 [[package]]
 name = "fakeredis"
-version = "2.23.2"
+version = "2.31.1"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "redis" },
     { name = "sortedcontainers" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/8f/d2/e094974d8822e5434a504447e92a719d439b9aff57497891ce2e0ba788bd/fakeredis-2.23.2.tar.gz", hash = "sha256:d649c409abe46c63690b6c35d3c460e4ce64c69a52cea3f02daff2649378f878", size = 132956, upload-time = "2024-05-18T16:56:30.846Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/54/65/433bf2dfa3d5c72d7339bffcd3a48d3d5ce4449af51804f55aa78e17149e/fakeredis-2.31.1.tar.gz", hash = "sha256:bba58475d6ba3846752d242921c5d3f6dc948066e0ddd054f3a448cd9a1aacad", size = 170681, upload-time = "2025-08-31T18:49:09.163Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/c8/41/a381828c92a09bf10a54a35555232e692978897bae400e87292ad369c047/fakeredis-2.23.2-py3-none-any.whl", hash = "sha256:3721946b955930c065231befd24a9cdc68b339746e93848ef01a010d98e4eb4f", size = 87923, upload-time = "2024-05-18T16:56:28.534Z" },
+    { url = "https://files.pythonhosted.org/packages/b4/98/1637792209ec01bb115b4d9c58bcf9e6bc536f6d724fdc9c541f5b12cea7/fakeredis-2.31.1-py3-none-any.whl", hash = "sha256:1c0403dedc42bb0038649f016e1a8b56b4b1c69dfb13cf11f870dc51e5c5b4df", size = 118329, upload-time = "2025-08-31T18:49:07.829Z" },
 ]
 
 [[package]]
@@ -1115,7 +1115,7 @@ dev = [
 [package.metadata]
 requires-dist = [
     { name = "anthropic", specifier = "==0.42.0" },
-    { name = "fakeredis", marker = "extra == 'dev'", specifier = "==2.23.2" },
+    { name = "fakeredis", marker = "extra == 'dev'", specifier = "==2.31.1" },
     { name = "fastapi", extras = ["standard"], specifier = "==0.116.2" },
     { name = "instructor", specifier = "==1.7.0" },
     { name = "langsmith", specifier = "==0.2.7" },
