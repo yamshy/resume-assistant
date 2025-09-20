@@ -7,7 +7,7 @@ requires-python = ">=3.12"
 dependencies = [
     "fastapi[standard]==0.116.2",
     "instructor==1.7.0",
-    "openai==1.59.4",
+    "openai==1.108.1",
     "anthropic==0.42.0",
     "pydantic==2.10.0",
     "redis==5.2.1",
