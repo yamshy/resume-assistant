@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Resume Assistant Chat</title>
+    <title>Resume Assistant Control Center</title>
     <link rel="stylesheet" href="/static/styles.css" />
   </head>
   <body>
@@ -12,7 +12,7 @@
         <header class="chat-header">
           <h1>Resume Assistant</h1>
           <p class="chat-subtitle">
-            Chat with the AI assistant about tailoring your resume.
+            Upload your history and iterate on tailored resumes without leaving the conversation.
           </p>
         </header>
         <main id="chat-log" class="chat-log" aria-live="polite"></main>
@@ -22,68 +22,106 @@
             id="message-input"
             name="message"
             class="chat-input"
-            placeholder="Ask for resume tips or paste a job description..."
+            placeholder="Ask for guidance or respond during validation..."
             required
           />
           <button type="submit" class="chat-submit">Send</button>
         </form>
       </div>
       <aside class="workflow-panel" aria-label="Resume workflow actions">
-        <section class="panel-section" aria-labelledby="knowledge-title">
-          <h2 id="knowledge-title" class="panel-title">Knowledge Base</h2>
+        <header class="panel-header">
+          <h2 class="panel-title">Workflow</h2>
           <p class="panel-subtitle">
-            Ingest achievements or project summaries so they are considered during generation.
+            Toggle between building your knowledge base and generating a targeted resume.
           </p>
-          <form id="knowledge-form" class="panel-form" autocomplete="off">
-            <label for="knowledge-content" class="panel-label">Document content</label>
+        </header>
+        <div class="panel-toggle" role="tablist" aria-label="Workflow toggle">
+          <button
+            id="ingest-tab"
+            type="button"
+            class="panel-toggle-button is-active"
+            data-mode="ingest"
+            role="tab"
+            aria-selected="true"
+            aria-controls="ingest-panel"
+          >
+            Build Knowledge Base
+          </button>
+          <button
+            id="generate-tab"
+            type="button"
+            class="panel-toggle-button"
+            data-mode="generate"
+            role="tab"
+            aria-selected="false"
+            aria-controls="generate-panel"
+          >
+            Generate Resume
+          </button>
+        </div>
+        <form id="workflow-form" class="panel-form" autocomplete="off">
+          <section
+            id="ingest-panel"
+            class="panel-section is-active"
+            data-mode="ingest"
+            role="tabpanel"
+            aria-labelledby="ingest-tab"
+          >
+            <label for="resume-files" class="panel-label">Upload resumes</label>
+            <input
+              id="resume-files"
+              name="resume-files"
+              class="panel-input"
+              type="file"
+              accept=".txt,.md,.pdf,.doc,.docx,.rtf"
+              multiple
+              required
+            />
+            <p class="input-help">
+              Attach exported resumes, cover letters, or portfolio write-ups. They will be parsed into structured skills
+              and achievements.
+            </p>
+            <label for="ingest-notes" class="panel-label optional">Reviewer notes (optional)</label>
             <textarea
-              id="knowledge-content"
-              name="knowledge-content"
+              id="ingest-notes"
+              name="ingest-notes"
               class="panel-textarea"
-              rows="6"
-              placeholder="Scaled Kubernetes infrastructure to 500+ nodes while reducing incidents by 30%."
+              rows="4"
+              placeholder="Mention promotions, metrics, or context you want preserved during validation."
+            ></textarea>
+            <button type="submit" class="panel-submit">Process resumes</button>
+          </section>
+          <section
+            id="generate-panel"
+            class="panel-section"
+            data-mode="generate"
+            role="tabpanel"
+            aria-labelledby="generate-tab"
+            hidden
+          >
+            <label for="job-description" class="panel-label">Job description</label>
+            <textarea
+              id="job-description"
+              name="job-description"
+              class="panel-textarea"
+              rows="10"
+              placeholder="Paste the role description to generate a tailored resume."
               required
             ></textarea>
-            <label for="knowledge-metadata" class="panel-label optional">Metadata (JSON, optional)</label>
-            <textarea
-              id="knowledge-metadata"
-              name="knowledge-metadata"
-              class="panel-textarea"
-              rows="3"
-              placeholder='{"source": "portfolio", "tags": ["sre", "kubernetes"]}'
-            ></textarea>
-            <button type="submit" class="panel-submit">Ingest document</button>
-          </form>
-          <p id="knowledge-status" class="status-message" role="status" aria-live="polite"></p>
-        </section>
-        <section class="panel-section" aria-labelledby="generate-title">
-          <h2 id="generate-title" class="panel-title">Generate Resume</h2>
-          <p class="panel-subtitle">
-            Provide the job posting and a structured profile to produce a tailored resume instantly.
-          </p>
-          <form id="generate-form" class="panel-form" autocomplete="off">
-            <label for="job-posting" class="panel-label">Job posting</label>
-            <textarea
-              id="job-posting"
-              name="job-posting"
-              class="panel-textarea"
-              rows="6"
-              placeholder="Site Reliability Engineer responsible for scaling observability across multi-region Kubernetes."
-              required
-            ></textarea>
-            <label for="profile-json" class="panel-label">Profile (JSON)</label>
-            <textarea
-              id="profile-json"
-              name="profile-json"
-              class="panel-textarea"
-              rows="8"
-              placeholder='{"full_name": "Alex Candidate", "email": "alex@example.com", "skills": ["Kubernetes", "Terraform"], "experience": [{"company": "ScaleOps", "role": "Senior SRE", "achievements": ["Improved deployment reliability to 99.95% uptime"]}]}'
-              required
-            ></textarea>
-            <button type="submit" class="panel-submit">Generate resume</button>
-          </form>
-          <p id="generate-status" class="status-message" role="status" aria-live="polite"></p>
-          <pre id="generate-result" class="panel-result" tabindex="0" aria-live="polite"></pre>
+            <label class="panel-checkbox" for="validation-follow-up">
+              <input type="checkbox" id="validation-follow-up" name="validation-follow-up" checked />
+              Ask the assistant for a validation checklist after generation
+            </label>
+            <button type="submit" class="panel-submit">Generate tailored resume</button>
+          </section>
+        </form>
+        <p id="workflow-status" class="status-message" role="status" aria-live="polite"></p>
+        <section id="preview-section" class="preview-section" aria-live="polite" hidden>
+          <header class="preview-header">
+            <h3 id="preview-title">Structured output</h3>
+            <button type="button" id="clear-preview" class="link-button">Clear</button>
+          </header>
+          <pre id="workflow-result" class="panel-result" tabindex="0"></pre>
         </section>
       </aside>
     </div>

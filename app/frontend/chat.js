@@ -6,18 +6,23 @@ const chatLog = document.getElementById("chat-log");
 const chatForm = document.getElementById("chat-form");
 const messageInput = document.getElementById("message-input");
 
-const knowledgeForm = document.getElementById("knowledge-form");
-const knowledgeContentInput = document.getElementById("knowledge-content");
-const knowledgeMetadataInput = document.getElementById("knowledge-metadata");
-const knowledgeStatus = document.getElementById("knowledge-status");
+const workflowForm = document.getElementById("workflow-form");
+const workflowStatus = document.getElementById("workflow-status");
+const workflowResult = document.getElementById("workflow-result");
+const previewSection = document.getElementById("preview-section");
+const clearPreviewButton = document.getElementById("clear-preview");
 
-const generateForm = document.getElementById("generate-form");
-const jobPostingInput = document.getElementById("job-posting");
-const profileJsonInput = document.getElementById("profile-json");
-const generateStatus = document.getElementById("generate-status");
-const generateResult = document.getElementById("generate-result");
+const toggleButtons = document.querySelectorAll(".panel-toggle-button");
+const ingestPanel = document.getElementById("ingest-panel");
+const generatePanel = document.getElementById("generate-panel");
+
+const resumeFilesInput = document.getElementById("resume-files");
+const ingestNotesInput = document.getElementById("ingest-notes");
+const jobDescriptionInput = document.getElementById("job-description");
+const validationFollowUp = document.getElementById("validation-follow-up");
 
 let conversationHistory = [];
+let workflowMode = "ingest";
 
 function setStatus(element, message, variant = "info") {
   if (!element) {
@@ -54,16 +59,63 @@ function appendMessage(role, content) {
   chatLog.scrollTo({ top: chatLog.scrollHeight, behavior: "smooth" });
 }
 
-async function sendMessage(event) {
-  event.preventDefault();
-  const message = messageInput.value.trim();
-  if (!message) {
+function clearPreview() {
+  if (workflowResult) {
+    workflowResult.textContent = "";
+  }
+  if (previewSection) {
+    previewSection.hidden = true;
+  }
+}
+
+function showPreview(payload) {
+  if (!workflowResult || !previewSection) {
     return;
   }
+  workflowResult.textContent = payload;
+  previewSection.hidden = false;
+}
 
+function setWorkflowMode(mode) {
+  workflowMode = mode;
+  toggleButtons.forEach((button) => {
+    const isActive = button.dataset.mode === mode;
+    button.classList.toggle("is-active", isActive);
+    button.setAttribute("aria-selected", String(isActive));
+  });
+
+  if (ingestPanel) {
+    const active = mode === "ingest";
+    ingestPanel.classList.toggle("is-active", active);
+    ingestPanel.hidden = !active;
+    if (resumeFilesInput) {
+      if (active) {
+        resumeFilesInput.setAttribute("required", "required");
+      } else {
+        resumeFilesInput.removeAttribute("required");
+      }
+    }
+  }
+
+  if (generatePanel) {
+    const active = mode === "generate";
+    generatePanel.classList.toggle("is-active", active);
+    generatePanel.hidden = !active;
+    if (jobDescriptionInput) {
+      if (active) {
+        jobDescriptionInput.setAttribute("required", "required");
+      } else {
+        jobDescriptionInput.removeAttribute("required");
+      }
+    }
+  }
+
+  setStatus(workflowStatus, "");
+}
+
+async function requestAssistantReply(message) {
   const payloadHistory = [...conversationHistory];
   appendMessage("user", message);
-  messageInput.value = "";
 
   try {
     const response = await fetch(CHAT_API_URL, {
@@ -96,46 +148,56 @@ async function sendMessage(event) {
       ];
     }
   } catch (error) {
-    appendMessage("system", error.message || "Unknown error");
+    const reason = error instanceof Error ? error.message : "Unknown error";
+    appendMessage("system", reason);
   }
 }
 
-async function ingestKnowledge(event) {
+async function sendMessage(event) {
   event.preventDefault();
-  const content = knowledgeContentInput?.value.trim();
-  const metadataRaw = knowledgeMetadataInput?.value.trim();
+  const message = messageInput?.value.trim();
+  if (!message) {
+    return;
+  }
+  if (messageInput) {
+    messageInput.value = "";
+  }
+  await requestAssistantReply(message);
+}
 
-  if (!content) {
-    setStatus(knowledgeStatus, "Document content is required.", "error");
+async function handleWorkflowSubmit(event) {
+  event.preventDefault();
+  if (workflowMode === "ingest") {
+    await processIngestion();
+  } else {
+    await processGeneration();
+  }
+}
+
+async function processIngestion() {
+  const files = resumeFilesInput?.files;
+  if (!files || files.length === 0) {
+    setStatus(workflowStatus, "Select at least one resume to ingest.", "error");
     return;
   }
 
-  let metadata = {};
-  if (metadataRaw) {
-    try {
-      metadata = JSON.parse(metadataRaw);
-    } catch (error) {
-      setStatus(knowledgeStatus, "Metadata must be valid JSON.", "error");
-      return;
-    }
+  const formData = new FormData();
+  Array.from(files).forEach((file) => {
+    formData.append("resumes", file);
+  });
+
+  const notes = ingestNotesInput?.value.trim();
+  if (notes) {
+    formData.append("notes", notes);
   }
 
-  setStatus(knowledgeStatus, "Ingesting document...");
+  clearPreview();
+  setStatus(workflowStatus, "Processing resumes...");
 
   try {
     const response = await fetch(KNOWLEDGE_API_URL, {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        documents: [
-          {
-            content,
-            metadata,
-          },
-        ],
-      }),
+      body: formData,
     });
 
     if (!response.ok) {
@@ -143,42 +205,41 @@ async function ingestKnowledge(event) {
     }
 
     const data = await response.json();
-    const ingested = typeof data.ingested === "number" ? data.ingested : 0;
-    setStatus(knowledgeStatus, `Stored ${ingested} document${ingested === 1 ? "" : "s"} in the knowledge base.`, "success");
+    const summary = data.summary ?? "Resumes ingested successfully.";
+    setStatus(workflowStatus, summary, "success");
 
-    if (knowledgeContentInput) {
-      knowledgeContentInput.value = "";
+    if (workflowResult) {
+      const snapshot = data.profile_snapshot ?? {};
+      const rendered = Object.keys(snapshot).length ? JSON.stringify(snapshot, null, 2) : JSON.stringify(data, null, 2);
+      showPreview(rendered);
     }
-    if (knowledgeMetadataInput) {
-      knowledgeMetadataInput.value = "";
+
+    if (resumeFilesInput) {
+      resumeFilesInput.value = "";
     }
+    if (ingestNotesInput) {
+      ingestNotesInput.value = "";
+    }
+
+    const skills = Array.isArray(data.skills_indexed) ? data.skills_indexed.slice(0, 5) : [];
+    const skillsLine = skills.length ? skills.join(", ") : "no new skills";
+    const followUp = `I just ingested ${data.ingested ?? "several"} resumes. Highlight the key checks we should perform on the structured skills (${skillsLine}).`;
+    await requestAssistantReply(followUp);
   } catch (error) {
-    setStatus(knowledgeStatus, error.message || "Unable to ingest document.", "error");
+    const message = error instanceof Error ? error.message : "Unable to ingest resumes.";
+    setStatus(workflowStatus, message, "error");
   }
 }
 
-async function generateResume(event) {
-  event.preventDefault();
-  const jobPosting = jobPostingInput?.value.trim();
-  const profileRaw = profileJsonInput?.value.trim();
-
-  if (!jobPosting || !profileRaw) {
-    setStatus(generateStatus, "Job posting and profile are required.", "error");
+async function processGeneration() {
+  const jobDescription = jobDescriptionInput?.value.trim();
+  if (!jobDescription) {
+    setStatus(workflowStatus, "Paste a job description to generate a resume.", "error");
     return;
   }
 
-  let profile;
-  try {
-    profile = JSON.parse(profileRaw);
-  } catch (error) {
-    setStatus(generateStatus, "Profile must be valid JSON.", "error");
-    return;
-  }
-
-  setStatus(generateStatus, "Generating resume...");
-  if (generateResult) {
-    generateResult.textContent = "";
-  }
+  clearPreview();
+  setStatus(workflowStatus, "Generating resume...");
 
   try {
     const response = await fetch(GENERATE_API_URL, {
@@ -187,8 +248,7 @@ async function generateResume(event) {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        job_posting: jobPosting,
-        profile,
+        job_posting: jobDescription,
       }),
     });
 
@@ -197,13 +257,18 @@ async function generateResume(event) {
     }
 
     const data = await response.json();
-    setStatus(generateStatus, "Resume generated successfully.", "success");
+    setStatus(workflowStatus, "Resume generated successfully.", "success");
+    showPreview(JSON.stringify(data, null, 2));
 
-    if (generateResult) {
-      generateResult.textContent = JSON.stringify(data, null, 2);
+    if (validationFollowUp?.checked) {
+      const firstLine = jobDescription.split("\n").find((line) => line.trim()) ?? jobDescription;
+      const snippet = firstLine.trim().slice(0, 140);
+      const followUp = `We generated a resume for this role: "${snippet}". Provide a validation checklist before I send it.`;
+      await requestAssistantReply(followUp);
     }
   } catch (error) {
-    setStatus(generateStatus, error.message || "Unable to generate resume.", "error");
+    const message = error instanceof Error ? error.message : "Unable to generate resume.";
+    setStatus(workflowStatus, message, "error");
   }
 }
 
@@ -211,17 +276,30 @@ if (chatForm) {
   chatForm.addEventListener("submit", sendMessage);
 }
 
-if (knowledgeForm) {
-  knowledgeForm.addEventListener("submit", ingestKnowledge);
+if (workflowForm) {
+  workflowForm.addEventListener("submit", handleWorkflowSubmit);
 }
 
-if (generateForm) {
-  generateForm.addEventListener("submit", generateResume);
+if (toggleButtons.length) {
+  toggleButtons.forEach((button) => {
+    button.addEventListener("click", () => {
+      const mode = button.dataset.mode;
+      if (mode && mode !== workflowMode) {
+        setWorkflowMode(mode);
+      }
+    });
+  });
+}
+
+if (clearPreviewButton) {
+  clearPreviewButton.addEventListener("click", clearPreview);
 }
 
 if (chatLog) {
   const welcomeMessage =
-    "Hi! I'm your resume assistant. Share a job posting and your experience so I can suggest how to tailor your résumé.";
+    "Hi! I'm your resume assistant. Upload a few resumes, then paste a job description and I'll help tailor and validate your résumé.";
   appendMessage("assistant", welcomeMessage);
   conversationHistory.push({ role: "assistant", content: welcomeMessage });
 }
+
+setWorkflowMode(workflowMode);

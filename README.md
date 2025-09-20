@@ -37,69 +37,44 @@ A helper `GET /health` endpoint returns a simple status payload.
 
 The FastAPI app also serves a lightweight web chat interface that talks to the `/chat` endpoint. Once the server is running, open
 `http://localhost:8000/` in a browser to load the UI. Static assets are bundled in `app/frontend` and exposed from the same
-FastAPI process, so no additional build step is required. The UI includes workflow panels so you can call the operational APIs
-without leaving the page:
+FastAPI process, so no additional build step is required. The workspace keeps the conversation on the left and a workflow drawer
+on the right so you can operate the API without leaving the chat:
 
-- **Knowledge Base** – Paste a document and optional JSON metadata, then click *Ingest document* to POST to `/knowledge`. A status
-  message confirms how many records were stored.
-- **Generate Resume** – Provide the job posting plus a structured JSON profile and submit the form to POST to `/generate`. The
-  JSON response is rendered in the panel so you can copy it into your delivery channel.
+- **Build Knowledge Base** – Upload one or more resume exports (TXT, PDF, DOCX, etc.) and optionally add reviewer notes. The UI
+  submits a multipart request to `/knowledge`, persists a structured skills/experience database, and drops a chat message so you
+  can validate the parsed output in real time.
+- **Generate Resume** – Paste the job description and click *Generate tailored resume*. If you have ingested resumes the
+  generator automatically hydrates the profile from the knowledge base; you can still supply a JSON payload via the API for
+  bespoke experiments. The result preview renders in the drawer while the assistant suggests human-in-the-loop checks.
 
 ### Populating the Knowledge Base
 
 The resume generator relies on a semantic vector store to recall notable achievements, skills, and company context during
-generation. Seed it with your own content by POSTing documents to the `/knowledge` endpoint. Each document accepts free-form
-text plus optional metadata for filtering or provenance tracking:
+generation. Seed it with your own content by uploading resume files to the `/knowledge` endpoint. The service extracts contact
+details, skills, and achievements into a structured JSON store and persists it to disk (override the location with
+`KNOWLEDGE_STORE_PATH`):
 
 ```bash
 curl -X POST http://localhost:8000/knowledge \
-  -H "Content-Type: application/json" \
-  -d '{
-    "documents": [
-      {
-        "content": "Scaled Kubernetes infrastructure to 500+ nodes while reducing incident response time by 30%.",
-        "metadata": {"source": "portfolio", "tags": ["sre", "kubernetes"]}
-      },
-      {
-        "content": "Led migration from on-prem ETL to dbt + Snowflake, cutting pipeline costs by 45%.",
-        "metadata": {"source": "case-study"}
-      }
-    ]
-  }'
+  -F "resumes=@$HOME/Documents/resume_sre.txt" \
+  -F "resumes=@$HOME/Documents/resume_manager.txt" \
+  -F "notes=Include that I led the SOC2 audit and doubled on-call coverage"
 ```
 
-The default in-memory store persists for the lifetime of the process. Point `VectorStore` at a persistent backend (e.g. ChromaDB)
-for long-lived deployments.
+The response summarises how many resumes were processed, the new skills indexed, and a profile snapshot used for subsequent
+generation. Extracted achievements are embedded into the retrieval store so they can be cited during drafting.
 
 ### Generating a Tailored Resume
 
-With the knowledge base populated, call the `/generate` endpoint with the target job posting and a structured profile. The
-generator orchestrates retrieval, LLM routing, semantic validation, and monitoring before returning an ATS-friendly resume:
+With the knowledge base populated, call the `/generate` endpoint with the target job posting. The generator hydrates the profile
+from the stored resumes, orchestrates retrieval, LLM routing, semantic validation, and monitoring, then returns an ATS-friendly
+resume. You can still pass a custom `profile` payload to override the aggregated data when experimenting:
 
 ```bash
 curl -X POST http://localhost:8000/generate \
   -H "Content-Type: application/json" \
   -d '{
-    "job_posting": "Site Reliability Engineer responsible for scaling observability across multi-region Kubernetes.",
-    "profile": {
-      "full_name": "Alex Candidate",
-      "email": "alex@example.com",
-      "phone": "+1 555-0200",
-      "location": "Remote",
-      "skills": ["Kubernetes", "Prometheus", "Terraform"],
-      "years_experience": 8,
-      "experience": [
-        {
-          "company": "ScaleOps",
-          "role": "Senior SRE",
-          "start_date": "2019-02-01",
-          "achievements": [
-            "Automated cluster remediation playbooks that cut paging volume by 40%",
-            "Improved deployment reliability to 99.95% uptime across three regions"
-          ]
-        }
-      ]
-    }
+    "job_posting": "Site Reliability Engineer responsible for scaling observability across multi-region Kubernetes."
   }'
 ```
 
