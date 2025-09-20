@@ -37,7 +37,13 @@ A helper `GET /health` endpoint returns a simple status payload.
 
 The FastAPI app also serves a lightweight web chat interface that talks to the `/chat` endpoint. Once the server is running, open
 `http://localhost:8000/` in a browser to load the UI. Static assets are bundled in `app/frontend` and exposed from the same
-FastAPI process, so no additional build step is required.
+FastAPI process, so no additional build step is required. The UI includes workflow panels so you can call the operational APIs
+without leaving the page:
+
+- **Knowledge Base** – Paste a document and optional JSON metadata, then click *Ingest document* to POST to `/knowledge`. A status
+  message confirms how many records were stored.
+- **Generate Resume** – Provide the job posting plus a structured JSON profile and submit the form to POST to `/generate`. The
+  JSON response is rendered in the panel so you can copy it into your delivery channel.
 
 ### Populating the Knowledge Base
 

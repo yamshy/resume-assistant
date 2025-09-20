@@ -88,7 +88,10 @@ def test_frontend_served_at_root():
     response = client.get("/")
     assert response.status_code == 200
     assert "text/html" in response.headers.get("content-type", "")
-    assert "chat-container" in response.text
+    body = response.text
+    assert "chat-container" in body
+    assert "knowledge-form" in body
+    assert "generate-form" in body
 
 
 def test_chat_endpoint_returns_conversational_reply():

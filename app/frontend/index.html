@@ -7,25 +7,85 @@
     <link rel="stylesheet" href="/static/styles.css" />
   </head>
   <body>
-    <div class="chat-container">
-      <header class="chat-header">
-        <h1>Resume Assistant</h1>
-        <p class="chat-subtitle">
-          Chat with the AI assistant about tailoring your resume.
-        </p>
-      </header>
-      <main id="chat-log" class="chat-log" aria-live="polite"></main>
-      <form id="chat-form" class="chat-form" autocomplete="off">
-        <label class="sr-only" for="message-input">Type your message</label>
-        <input
-          id="message-input"
-          name="message"
-          class="chat-input"
-          placeholder="Ask for resume tips or paste a job description..."
-          required
-        />
-        <button type="submit" class="chat-submit">Send</button>
-      </form>
+    <div class="app-shell">
+      <div class="chat-container" aria-label="Chat with the resume assistant">
+        <header class="chat-header">
+          <h1>Resume Assistant</h1>
+          <p class="chat-subtitle">
+            Chat with the AI assistant about tailoring your resume.
+          </p>
+        </header>
+        <main id="chat-log" class="chat-log" aria-live="polite"></main>
+        <form id="chat-form" class="chat-form" autocomplete="off">
+          <label class="sr-only" for="message-input">Type your message</label>
+          <input
+            id="message-input"
+            name="message"
+            class="chat-input"
+            placeholder="Ask for resume tips or paste a job description..."
+            required
+          />
+          <button type="submit" class="chat-submit">Send</button>
+        </form>
+      </div>
+      <aside class="workflow-panel" aria-label="Resume workflow actions">
+        <section class="panel-section" aria-labelledby="knowledge-title">
+          <h2 id="knowledge-title" class="panel-title">Knowledge Base</h2>
+          <p class="panel-subtitle">
+            Ingest achievements or project summaries so they are considered during generation.
+          </p>
+          <form id="knowledge-form" class="panel-form" autocomplete="off">
+            <label for="knowledge-content" class="panel-label">Document content</label>
+            <textarea
+              id="knowledge-content"
+              name="knowledge-content"
+              class="panel-textarea"
+              rows="6"
+              placeholder="Scaled Kubernetes infrastructure to 500+ nodes while reducing incidents by 30%."
+              required
+            ></textarea>
+            <label for="knowledge-metadata" class="panel-label optional">Metadata (JSON, optional)</label>
+            <textarea
+              id="knowledge-metadata"
+              name="knowledge-metadata"
+              class="panel-textarea"
+              rows="3"
+              placeholder='{"source": "portfolio", "tags": ["sre", "kubernetes"]}'
+            ></textarea>
+            <button type="submit" class="panel-submit">Ingest document</button>
+          </form>
+          <p id="knowledge-status" class="status-message" role="status" aria-live="polite"></p>
+        </section>
+        <section class="panel-section" aria-labelledby="generate-title">
+          <h2 id="generate-title" class="panel-title">Generate Resume</h2>
+          <p class="panel-subtitle">
+            Provide the job posting and a structured profile to produce a tailored resume instantly.
+          </p>
+          <form id="generate-form" class="panel-form" autocomplete="off">
+            <label for="job-posting" class="panel-label">Job posting</label>
+            <textarea
+              id="job-posting"
+              name="job-posting"
+              class="panel-textarea"
+              rows="6"
+              placeholder="Site Reliability Engineer responsible for scaling observability across multi-region Kubernetes."
+              required
+            ></textarea>
+            <label for="profile-json" class="panel-label">Profile (JSON)</label>
+            <textarea
+              id="profile-json"
+              name="profile-json"
+              class="panel-textarea"
+              rows="8"
+              placeholder='{"full_name": "Alex Candidate", "email": "alex@example.com", "skills": ["Kubernetes", "Terraform"], "experience": [{"company": "ScaleOps", "role": "Senior SRE", "achievements": ["Improved deployment reliability to 99.95% uptime"]}]}'
+              required
+            ></textarea>
+            <button type="submit" class="panel-submit">Generate resume</button>
+          </form>
+          <p id="generate-status" class="status-message" role="status" aria-live="polite"></p>
+          <pre id="generate-result" class="panel-result" tabindex="0" aria-live="polite"></pre>
+        </section>
+      </aside>
     </div>
     <script src="/static/chat.js" type="module"></script>
   </body>
