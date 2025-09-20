@@ -2,38 +2,42 @@ const CHAT_API_URL = "/chat";
 const KNOWLEDGE_API_URL = "/knowledge";
 const GENERATE_API_URL = "/generate";
 
+const MODE_CHAT = "chat";
+const MODE_INGEST = "ingest";
+const MODE_GENERATE = "generate";
+
 const chatLog = document.getElementById("chat-log");
-const chatForm = document.getElementById("chat-form");
-const messageInput = document.getElementById("message-input");
+const interactionForm = document.getElementById("interaction-form");
+const statusMessage = document.getElementById("status-message");
 
-const workflowForm = document.getElementById("workflow-form");
-const workflowStatus = document.getElementById("workflow-status");
-const workflowResult = document.getElementById("workflow-result");
-const previewSection = document.getElementById("preview-section");
-const clearPreviewButton = document.getElementById("clear-preview");
+const modeButtons = document.querySelectorAll(".mode-button");
+const composerSections = document.querySelectorAll(".composer-section");
 
-const toggleButtons = document.querySelectorAll(".panel-toggle-button");
-const ingestPanel = document.getElementById("ingest-panel");
-const generatePanel = document.getElementById("generate-panel");
-
+const chatInput = document.getElementById("chat-input");
 const resumeFilesInput = document.getElementById("resume-files");
 const ingestNotesInput = document.getElementById("ingest-notes");
 const jobDescriptionInput = document.getElementById("job-description");
 const validationFollowUp = document.getElementById("validation-follow-up");
 
+let activeMode = MODE_CHAT;
 let conversationHistory = [];
-let workflowMode = "ingest";
 
-function setStatus(element, message, variant = "info") {
-  if (!element) {
+function setStatus(message, variant = "info") {
+  if (!statusMessage) {
     return;
   }
-  element.textContent = message;
-  element.classList.remove("status-success", "status-error");
+
+  statusMessage.textContent = message;
+  statusMessage.classList.remove("status-success", "status-error");
+
+  if (!message) {
+    return;
+  }
+
   if (variant === "success") {
-    element.classList.add("status-success");
+    statusMessage.classList.add("status-success");
   } else if (variant === "error") {
-    element.classList.add("status-error");
+    statusMessage.classList.add("status-error");
   }
 }
 
@@ -54,63 +58,86 @@ function createMessageElement(role, content) {
 }
 
 function appendMessage(role, content) {
+  if (!chatLog) {
+    return;
+  }
   const element = createMessageElement(role, content);
   chatLog.appendChild(element);
   chatLog.scrollTo({ top: chatLog.scrollHeight, behavior: "smooth" });
 }
 
-function clearPreview() {
-  if (workflowResult) {
-    workflowResult.textContent = "";
-  }
-  if (previewSection) {
-    previewSection.hidden = true;
-  }
-}
-
-function showPreview(payload) {
-  if (!workflowResult || !previewSection) {
+function appendStructuredMessage(label, payload) {
+  if (!chatLog) {
     return;
   }
-  workflowResult.textContent = payload;
-  previewSection.hidden = false;
+
+  const wrapper = document.createElement("section");
+  wrapper.classList.add("message", "message-structured");
+
+  const header = document.createElement("header");
+  header.classList.add("structured-header");
+
+  const title = document.createElement("span");
+  title.classList.add("message-role");
+  title.textContent = label;
+
+  header.appendChild(title);
+  wrapper.appendChild(header);
+
+  const body = document.createElement("pre");
+  body.classList.add("structured-content");
+
+  if (typeof payload === "string") {
+    body.textContent = payload;
+  } else {
+    body.textContent = JSON.stringify(payload, null, 2);
+  }
+
+  wrapper.appendChild(body);
+  chatLog.appendChild(wrapper);
+  chatLog.scrollTo({ top: chatLog.scrollHeight, behavior: "smooth" });
 }
 
-function setWorkflowMode(mode) {
-  workflowMode = mode;
-  toggleButtons.forEach((button) => {
+function setMode(mode) {
+  activeMode = mode;
+
+  modeButtons.forEach((button) => {
     const isActive = button.dataset.mode === mode;
     button.classList.toggle("is-active", isActive);
     button.setAttribute("aria-selected", String(isActive));
   });
 
-  if (ingestPanel) {
-    const active = mode === "ingest";
-    ingestPanel.classList.toggle("is-active", active);
-    ingestPanel.hidden = !active;
-    if (resumeFilesInput) {
-      if (active) {
-        resumeFilesInput.setAttribute("required", "required");
-      } else {
-        resumeFilesInput.removeAttribute("required");
-      }
+  composerSections.forEach((section) => {
+    const isActive = section.dataset.mode === mode;
+    section.classList.toggle("is-active", isActive);
+    section.hidden = !isActive;
+  });
+
+  if (chatInput) {
+    if (mode === MODE_CHAT) {
+      chatInput.setAttribute("required", "required");
+    } else {
+      chatInput.removeAttribute("required");
     }
   }
 
-  if (generatePanel) {
-    const active = mode === "generate";
-    generatePanel.classList.toggle("is-active", active);
-    generatePanel.hidden = !active;
-    if (jobDescriptionInput) {
-      if (active) {
-        jobDescriptionInput.setAttribute("required", "required");
-      } else {
-        jobDescriptionInput.removeAttribute("required");
-      }
+  if (resumeFilesInput) {
+    if (mode === MODE_INGEST) {
+      resumeFilesInput.setAttribute("required", "required");
+    } else {
+      resumeFilesInput.removeAttribute("required");
     }
   }
 
-  setStatus(workflowStatus, "");
+  if (jobDescriptionInput) {
+    if (mode === MODE_GENERATE) {
+      jobDescriptionInput.setAttribute("required", "required");
+    } else {
+      jobDescriptionInput.removeAttribute("required");
+    }
+  }
+
+  setStatus("");
 }
 
 async function requestAssistantReply(message) {
@@ -153,31 +180,25 @@ async function requestAssistantReply(message) {
   }
 }
 
-async function sendMessage(event) {
-  event.preventDefault();
-  const message = messageInput?.value.trim();
+async function sendChatMessage() {
+  const message = chatInput?.value.trim();
   if (!message) {
+    setStatus("Enter a message to chat with the assistant.", "error");
     return;
   }
-  if (messageInput) {
-    messageInput.value = "";
-  }
-  await requestAssistantReply(message);
-}
 
-async function handleWorkflowSubmit(event) {
-  event.preventDefault();
-  if (workflowMode === "ingest") {
-    await processIngestion();
-  } else {
-    await processGeneration();
+  if (chatInput) {
+    chatInput.value = "";
   }
+
+  setStatus("");
+  await requestAssistantReply(message);
 }
 
 async function processIngestion() {
   const files = resumeFilesInput?.files;
   if (!files || files.length === 0) {
-    setStatus(workflowStatus, "Select at least one resume to ingest.", "error");
+    setStatus("Select at least one resume to ingest.", "error");
     return;
   }
 
@@ -191,8 +212,7 @@ async function processIngestion() {
     formData.append("notes", notes);
   }
 
-  clearPreview();
-  setStatus(workflowStatus, "Processing resumes...");
+  setStatus("Processing resumes...");
 
   try {
     const response = await fetch(KNOWLEDGE_API_URL, {
@@ -206,13 +226,17 @@ async function processIngestion() {
 
     const data = await response.json();
     const summary = data.summary ?? "Resumes ingested successfully.";
-    setStatus(workflowStatus, summary, "success");
 
-    if (workflowResult) {
-      const snapshot = data.profile_snapshot ?? {};
-      const rendered = Object.keys(snapshot).length ? JSON.stringify(snapshot, null, 2) : JSON.stringify(data, null, 2);
-      showPreview(rendered);
+    appendMessage("system", summary);
+
+    const snapshot = data.profile_snapshot;
+    if (snapshot && typeof snapshot === "object" && Object.keys(snapshot).length > 0) {
+      appendStructuredMessage("Ingestion snapshot", snapshot);
+    } else {
+      appendStructuredMessage("Ingestion response", data);
     }
+
+    setStatus("Resumes ingested successfully.", "success");
 
     if (resumeFilesInput) {
       resumeFilesInput.value = "";
@@ -223,23 +247,23 @@ async function processIngestion() {
 
     const skills = Array.isArray(data.skills_indexed) ? data.skills_indexed.slice(0, 5) : [];
     const skillsLine = skills.length ? skills.join(", ") : "no new skills";
-    const followUp = `I just ingested ${data.ingested ?? "several"} resumes. Highlight the key checks we should perform on the structured skills (${skillsLine}).`;
+    const followUp = `I just ingested ${data.ingested ?? files.length} resumes. Highlight the key checks we should perform on the structured skills (${skillsLine}).`;
     await requestAssistantReply(followUp);
   } catch (error) {
     const message = error instanceof Error ? error.message : "Unable to ingest resumes.";
-    setStatus(workflowStatus, message, "error");
+    setStatus(message, "error");
+    appendMessage("system", message);
   }
 }
 
 async function processGeneration() {
   const jobDescription = jobDescriptionInput?.value.trim();
   if (!jobDescription) {
-    setStatus(workflowStatus, "Paste a job description to generate a resume.", "error");
+    setStatus("Paste a job description to generate a resume.", "error");
     return;
   }
 
-  clearPreview();
-  setStatus(workflowStatus, "Generating resume...");
+  setStatus("Generating resume...");
 
   try {
     const response = await fetch(GENERATE_API_URL, {
@@ -257,8 +281,10 @@ async function processGeneration() {
     }
 
     const data = await response.json();
-    setStatus(workflowStatus, "Resume generated successfully.", "success");
-    showPreview(JSON.stringify(data, null, 2));
+    appendMessage("system", "Resume generated successfully.");
+    appendStructuredMessage("Generated resume", data);
+
+    setStatus("Resume generated successfully.", "success");
 
     if (validationFollowUp?.checked) {
       const firstLine = jobDescription.split("\n").find((line) => line.trim()) ?? jobDescription;
@@ -268,38 +294,51 @@ async function processGeneration() {
     }
   } catch (error) {
     const message = error instanceof Error ? error.message : "Unable to generate resume.";
-    setStatus(workflowStatus, message, "error");
+    setStatus(message, "error");
+    appendMessage("system", message);
   }
 }
 
-if (chatForm) {
-  chatForm.addEventListener("submit", sendMessage);
+async function handleSubmit(event) {
+  event.preventDefault();
+
+  if (activeMode === MODE_CHAT) {
+    await sendChatMessage();
+  } else if (activeMode === MODE_INGEST) {
+    await processIngestion();
+  } else if (activeMode === MODE_GENERATE) {
+    await processGeneration();
+  }
 }
 
-if (workflowForm) {
-  workflowForm.addEventListener("submit", handleWorkflowSubmit);
+if (interactionForm) {
+  interactionForm.addEventListener("submit", handleSubmit);
 }
 
-if (toggleButtons.length) {
-  toggleButtons.forEach((button) => {
+if (modeButtons.length) {
+  modeButtons.forEach((button) => {
     button.addEventListener("click", () => {
       const mode = button.dataset.mode;
-      if (mode && mode !== workflowMode) {
-        setWorkflowMode(mode);
+      if (mode && mode !== activeMode) {
+        setMode(mode);
+
+        if (mode === MODE_CHAT && chatInput) {
+          chatInput.focus();
+        } else if (mode === MODE_INGEST && resumeFilesInput) {
+          resumeFilesInput.focus();
+        } else if (mode === MODE_GENERATE && jobDescriptionInput) {
+          jobDescriptionInput.focus();
+        }
       }
     });
   });
 }
 
-if (clearPreviewButton) {
-  clearPreviewButton.addEventListener("click", clearPreview);
-}
-
 if (chatLog) {
   const welcomeMessage =
-    "Hi! I'm your resume assistant. Upload a few resumes, then paste a job description and I'll help tailor and validate your résumé.";
+    "Hi! I'm your resume assistant. Upload resumes, generate tailored drafts, and keep the validation conversation going here.";
   appendMessage("assistant", welcomeMessage);
   conversationHistory.push({ role: "assistant", content: welcomeMessage });
 }
 
-setWorkflowMode(workflowMode);
+setMode(activeMode);

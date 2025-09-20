@@ -125,8 +125,9 @@ def test_frontend_served_at_root():
     assert response.status_code == 200
     assert "text/html" in response.headers.get("content-type", "")
     body = response.text
-    assert "chat-container" in body
-    assert "workflow-form" in body
+    assert "chat-log" in body
+    assert "interaction-form" in body
+    assert "mode-toggle" in body
     assert "resume-files" in body
     assert "job-description" in body
 

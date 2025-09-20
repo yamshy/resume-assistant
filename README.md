@@ -35,17 +35,18 @@ A helper `GET /health` endpoint returns a simple status payload.
 
 ### Using the Chat UI
 
-The FastAPI app also serves a lightweight web chat interface that talks to the `/chat` endpoint. Once the server is running, open
+The FastAPI app also serves a lightweight web interface that talks to the `/chat` endpoint. Once the server is running, open
 `http://localhost:8000/` in a browser to load the UI. Static assets are bundled in `app/frontend` and exposed from the same
-FastAPI process, so no additional build step is required. The workspace keeps the conversation on the left and a workflow drawer
-on the right so you can operate the API without leaving the chat:
+FastAPI process, so no additional build step is required. The workspace keeps everything inside the conversation: a single
+composer features tabs for **Chat**, **Ingest resumes**, and **Generate resume**, and each action posts its result back into the
+chat transcript so you can validate structured payloads alongside the assistant's follow-up prompts.
 
-- **Build Knowledge Base** – Upload one or more resume exports (TXT, PDF, DOCX, etc.) and optionally add reviewer notes. The UI
-  submits a multipart request to `/knowledge`, persists a structured skills/experience database, and drops a chat message so you
-  can validate the parsed output in real time.
-- **Generate Resume** – Paste the job description and click *Generate tailored resume*. If you have ingested resumes the
+- **Ingest resumes** – Upload one or more resume exports (TXT, PDF, DOCX, etc.) and optionally add reviewer notes. The UI submits
+  a multipart request to `/knowledge`, persists a structured skills/experience database, and drops the parsed snapshot directly
+  into the chat for review.
+- **Generate resume** – Paste the job description and click *Generate tailored resume*. If you have ingested resumes the
   generator automatically hydrates the profile from the knowledge base; you can still supply a JSON payload via the API for
-  bespoke experiments. The result preview renders in the drawer while the assistant suggests human-in-the-loop checks.
+  bespoke experiments. The structured resume JSON is rendered inline while the assistant suggests human-in-the-loop checks.
 
 ### Populating the Knowledge Base
 
