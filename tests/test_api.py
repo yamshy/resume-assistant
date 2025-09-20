@@ -133,14 +133,27 @@ def test_frontend_served_at_root():
     assert "job-description" in body
 
 
-def test_chat_endpoint_returns_message():
+def test_chat_endpoint_returns_grounded_response():
     client = build_client()
-    response = client.post(
-        "/chat",
-        json={"messages": [{"role": "user", "content": "Hello, what do you know about my profile?"}]},
-    )
+    payload = {
+        "messages": [
+            {"role": "user", "content": "How can I talk about achievements?"},
+        ]
+    }
+
+    response = client.post("/chat", json=payload)
+
     assert response.status_code == 200
     data = response.json()
-    assert data["message"]["role"] == "assistant"
-    assert data["message"]["content"]
-    assert data["follow_up"]
+    assert data["reply"]["role"] == "assistant"
+    assert "resume playbook" in data["reply"]["content"].lower()
+    assert data["reply"].get("metadata", {}).get("grounding")
+    assert data["session"]["turns"] == 1
+
+
+def test_chat_endpoint_requires_messages():
+    client = build_client()
+
+    response = client.post("/chat", json={"messages": []})
+
+    assert response.status_code == 422

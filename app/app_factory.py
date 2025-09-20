@@ -48,18 +48,19 @@ class ValidateRequest(BaseModel):
 
 
 class ChatMessage(BaseModel):
-    role: Literal["user", "assistant", "system"]
+    role: Literal["system", "user", "assistant"]
     content: str = Field(..., min_length=1)
+    metadata: Dict[str, Any] | None = None
 
 
 class ChatRequest(BaseModel):
     messages: list[ChatMessage] = Field(..., min_length=1)
+    session: Dict[str, Any] | None = None
 
 
 class ChatResponse(BaseModel):
-    message: ChatMessage
-    follow_up: str | None = None
-    profile_snapshot: Dict[str, Any] | None = None
+    reply: ChatMessage
+    session: Dict[str, Any]
 
 
 def create_app() -> FastAPI:
@@ -124,19 +125,13 @@ def create_app() -> FastAPI:
     app.state.resume_ingestor = ingestor
 
     @app.post("/chat", response_model=ChatResponse)
-    async def chat_endpoint(request: ChatRequest) -> ChatResponse:
-        last_user_message = next(
-            (message.content for message in reversed(request.messages) if message.role == "user"),
-            "",
+    async def chat_turn(request: ChatRequest) -> ChatResponse:
+        reply_payload, session_state = await generator.chat(
+            [message.model_dump() for message in request.messages],
+            request.session,
         )
-        profile = knowledge_store.aggregated_profile()
-        reply_text = _compose_chat_reply(last_user_message, profile)
-        follow_up = _resolve_follow_up(profile)
-        return ChatResponse(
-            message=ChatMessage(role="assistant", content=reply_text),
-            follow_up=follow_up,
-            profile_snapshot=profile,
-        )
+        reply = ChatMessage(**reply_payload)
+        return ChatResponse(reply=reply, session=session_state)
 
     @app.post("/generate", response_model=Resume)
     async def generate_resume(request: GenerateRequest, background_tasks: BackgroundTasks) -> Resume:
@@ -271,63 +266,6 @@ def _build_ingestion_summary(count: int, skills: list[str], achievements: int) -
     return (
         f"Ingested {resume_phrase} and indexed {achievements_phrase} while capturing {skills_phrase}."
     )
-
-
-def _compose_chat_reply(user_text: str, profile: Dict[str, Any] | None) -> str:
-    if not profile:
-        return (
-            "I don't have any stored experience yet. Upload a few resumes in the knowledge panel so I can build "
-            "your skills and achievements before we generate tailored drafts."
-        )
-
-    summary = _profile_summary(profile)
-    lower_text = user_text.lower()
-    if "skill" in lower_text:
-        skill_preview = ", ".join(profile.get("skills", [])[:5])
-        if skill_preview:
-            return (
-                f"{summary} Right now I'm highlighting skills such as {skill_preview}. "
-                "Let me know if something is missing or upload another resume to update the knowledge base."
-            )
-
-    if any(keyword in lower_text for keyword in ("job", "posting", "generate", "resume")):
-        return (
-            f"{summary} Paste the job description in the Generate Resume panel and I'll tailor a draft using these highlights."
-        )
-
-    if not user_text.strip():
-        return (
-            f"{summary} Ask a question about your profile or share the role you're targeting and we'll plan the next step together."
-        )
-
-    return (
-        f"{summary} I've logged your note — upload additional resumes or request a tailored draft whenever you're ready."
-    )
-
-
-def _profile_summary(profile: Dict[str, Any]) -> str:
-    skills = profile.get("skills") or []
-    experiences = profile.get("experience") or []
-    companies = [exp.get("company") for exp in experiences if exp.get("company")]
-    roles = [exp.get("role") for exp in experiences if exp.get("role")]
-    company_phrase = ", ".join(companies[:2]) if companies else "recent roles"
-    role_phrase = ", ".join(roles[:2]) if roles else "key responsibilities"
-    if skills:
-        skill_phrase = ", ".join(skills[:5])
-    else:
-        skill_phrase = "core strengths we'll identify as you upload more resumes"
-    years = profile.get("years_experience")
-    years_phrase = f"about {years} years of experience" if years else "several years of experience"
-    return (
-        f"Based on your resumes I see work at {company_phrase} with roles across {role_phrase}, showcasing {skill_phrase}. "
-        f"That's {years_phrase}."
-    )
-
-
-def _resolve_follow_up(profile: Dict[str, Any] | None) -> str:
-    if not profile:
-        return "Upload prior resumes through the knowledge form to build your profile."
-    return "Paste a job description in the Generate Resume panel when you're ready for a tailored draft."
 
 
 def _create_redis():

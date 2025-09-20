@@ -12,6 +12,7 @@ const initialGreeting =
   "Welcome! Upload a few of your past resumes so I can build a knowledge base, then paste a job description to create a tailored draft.";
 
 const conversationHistory = [{ role: "assistant", content: initialGreeting }];
+let sessionState = null;
 let lastProfileDigest = null;
 
 function appendTranscriptMessage(role, text, options = {}) {
@@ -148,16 +149,34 @@ chatForm.addEventListener("submit", async (event) => {
   setStatus("Thinking through your request...", "pending");
 
   try {
-    const payload = await postJSON("/chat", { messages: conversationHistory });
-    const assistantMessage = payload?.message?.content || "I'm here to help.";
-    appendTranscriptMessage("assistant", assistantMessage);
-    conversationHistory.push({ role: "assistant", content: assistantMessage });
-
-    if (payload?.follow_up) {
-      appendTranscriptMessage("system", payload.follow_up);
+    const requestPayload = {
+      messages: conversationHistory.map((message) => {
+        const payload = { role: message.role, content: message.content };
+        if (message.metadata) {
+          payload.metadata = message.metadata;
+        }
+        return payload;
+      }),
+    };
+    if (sessionState) {
+      requestPayload.session = sessionState;
     }
 
-    maybeShowProfileSnapshot(payload?.profile_snapshot);
+    const payload = await postJSON("/chat", requestPayload);
+    const assistantMessage = payload?.reply?.content || "I'm here to help.";
+    const metadata = payload?.reply?.metadata || null;
+    const options = {};
+    if (metadata && Object.keys(metadata).length > 0) {
+      options.detailElement = createResultCard("Assistant context", metadata);
+    }
+    appendTranscriptMessage("assistant", assistantMessage, options);
+    const assistantEntry = { role: "assistant", content: assistantMessage };
+    if (metadata) {
+      assistantEntry.metadata = metadata;
+    }
+    conversationHistory.push(assistantEntry);
+
+    sessionState = payload?.session || sessionState;
     setStatus("Conversation updated.", "success");
   } catch (error) {
     appendTranscriptMessage("system", "I couldn't reach the chat endpoint. Please try again.");

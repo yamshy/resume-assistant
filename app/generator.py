@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import json
 import time
-from typing import Any, Dict, Optional
+from typing import Any, Dict, Mapping, Optional, Sequence
 
 import tiktoken
 
@@ -71,6 +71,46 @@ class ResumeGenerator:
         resume.metadata.setdefault("model", self.router.select_model(job_posting, user_profile))
         resume.metadata.setdefault("tokens", tokens)
         return resume
+
+    async def chat(
+        self,
+        messages: Sequence[Mapping[str, Any]],
+        session: Optional[Mapping[str, Any]] = None,
+    ) -> tuple[Dict[str, Any], Dict[str, Any]]:
+        """Provide conversational guidance grounded in stored best practices."""
+
+        session_state = dict(session or {})
+        turns = session_state.get("turns", 0)
+        session_state["turns"] = int(turns) + 1
+
+        last_user_message = next(
+            (message for message in reversed(messages) if message.get("role") == "user"),
+            None,
+        )
+
+        reply_metadata: Dict[str, Any] | None = None
+        if not last_user_message or not last_user_message.get("content"):
+            reply_text = "I'm here to help with your resume. What would you like to focus on?"
+        else:
+            query = str(last_user_message.get("content", ""))
+            documents = await self.vector_store.similarity_search(query, k=1)
+            if documents:
+                document = documents[0]
+                reply_text = (
+                    "Here's guidance grounded in our resume playbook:\n"
+                    f"{document.content}"
+                )
+                reply_metadata = {"grounding": [document.metadata | {"content": document.content}]}
+            else:
+                reply_text = (
+                    "Focus on highlighting quantifiable achievements aligned with the job description."
+                )
+
+        reply: Dict[str, Any] = {"role": "assistant", "content": reply_text}
+        if reply_metadata:
+            reply["metadata"] = reply_metadata
+
+        return reply, session_state
 
     async def _build_context(self, job_posting: str, profile: Dict[str, Any]) -> Dict[str, Any]:
         combined_query = f"{job_posting}\n{json.dumps(profile, sort_keys=True, default=str)}"
