@@ -27,26 +27,24 @@ uv run uvicorn main:app --reload
 
 The service exposes three primary endpoints:
 
-- `POST /generate` – Accepts a job posting and user profile, returning a structured resume with metadata, citations, and confidence scores.
+- `POST /knowledge` – Ingests one or more resumes plus optional reviewer notes and updates the structured skills/experience database and retrieval store.
+- `POST /generate` – Accepts a job posting and user profile (or the aggregated knowledge base), returning a structured resume with metadata, citations, and confidence scores.
 - `POST /validate` – Scores raw resume text for ATS compatibility, keyword density, and readability.
-- `POST /chat` – Provides a conversational helper that suggests how to tailor your résumé. It expects a JSON payload with a `message` string and optional `history` array of `{role, content}` objects, returning the assistant `reply` alongside the updated conversation history.
 
 A helper `GET /health` endpoint returns a simple status payload.
 
-### Using the Chat UI
+### Using the Web Workspace
 
-The FastAPI app also serves a lightweight web interface that talks to the `/chat` endpoint. Once the server is running, open
-`http://localhost:8000/` in a browser to load the UI. Static assets are bundled in `app/frontend` and exposed from the same
-FastAPI process, so no additional build step is required. The workspace keeps everything inside the conversation: a single
-composer features tabs for **Chat**, **Ingest resumes**, and **Generate resume**, and each action posts its result back into the
-chat transcript so you can validate structured payloads alongside the assistant's follow-up prompts.
+The FastAPI app serves a lightweight workflow UI at `http://localhost:8000/`. Static assets ship with the repository in
+`app/frontend`, so no build step is required. The composer provides two modes that map directly to the API endpoints and stream
+their results back into the activity log for human-in-the-loop review.
 
 - **Ingest resumes** – Upload one or more resume exports (TXT, PDF, DOCX, etc.) and optionally add reviewer notes. The UI submits
-  a multipart request to `/knowledge`, persists a structured skills/experience database, and drops the parsed snapshot directly
-  into the chat for review.
+  a multipart request to `/knowledge`, persists a structured skills/experience database, and renders the parsed snapshot so you
+  can confirm extracted skills and achievements before proceeding.
 - **Generate resume** – Paste the job description and click *Generate tailored resume*. If you have ingested resumes the
   generator automatically hydrates the profile from the knowledge base; you can still supply a JSON payload via the API for
-  bespoke experiments. The structured resume JSON is rendered inline while the assistant suggests human-in-the-loop checks.
+  bespoke experiments. The structured resume JSON is rendered inline so reviewers can annotate or adjust prior to delivery.
 
 ### Populating the Knowledge Base
 
@@ -85,14 +83,14 @@ to score an edited resume for ATS readiness before submitting.
 
 ### Running in Docker
 
-The repository ships with a production-ready Dockerfile and Compose stack so you can run the full service (API, chat UI, Redis,
-and ChromaDB) with a single command. Build the image and start the containers with:
+The repository ships with a production-ready Dockerfile and Compose stack so you can run the full service (API, web workspace,
+Redis, and ChromaDB) with a single command. Build the image and start the containers with:
 
 ```bash
 docker compose up --build
 ```
 
-The API will be available at `http://localhost:8000` and serves the chat UI from the same address. Static assets come directly
+The API will be available at `http://localhost:8000` and serves the workflow UI from the same address. Static assets come directly
 from the image, so no additional build tooling is required. Resume knowledge is persisted to `./data/knowledge` on the host via
 the `KNOWLEDGE_STORE_PATH` environment variable that the container exports. Uploading resumes through the UI or via `POST
 /knowledge` will create/update `data/knowledge/knowledge_store.json` without rebuilding the image.

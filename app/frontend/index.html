@@ -11,32 +11,25 @@
       <header class="app-header">
         <h1>Resume Assistant</h1>
         <p class="app-subtitle">
-          Ingest your experience, tailor a resume, and collaborate with the assistant in one continuous conversation.
+          Build a structured knowledge base from your resumes and generate tailored drafts for each job posting.
         </p>
       </header>
-      <main class="chat-window" aria-label="Resume assistant conversation">
-        <section id="chat-log" class="chat-log" aria-live="polite"></section>
+      <main class="workspace-window" aria-label="Resume assistant activity log">
+        <section id="activity-log" class="activity-log" aria-live="polite">
+          <p class="activity-placeholder" data-placeholder="true">
+            Activity will appear here after you ingest resumes or generate a draft.
+          </p>
+        </section>
       </main>
-      <form id="interaction-form" class="composer" autocomplete="off">
+      <form id="workflow-form" class="composer" autocomplete="off">
         <div class="mode-toggle" role="tablist" aria-label="Select workflow mode">
-          <button
-            id="mode-chat"
-            type="button"
-            class="mode-button is-active"
-            data-mode="chat"
-            role="tab"
-            aria-selected="true"
-            aria-controls="chat-section"
-          >
-            Chat
-          </button>
           <button
             id="mode-ingest"
             type="button"
-            class="mode-button"
+            class="mode-button is-active"
             data-mode="ingest"
             role="tab"
-            aria-selected="false"
+            aria-selected="true"
             aria-controls="ingest-section"
           >
             Ingest resumes
@@ -55,32 +48,11 @@
         </div>
 
         <section
-          id="chat-section"
-          class="composer-section is-active"
-          data-mode="chat"
-          role="tabpanel"
-          aria-labelledby="mode-chat"
-        >
-          <label class="sr-only" for="chat-input">Type a message for the assistant</label>
-          <div class="field-row">
-            <input
-              id="chat-input"
-              name="message"
-              class="text-input"
-              placeholder="Ask a question, provide feedback, or request next steps..."
-              required
-            />
-            <button type="submit" class="primary-action">Send</button>
-          </div>
-        </section>
-
-        <section
           id="ingest-section"
-          class="composer-section"
+          class="composer-section is-active"
           data-mode="ingest"
           role="tabpanel"
           aria-labelledby="mode-ingest"
-          hidden
         >
           <div class="field-group">
             <label for="resume-files" class="field-label">Upload resumes</label>
@@ -94,17 +66,17 @@
               required
             />
             <p class="input-help">
-              Attach exported resumes, cover letters, or portfolio summaries. They will be parsed into a structured knowledge base.
+              Attach exported resumes, cover letters, or portfolio summaries. They will be parsed into a structured skills and experience database.
             </p>
           </div>
           <div class="field-group">
-            <label for="ingest-notes" class="field-label optional">Reviewer notes (optional)</label>
+            <label for="ingest-notes" class="field-label optional">Reviewer notes</label>
             <textarea
               id="ingest-notes"
               name="ingest-notes"
               class="text-area"
               rows="4"
-              placeholder="Mention context, achievements, or metrics you want preserved during validation."
+              placeholder="Mention context or achievements you want preserved during validation."
             ></textarea>
           </div>
           <button type="submit" class="primary-action">Process resumes</button>
@@ -129,16 +101,15 @@
               required
             ></textarea>
           </div>
-          <label class="checkbox-field" for="validation-follow-up">
-            <input type="checkbox" id="validation-follow-up" name="validation-follow-up" checked />
-            Ask the assistant for a validation checklist after generation
-          </label>
+          <p class="input-help">
+            Generated resumes are returned as structured JSON so you can review and edit before handing off to your human-in-the-loop workflow.
+          </p>
           <button type="submit" class="primary-action">Generate tailored resume</button>
         </section>
 
         <p id="status-message" class="status-message" role="status" aria-live="polite"></p>
       </form>
     </div>
-    <script src="/static/chat.js" type="module"></script>
+    <script src="/static/workspace.js" type="module"></script>
   </body>
 </html>

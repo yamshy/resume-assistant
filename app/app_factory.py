@@ -7,7 +7,7 @@ import re
 import tempfile
 from pathlib import Path
 from types import ModuleType
-from typing import Any, Dict, Literal, Sequence
+from typing import Any, Dict
 
 from fastapi import BackgroundTasks, FastAPI, File, Form, HTTPException, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
@@ -45,21 +45,6 @@ class GenerateRequest(BaseModel):
 
 class ValidateRequest(BaseModel):
     resume_text: str = Field(..., min_length=50)
-
-
-class ChatMessage(BaseModel):
-    role: Literal["system", "user", "assistant"]
-    content: str = Field(..., min_length=1, max_length=2000)
-
-
-class ChatRequest(BaseModel):
-    message: str = Field(..., min_length=1, max_length=2000)
-    history: list[ChatMessage] = Field(default_factory=list)
-
-
-class ChatResponse(BaseModel):
-    reply: str
-    history: list[ChatMessage]
 
 
 def create_app() -> FastAPI:
@@ -158,14 +143,6 @@ def create_app() -> FastAPI:
             "keyword_density": calculate_keyword_density(text),
             "readability": calculate_readability_score(text),
         }
-
-    @app.post("/chat", response_model=ChatResponse)
-    async def chat(request: ChatRequest) -> ChatResponse:
-        conversation = list(request.history)
-        conversation.append(ChatMessage(role="user", content=request.message))
-        reply = build_chat_reply(request.message, conversation)
-        conversation.append(ChatMessage(role="assistant", content=reply))
-        return ChatResponse(reply=reply, history=conversation)
 
     @app.post("/knowledge", status_code=201)
     async def ingest_knowledge(
@@ -314,46 +291,3 @@ def _estimate_syllables(word: str) -> int:
         count -= 1
     return max(1, count)
 
-
-def build_chat_reply(message: str, history: Sequence[ChatMessage]) -> str:
-    message_lower = message.lower()
-    suggestions: list[str] = []
-
-    if "summary" in message_lower:
-        suggestions.append(
-            "Open with a two sentence summary that mirrors the title and two top requirements from the job posting."
-        )
-    if "skill" in message_lower or "technology" in message_lower:
-        suggestions.append("Group skills by theme (cloud, programming, tooling) and emphasise those asked for in the role.")
-    if "experience" in message_lower or "achievement" in message_lower:
-        suggestions.append(
-            "Frame each achievement around impact: start with the action you took, quantify the result, and mention the platform."
-        )
-    if "job" in message_lower or "posting" in message_lower or len(message.split()) > 80:
-        suggestions.append(
-            "Highlight the three most important responsibilities from the posting and echo them in your summary and top bullets."
-        )
-    if "thank" in message_lower:
-        suggestions.append("Happy to help! Feel free to share another role or ask for validation tips whenever you need them.")
-
-    if not suggestions:
-        suggestions.extend(
-            [
-                "Share the job posting plus a quick summary of your experience and I'll outline how to position the resume.",
-                "When you're ready for a draft, call the /generate endpoint with your profile details for a structured resume.",
-                "Use /validate to score an existing resume for ATS compatibility, keyword coverage, and readability before submitting.",
-            ]
-        )
-
-    bullet_lines = "\n".join(f"- {tip}" for tip in suggestions)
-    last_user = next((entry.content for entry in reversed(history) if entry.role == "user"), None)
-
-    acknowledgement = "Thanks for the update!"
-    if last_user:
-        acknowledgement = f"Thanks for sharing that context about '{last_user[:80]}'."
-
-    return (
-        f"{acknowledgement} Here's how you can move forward:\n"
-        f"{bullet_lines}\n"
-        "Let me know if you'd like me to focus on specific sections or prepare a bullet draft."
-    )

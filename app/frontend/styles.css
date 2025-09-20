@@ -11,6 +11,7 @@
   --accent-strong: #2563eb;
   --success: #34d399;
   --error: #f87171;
+  --note: #facc15;
   --font-stack: "Inter", "Segoe UI", system-ui, -apple-system, BlinkMacSystemFont, "Helvetica Neue", sans-serif;
 }
 
@@ -62,7 +63,7 @@ body {
   max-width: 720px;
 }
 
-.chat-window {
+.workspace-window {
   flex: 1;
   min-height: 0;
   display: flex;
@@ -73,7 +74,7 @@ body {
   overflow: hidden;
 }
 
-.chat-log {
+.activity-log {
   flex: 1;
   min-height: 0;
   overflow-y: auto;
@@ -83,12 +84,18 @@ body {
   gap: 16px;
 }
 
-.chat-log:focus-visible {
+.activity-log:focus-visible {
   outline: 2px solid var(--accent);
   outline-offset: -2px;
 }
 
-.message {
+.activity-placeholder {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.95rem;
+}
+
+.activity-entry {
   display: flex;
   flex-direction: column;
   gap: 8px;
@@ -98,50 +105,52 @@ body {
   border: 1px solid rgba(148, 163, 184, 0.12);
 }
 
-.message-user {
-  align-self: flex-end;
-  background: linear-gradient(135deg, rgba(96, 165, 250, 0.18), rgba(96, 165, 250, 0.08));
-  border-color: rgba(96, 165, 250, 0.35);
+.activity-entry--info {
+  background: var(--surface-raised);
+  border-color: rgba(96, 165, 250, 0.3);
 }
 
-.message-assistant {
-  align-self: flex-start;
-  background: linear-gradient(135deg, rgba(76, 201, 240, 0.14), rgba(76, 201, 240, 0.05));
-  border-color: rgba(76, 201, 240, 0.28);
+.activity-entry--success {
+  background: linear-gradient(135deg, rgba(52, 211, 153, 0.18), rgba(52, 211, 153, 0.08));
+  border-color: rgba(52, 211, 153, 0.35);
 }
 
-.message-system {
-  align-self: stretch;
-  background: rgba(15, 23, 42, 0.85);
-  border-color: rgba(148, 163, 184, 0.35);
+.activity-entry--error {
+  background: linear-gradient(135deg, rgba(248, 113, 113, 0.2), rgba(248, 113, 113, 0.1));
+  border-color: rgba(248, 113, 113, 0.4);
 }
 
-.message-role {
+.activity-entry--note {
+  background: linear-gradient(135deg, rgba(250, 204, 21, 0.16), rgba(250, 204, 21, 0.05));
+  border-color: rgba(250, 204, 21, 0.4);
+}
+
+.activity-entry__label {
   font-size: 0.8rem;
   text-transform: uppercase;
   letter-spacing: 0.08em;
   color: var(--muted);
 }
 
-.message-content {
+.activity-entry__content {
   margin: 0;
   white-space: pre-wrap;
   line-height: 1.5;
 }
 
-.message-structured {
+.activity-entry--structured {
   gap: 12px;
   background: var(--surface-raised);
   border-color: rgba(96, 165, 250, 0.35);
 }
 
-.structured-header {
+.activity-entry__header {
   display: flex;
   align-items: center;
   gap: 12px;
 }
 
-.structured-content {
+.activity-entry__structured {
   margin: 0;
   padding: 16px;
   max-height: 320px;
@@ -204,11 +213,6 @@ body {
   display: flex;
 }
 
-.field-row {
-  display: flex;
-  gap: 12px;
-}
-
 .field-group {
   display: flex;
   flex-direction: column;
@@ -226,7 +230,6 @@ body {
   font-weight: 400;
 }
 
-.text-input,
 .text-area,
 .file-input {
   width: 100%;
@@ -244,7 +247,6 @@ body {
   min-height: 160px;
 }
 
-.text-input:focus,
 .text-area:focus,
 .file-input:focus {
   outline: none;
@@ -257,20 +259,6 @@ body {
   font-size: 0.9rem;
   color: var(--muted);
   line-height: 1.4;
-}
-
-.checkbox-field {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  font-size: 0.95rem;
-  color: var(--muted);
-}
-
-.checkbox-field input {
-  width: 18px;
-  height: 18px;
-  accent-color: var(--accent);
 }
 
 .primary-action {
@@ -311,17 +299,6 @@ body {
   color: var(--error);
 }
 
-.sr-only {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  padding: 0;
-  margin: -1px;
-  overflow: hidden;
-  clip: rect(0, 0, 0, 0);
-  border: 0;
-}
-
 @media (max-width: 720px) {
   body {
     padding: 16px;
@@ -332,12 +309,8 @@ body {
     gap: 20px;
   }
 
-  .chat-log {
+  .activity-log {
     padding: 20px;
-  }
-
-  .field-row {
-    flex-direction: column;
   }
 
   .primary-action {

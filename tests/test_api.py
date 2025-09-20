@@ -125,25 +125,8 @@ def test_frontend_served_at_root():
     assert response.status_code == 200
     assert "text/html" in response.headers.get("content-type", "")
     body = response.text
-    assert "chat-log" in body
-    assert "interaction-form" in body
+    assert "activity-log" in body
+    assert "workflow-form" in body
     assert "mode-toggle" in body
     assert "resume-files" in body
     assert "job-description" in body
-
-
-def test_chat_endpoint_returns_conversational_reply():
-    client = build_client()
-    payload = {
-        "message": "How should I improve the summary for an SRE role?",
-        "history": [
-            {"role": "assistant", "content": "Welcome to the resume assistant!"},
-        ],
-    }
-    response = client.post("/chat", json=payload)
-    assert response.status_code == 200
-    data = response.json()
-    assert data["reply"].startswith("Thanks for")
-    assert len(data["history"]) == len(payload["history"]) + 2
-    assert data["history"][-1]["role"] == "assistant"
-    assert any(entry["role"] == "user" for entry in data["history"])
