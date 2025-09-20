@@ -8,9 +8,12 @@ services:
     environment:
       OPENAI_API_KEY: "${OPENAI_API_KEY:-}"
       REDIS_URL: redis://redis:6379/0
+      KNOWLEDGE_STORE_PATH: /data/knowledge_store.json
     depends_on:
       - redis
       - chroma
+    volumes:
+      - ./data/knowledge:/data
     command: ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
 
   redis:

@@ -82,12 +82,23 @@ The response includes structured sections (`experiences`, `education`, `skills`)
 token estimates, cache hits). Persist or render `Resume.to_text()` to deliver a finalized document. Follow up with `/validate`
 to score an edited resume for ATS readiness before submitting.
 
-### Docker Compose
-A production-friendly stack is available via Docker Compose:
+### Running in Docker
+
+The repository ships with a production-ready Dockerfile and Compose stack so you can run the full service (API, chat UI, Redis,
+and ChromaDB) with a single command. Build the image and start the containers with:
+
 ```bash
 docker compose up --build
 ```
-This launches the FastAPI app, Redis for caching, and ChromaDB for semantic retrieval.
+
+The API will be available at `http://localhost:8000` and serves the chat UI from the same address. Static assets come directly
+from the image, so no additional build tooling is required. Resume knowledge is persisted to `./data/knowledge` on the host via
+the `KNOWLEDGE_STORE_PATH` environment variable that the container exports. Uploading resumes through the UI or via `POST
+/knowledge` will create/update `data/knowledge/knowledge_store.json` without rebuilding the image.
+
+Set `OPENAI_API_KEY` in your environment before running `docker compose up` if you want to invoke real LLMs. Otherwise the
+service falls back to the deterministic template generator. When you're done experimenting, run `docker compose down` to stop
+the stack and release resources.
 
 ## Testing
 Run the automated test suite with:
