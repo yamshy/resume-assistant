@@ -25,19 +25,82 @@ uv sync
 uv run uvicorn main:app --reload
 ```
 
-The service exposes two endpoints:
+The service exposes three primary endpoints:
 
-- `POST /generate` – Accepts a job posting and user profile, returning a structured resume with metadata, citations, and confidence scores.
+- `POST /knowledge` – Ingests one or more resumes plus optional reviewer notes and updates the structured skills/experience database and retrieval store.
+- `POST /generate` – Accepts a job posting and user profile (or the aggregated knowledge base), returning a structured resume with metadata, citations, and confidence scores.
 - `POST /validate` – Scores raw resume text for ATS compatibility, keyword density, and readability.
 
 A helper `GET /health` endpoint returns a simple status payload.
 
-### Docker Compose
-A production-friendly stack is available via Docker Compose:
+### Using the Web Workspace
+
+The FastAPI app serves a chat-first workspace at `http://localhost:8000/`. Static assets ship with the repository in
+`app/frontend`, so no build step is required. The interface combines a running conversation with workflow panels that map to the
+API endpoints and stream their results back into the transcript for human-in-the-loop review.
+
+- **Chat guidance** – Ask the assistant what knowledge is available, confirm that resumes were parsed correctly, or walk through
+  the steps needed to prepare a new application. The browser client calls the `/chat` endpoint and keeps the full history on the
+  page so reviewers can audit each exchange.
+- **Ingest resumes** – Upload one or more resume exports (TXT, PDF, DOCX, etc.) and optionally add reviewer notes. The UI submits
+  a multipart request to `/knowledge`, persists a structured skills/experience database, and renders the parsed snapshot so you
+  can confirm extracted skills and achievements before proceeding.
+- **Generate resume** – Paste the job description and click *Generate tailored resume*. If you have ingested resumes the
+  generator automatically hydrates the profile from the knowledge base; you can still supply a JSON payload via the API for
+  bespoke experiments. The structured resume JSON is rendered inline so reviewers can annotate or adjust prior to delivery.
+
+### Populating the Knowledge Base
+
+The resume generator relies on a semantic vector store to recall notable achievements, skills, and company context during
+generation. Seed it with your own content by uploading resume files to the `/knowledge` endpoint. The service extracts contact
+details, skills, and achievements into a structured JSON store and persists it to disk (override the location with
+`KNOWLEDGE_STORE_PATH`):
+
+```bash
+curl -X POST http://localhost:8000/knowledge \
+  -F "resumes=@$HOME/Documents/resume_sre.txt" \
+  -F "resumes=@$HOME/Documents/resume_manager.txt" \
+  -F "notes=Include that I led the SOC2 audit and doubled on-call coverage"
+```
+
+The response summarises how many resumes were processed, the new skills indexed, and a profile snapshot used for subsequent
+generation. Extracted achievements are embedded into the retrieval store so they can be cited during drafting.
+
+### Generating a Tailored Resume
+
+With the knowledge base populated, call the `/generate` endpoint with the target job posting. The generator hydrates the profile
+from the stored resumes, orchestrates retrieval, LLM routing, semantic validation, and monitoring, then returns an ATS-friendly
+resume. You can still pass a custom `profile` payload to override the aggregated data when experimenting:
+
+```bash
+curl -X POST http://localhost:8000/generate \
+  -H "Content-Type: application/json" \
+  -d '{
+    "job_posting": "Site Reliability Engineer responsible for scaling observability across multi-region Kubernetes."
+  }'
+```
+
+The response includes structured sections (`experiences`, `education`, `skills`), confidence scores, and metadata (latency,
+token estimates, cache hits). Persist or render `Resume.to_text()` to deliver a finalized document. Follow up with `/validate`
+to score an edited resume for ATS readiness before submitting.
+
+### Running in Docker
+
+The repository ships with a production-ready Dockerfile and Compose stack so you can run the full service (API, web workspace,
+Redis, and ChromaDB) with a single command. Build the image and start the containers with:
+
 ```bash
 docker compose up --build
 ```
-This launches the FastAPI app, Redis for caching, and ChromaDB for semantic retrieval.
+
+The API will be available at `http://localhost:8000` and serves the workflow UI from the same address. Static assets come directly
+from the image, so no additional build tooling is required. Resume knowledge is persisted to `./data/knowledge` on the host via
+the `KNOWLEDGE_STORE_PATH` environment variable that the container exports. Uploading resumes through the UI or via `POST
+/knowledge` will create/update `data/knowledge/knowledge_store.json` without rebuilding the image.
+
+Set `OPENAI_API_KEY` in your environment before running `docker compose up` if you want to invoke real LLMs. Otherwise the
+service falls back to the deterministic template generator. When you're done experimenting, run `docker compose down` to stop
+the stack and release resources.
 
 ## Testing
 Run the automated test suite with:

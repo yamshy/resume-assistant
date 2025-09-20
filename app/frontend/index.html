@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Resume Assistant Workspace</title>
+    <link rel="stylesheet" href="/static/styles.css" />
+  </head>
+  <body>
+    <div class="app-shell">
+      <header class="app-header">
+        <h1>Resume Assistant</h1>
+        <p class="app-tagline">
+          Chat with the resume assistant, upload past resumes, and generate drafts tailored to any job posting.
+        </p>
+      </header>
+      <main class="main-layout">
+        <section
+          id="chat-transcript"
+          class="transcript"
+          aria-live="polite"
+          aria-label="Conversation history"
+        >
+          <article class="message assistant">
+            <div class="message-role">Assistant</div>
+            <p>
+              Welcome! Upload a few of your past resumes so I can build a knowledge base, then paste a job description to create
+              a tailored draft.
+            </p>
+          </article>
+        </section>
+        <aside class="workflow-panels" aria-label="Knowledge and generation workflows">
+          <section class="panel" id="knowledge-panel">
+            <h2>Knowledge base</h2>
+            <p class="panel-subtitle">Upload resumes to build a structured profile of your skills and experience.</p>
+            <form id="knowledge-form" class="panel-form" autocomplete="off">
+              <label for="knowledge-files" class="field-label">Resume files</label>
+              <input
+                id="knowledge-files"
+                class="file-input"
+                name="resumes"
+                type="file"
+                accept=".txt,.md,.pdf,.doc,.docx,.rtf"
+                multiple
+                required
+              />
+              <label for="knowledge-notes" class="field-label optional">Reviewer notes</label>
+              <textarea
+                id="knowledge-notes"
+                class="text-area"
+                name="notes"
+                rows="3"
+                placeholder="Mention accomplishments or context to keep in mind during validation."
+              ></textarea>
+              <button type="submit" class="panel-action">Process resumes</button>
+            </form>
+          </section>
+          <section class="panel" id="generate-panel">
+            <h2>Generate resume</h2>
+            <p class="panel-subtitle">
+              Paste a job description and the assistant will produce a structured resume using your stored experience.
+            </p>
+            <form id="generate-form" class="panel-form" autocomplete="off">
+              <label for="job-description" class="field-label">Job description</label>
+              <textarea
+                id="job-description"
+                class="text-area"
+                name="job"
+                rows="8"
+                placeholder="Include responsibilities, qualifications, and any key keywords."
+                required
+              ></textarea>
+              <button type="submit" class="panel-action">Generate tailored resume</button>
+            </form>
+          </section>
+        </aside>
+      </main>
+      <form id="chat-form" class="chat-composer" autocomplete="off">
+        <label for="chat-input" class="sr-only">Message</label>
+        <input
+          id="chat-input"
+          class="chat-input"
+          name="message"
+          type="text"
+          placeholder="Ask about your profile or share a job requirement..."
+          required
+        />
+        <button type="submit" class="chat-send">Send</button>
+      </form>
+      <p id="status-message" class="status-message" role="status" aria-live="polite"></p>
+    </div>
+    <script src="/static/workspace.js" type="module"></script>
+  </body>
+</html>
