@@ -1,287 +1,281 @@
-const KNOWLEDGE_API_URL = "/knowledge";
-const GENERATE_API_URL = "/generate";
-
-const MODE_INGEST = "ingest";
-const MODE_GENERATE = "generate";
-
-const activityLog = document.getElementById("activity-log");
-const workflowForm = document.getElementById("workflow-form");
+const transcript = document.getElementById("chat-transcript");
+const chatForm = document.getElementById("chat-form");
+const chatInput = document.getElementById("chat-input");
+const knowledgeForm = document.getElementById("knowledge-form");
+const knowledgeFiles = document.getElementById("knowledge-files");
+const knowledgeNotes = document.getElementById("knowledge-notes");
+const generateForm = document.getElementById("generate-form");
+const jobDescription = document.getElementById("job-description");
 const statusMessage = document.getElementById("status-message");
 
-const modeButtons = document.querySelectorAll(".mode-button");
-const composerSections = document.querySelectorAll(".composer-section");
+const initialGreeting =
+  "Welcome! Upload a few of your past resumes so I can build a knowledge base, then paste a job description to create a tailored draft.";
 
-const resumeFilesInput = document.getElementById("resume-files");
-const ingestNotesInput = document.getElementById("ingest-notes");
-const jobDescriptionInput = document.getElementById("job-description");
+const conversationHistory = [{ role: "assistant", content: initialGreeting }];
+let lastProfileDigest = null;
 
-let activeMode = MODE_INGEST;
+function appendTranscriptMessage(role, text, options = {}) {
+  const article = document.createElement("article");
+  article.className = `message ${role}`;
 
-const KIND_LABELS = {
-  info: "Update",
-  success: "Success",
-  error: "Error",
-  note: "Next step",
-};
-
-function clearPlaceholder() {
-  const placeholder = activityLog?.querySelector("[data-placeholder=true]");
-  if (placeholder) {
-    placeholder.remove();
-  }
-}
-
-function appendActivity(kind, content) {
-  if (!activityLog || !content) {
-    return;
-  }
-
-  clearPlaceholder();
-
-  const entry = document.createElement("section");
-  entry.classList.add("activity-entry", `activity-entry--${kind}`);
-
-  const label = document.createElement("span");
-  label.classList.add("activity-entry__label");
-  label.textContent = KIND_LABELS[kind] ?? "Update";
+  const label = document.createElement("div");
+  label.className = "message-role";
+  label.textContent = role === "user" ? "You" : role === "assistant" ? "Assistant" : "Update";
 
   const body = document.createElement("p");
-  body.classList.add("activity-entry__content");
-  body.textContent = content;
+  body.textContent = text;
 
-  entry.append(label, body);
-  activityLog.append(entry);
-  activityLog.scrollTo({ top: activityLog.scrollHeight, behavior: "smooth" });
+  article.append(label, body);
+
+  if (options.detailElement) {
+    article.appendChild(options.detailElement);
+  }
+
+  transcript.appendChild(article);
+  transcript.scrollTop = transcript.scrollHeight;
+  return article;
 }
 
-function appendStructuredActivity(label, payload) {
-  if (!activityLog) {
-    return;
+function createResultCard(title, content) {
+  const card = document.createElement("div");
+  card.className = "result-card";
+
+  if (title) {
+    const heading = document.createElement("h3");
+    heading.textContent = title;
+    card.appendChild(heading);
   }
 
-  clearPlaceholder();
-
-  const entry = document.createElement("section");
-  entry.classList.add("activity-entry", "activity-entry--structured");
-
-  const header = document.createElement("header");
-  header.classList.add("activity-entry__header");
-
-  const title = document.createElement("span");
-  title.classList.add("activity-entry__label");
-  title.textContent = label;
-
-  header.append(title);
-  entry.append(header);
-
-  const body = document.createElement("pre");
-  body.classList.add("activity-entry__structured");
-  if (typeof payload === "string") {
-    body.textContent = payload;
-  } else {
-    body.textContent = JSON.stringify(payload, null, 2);
+  if (typeof content === "string") {
+    const paragraph = document.createElement("p");
+    paragraph.textContent = content;
+    card.appendChild(paragraph);
+  } else if (content && typeof content === "object") {
+    const pre = document.createElement("pre");
+    pre.textContent = JSON.stringify(content, null, 2);
+    card.appendChild(pre);
   }
 
-  entry.append(body);
-  activityLog.append(entry);
-  activityLog.scrollTo({ top: activityLog.scrollHeight, behavior: "smooth" });
+  return card;
 }
 
-function setStatus(message, variant = "info") {
-  if (!statusMessage) {
-    return;
-  }
-
+function setStatus(message, state) {
   statusMessage.textContent = message;
-  statusMessage.classList.remove("status-success", "status-error");
+  statusMessage.classList.remove("is-success", "is-error", "is-pending");
+  if (state) {
+    statusMessage.classList.add(`is-${state}`);
+  }
+}
 
+async function postJSON(url, payload) {
+  const response = await fetch(url, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+  });
+  if (!response.ok) {
+    const detail = await parseErrorMessage(response);
+    throw new Error(detail);
+  }
+  return response.json();
+}
+
+async function postForm(url, formData) {
+  const response = await fetch(url, {
+    method: "POST",
+    body: formData,
+  });
+  if (!response.ok) {
+    const detail = await parseErrorMessage(response);
+    throw new Error(detail);
+  }
+  return response.json();
+}
+
+async function parseErrorMessage(response) {
+  try {
+    const payload = await response.json();
+    if (payload.detail) {
+      if (typeof payload.detail === "string") {
+        return payload.detail;
+      }
+      if (Array.isArray(payload.detail) && payload.detail[0]?.msg) {
+        return payload.detail[0].msg;
+      }
+    }
+  } catch (error) {
+    // Ignore JSON parsing errors and fall back to text.
+  }
+  try {
+    return await response.text();
+  } catch (error) {
+    return response.statusText || "Request failed";
+  }
+}
+
+function maybeShowProfileSnapshot(profile) {
+  if (!profile) {
+    return;
+  }
+  const digest = JSON.stringify(profile);
+  if (digest === lastProfileDigest) {
+    return;
+  }
+  lastProfileDigest = digest;
+  const card = createResultCard("Profile snapshot", profile);
+  appendTranscriptMessage("assistant", "Here's the profile I'm working with right now.", {
+    detailElement: card,
+  });
+}
+
+chatForm.addEventListener("submit", async (event) => {
+  event.preventDefault();
+  const message = chatInput.value.trim();
   if (!message) {
     return;
   }
 
-  if (variant === "success") {
-    statusMessage.classList.add("status-success");
-  } else if (variant === "error") {
-    statusMessage.classList.add("status-error");
+  appendTranscriptMessage("user", message);
+  conversationHistory.push({ role: "user", content: message });
+  chatInput.value = "";
+  chatInput.focus();
+
+  const submitButton = chatForm.querySelector("button[type='submit']");
+  if (submitButton) {
+    submitButton.disabled = true;
   }
-}
 
-function setMode(mode) {
-  activeMode = mode;
+  setStatus("Thinking through your request...", "pending");
 
-  modeButtons.forEach((button) => {
-    const isActive = button.dataset.mode === mode;
-    button.classList.toggle("is-active", isActive);
-    button.setAttribute("aria-selected", String(isActive));
-  });
+  try {
+    const payload = await postJSON("/chat", { messages: conversationHistory });
+    const assistantMessage = payload?.message?.content || "I'm here to help.";
+    appendTranscriptMessage("assistant", assistantMessage);
+    conversationHistory.push({ role: "assistant", content: assistantMessage });
 
-  composerSections.forEach((section) => {
-    const isActive = section.dataset.mode === mode;
-    section.classList.toggle("is-active", isActive);
-    section.hidden = !isActive;
-  });
+    if (payload?.follow_up) {
+      appendTranscriptMessage("system", payload.follow_up);
+    }
 
-  if (resumeFilesInput) {
-    if (mode === MODE_INGEST) {
-      resumeFilesInput.setAttribute("required", "required");
-    } else {
-      resumeFilesInput.removeAttribute("required");
+    maybeShowProfileSnapshot(payload?.profile_snapshot);
+    setStatus("Conversation updated.", "success");
+  } catch (error) {
+    appendTranscriptMessage("system", "I couldn't reach the chat endpoint. Please try again.");
+    setStatus(`Chat failed: ${error.message}`, "error");
+  } finally {
+    if (submitButton) {
+      submitButton.disabled = false;
     }
   }
+});
 
-  if (jobDescriptionInput) {
-    if (mode === MODE_GENERATE) {
-      jobDescriptionInput.setAttribute("required", "required");
-    } else {
-      jobDescriptionInput.removeAttribute("required");
-    }
-  }
-
-  setStatus("");
-}
-
-async function processIngestion() {
-  const files = resumeFilesInput?.files;
-  if (!files || files.length === 0) {
-    setStatus("Select at least one resume to ingest.", "error");
+knowledgeForm.addEventListener("submit", async (event) => {
+  event.preventDefault();
+  if (!knowledgeFiles.files.length) {
+    setStatus("Select at least one resume file to ingest.", "error");
     return;
   }
 
-  const formData = new FormData();
-  Array.from(files).forEach((file) => {
-    formData.append("resumes", file);
-  });
+  const submitButton = knowledgeForm.querySelector("button[type='submit']");
+  if (submitButton) {
+    submitButton.disabled = true;
+  }
 
-  const notes = ingestNotesInput?.value.trim();
+  const formData = new FormData();
+  Array.from(knowledgeFiles.files).forEach((file) => {
+    formData.append("resumes", file, file.name);
+  });
+  const notes = knowledgeNotes.value.trim();
   if (notes) {
     formData.append("notes", notes);
   }
 
-  setStatus("Processing resumes...");
+  setStatus("Processing resumes...", "pending");
 
   try {
-    const response = await fetch(KNOWLEDGE_API_URL, {
-      method: "POST",
-      body: formData,
-    });
+    const result = await postForm("/knowledge", formData);
+    const ingestedCount = result.ingested ?? 0;
+    const skills = Array.isArray(result.skills_indexed) ? result.skills_indexed : [];
+    const achievements = result.achievements_indexed ?? 0;
 
-    if (!response.ok) {
-      throw new Error(`Request failed with status ${response.status}`);
+    const summaryParts = [
+      `Processed ${ingestedCount} resume${ingestedCount === 1 ? "" : "s"}.`,
+      skills.length
+        ? `Indexed ${skills.length} new skill${skills.length === 1 ? "" : "s"}.`
+        : "No brand new skills were detected this round.",
+      `Captured ${achievements} achievement${achievements === 1 ? "" : "s"}.`,
+    ];
+
+    const detailCard = document.createElement("div");
+    detailCard.className = "result-card";
+    const skillsParagraph = document.createElement("p");
+    skillsParagraph.textContent = skills.length
+      ? `New skills captured: ${skills.join(", ")}`
+      : "No new skills detected in this upload.";
+    detailCard.appendChild(skillsParagraph);
+
+    if (result.profile_snapshot) {
+      const heading = document.createElement("h3");
+      heading.textContent = "Profile snapshot";
+      const snapshotPre = document.createElement("pre");
+      snapshotPre.textContent = JSON.stringify(result.profile_snapshot, null, 2);
+      detailCard.appendChild(heading);
+      detailCard.appendChild(snapshotPre);
+      lastProfileDigest = JSON.stringify(result.profile_snapshot);
     }
 
-    const data = await response.json();
-    const summary = data.summary ?? "Resumes ingested successfully.";
-
-    appendActivity("success", summary);
-
-    const snapshot = data.profile_snapshot;
-    if (snapshot && typeof snapshot === "object" && Object.keys(snapshot).length > 0) {
-      appendStructuredActivity("Profile snapshot", snapshot);
-    } else {
-      appendStructuredActivity("Ingestion response", data);
-    }
-
-    if (Array.isArray(data.skills_indexed) && data.skills_indexed.length > 0) {
-      const preview = data.skills_indexed.slice(0, 5).join(", ");
-      appendActivity("info", `New skills captured: ${preview}${data.skills_indexed.length > 5 ? "…" : ""}`);
-    }
-
-    appendActivity(
-      "note",
-      "Validate the extracted details above before proceeding to resume generation.",
-    );
+    appendTranscriptMessage("assistant", summaryParts.join(" "), { detailElement: detailCard });
 
     setStatus("Resumes ingested successfully.", "success");
-
-    if (resumeFilesInput) {
-      resumeFilesInput.value = "";
-    }
-    if (ingestNotesInput) {
-      ingestNotesInput.value = "";
-    }
+    knowledgeForm.reset();
+    knowledgeFiles.value = "";
   } catch (error) {
-    const message = error instanceof Error ? error.message : "Unable to ingest resumes.";
-    setStatus(message, "error");
-    appendActivity("error", message);
+    appendTranscriptMessage(
+      "system",
+      "Something went wrong while ingesting resumes. Double-check the files and try again.",
+    );
+    setStatus(`Ingestion failed: ${error.message}`, "error");
+  } finally {
+    if (submitButton) {
+      submitButton.disabled = false;
+    }
   }
-}
+});
 
-async function processGeneration() {
-  const jobDescription = jobDescriptionInput?.value.trim();
-  if (!jobDescription) {
+generateForm.addEventListener("submit", async (event) => {
+  event.preventDefault();
+  const description = jobDescription.value.trim();
+  if (!description) {
     setStatus("Paste a job description to generate a resume.", "error");
     return;
   }
 
-  setStatus("Generating resume...");
+  const submitButton = generateForm.querySelector("button[type='submit']");
+  if (submitButton) {
+    submitButton.disabled = true;
+  }
+
+  setStatus("Generating a tailored resume...", "pending");
 
   try {
-    const response = await fetch(GENERATE_API_URL, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        job_posting: jobDescription,
-      }),
-    });
-
-    if (!response.ok) {
-      throw new Error(`Request failed with status ${response.status}`);
-    }
-
-    const data = await response.json();
-    appendActivity("success", "Resume generated successfully.");
-    appendStructuredActivity("Generated resume", data);
-    appendActivity(
-      "note",
-      "Review the generated resume above and capture any human-in-the-loop adjustments before delivery.",
+    const resume = await postJSON("/generate", { job_posting: description });
+    const card = createResultCard("Generated resume", resume);
+    appendTranscriptMessage(
+      "assistant",
+      "Here's a structured resume draft based on the job description.",
+      { detailElement: card },
     );
-
-    setStatus("Resume generated successfully.", "success");
+    setStatus("Resume generated.", "success");
+    generateForm.reset();
   } catch (error) {
-    const message = error instanceof Error ? error.message : "Unable to generate resume.";
-    setStatus(message, "error");
-    appendActivity("error", message);
+    appendTranscriptMessage(
+      "system",
+      "I couldn't generate a resume. Upload resumes to the knowledge base or try again with more detail.",
+    );
+    setStatus(`Generation failed: ${error.message}`, "error");
+  } finally {
+    if (submitButton) {
+      submitButton.disabled = false;
+    }
   }
-}
-
-function handleSubmit(event) {
-  event.preventDefault();
-
-  if (activeMode === MODE_INGEST) {
-    processIngestion();
-  } else if (activeMode === MODE_GENERATE) {
-    processGeneration();
-  }
-}
-
-if (workflowForm) {
-  workflowForm.addEventListener("submit", handleSubmit);
-}
-
-if (modeButtons.length) {
-  modeButtons.forEach((button) => {
-    button.addEventListener("click", () => {
-      const mode = button.dataset.mode;
-      if (mode && mode !== activeMode) {
-        setMode(mode);
-
-        if (mode === MODE_INGEST && resumeFilesInput) {
-          resumeFilesInput.focus();
-        } else if (mode === MODE_GENERATE && jobDescriptionInput) {
-          jobDescriptionInput.focus();
-        }
-      }
-    });
-  });
-}
-
-if (activityLog) {
-  appendActivity(
-    "info",
-    "Upload one or more resumes to build your structured skills and experience database, then switch to Generate to tailor a draft for a job posting.",
-  );
-}
-
-setMode(activeMode);
+});

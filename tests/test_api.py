@@ -125,8 +125,22 @@ def test_frontend_served_at_root():
     assert response.status_code == 200
     assert "text/html" in response.headers.get("content-type", "")
     body = response.text
-    assert "activity-log" in body
-    assert "workflow-form" in body
-    assert "mode-toggle" in body
-    assert "resume-files" in body
+    assert "chat-transcript" in body
+    assert "chat-form" in body
+    assert "knowledge-form" in body
+    assert "generate-form" in body
+    assert "knowledge-files" in body
     assert "job-description" in body
+
+
+def test_chat_endpoint_returns_message():
+    client = build_client()
+    response = client.post(
+        "/chat",
+        json={"messages": [{"role": "user", "content": "Hello, what do you know about my profile?"}]},
+    )
+    assert response.status_code == 200
+    data = response.json()
+    assert data["message"]["role"] == "assistant"
+    assert data["message"]["content"]
+    assert data["follow_up"]

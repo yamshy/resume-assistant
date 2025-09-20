@@ -35,10 +35,13 @@ A helper `GET /health` endpoint returns a simple status payload.
 
 ### Using the Web Workspace
 
-The FastAPI app serves a lightweight workflow UI at `http://localhost:8000/`. Static assets ship with the repository in
-`app/frontend`, so no build step is required. The composer provides two modes that map directly to the API endpoints and stream
-their results back into the activity log for human-in-the-loop review.
+The FastAPI app serves a chat-first workspace at `http://localhost:8000/`. Static assets ship with the repository in
+`app/frontend`, so no build step is required. The interface combines a running conversation with workflow panels that map to the
+API endpoints and stream their results back into the transcript for human-in-the-loop review.
 
+- **Chat guidance** – Ask the assistant what knowledge is available, confirm that resumes were parsed correctly, or walk through
+  the steps needed to prepare a new application. The browser client calls the `/chat` endpoint and keeps the full history on the
+  page so reviewers can audit each exchange.
 - **Ingest resumes** – Upload one or more resume exports (TXT, PDF, DOCX, etc.) and optionally add reviewer notes. The UI submits
   a multipart request to `/knowledge`, persists a structured skills/experience database, and renders the parsed snapshot so you
   can confirm extracted skills and achievements before proceeding.
