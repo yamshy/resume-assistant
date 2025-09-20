@@ -59,6 +59,30 @@ def test_validate_endpoint_scores_resume():
     assert 0 <= data["keyword_density"] <= 1
 
 
+def test_knowledge_ingest_endpoint_adds_documents():
+    client = build_client()
+    vector_store = client.app.state.vector_store
+    existing_docs = len(getattr(vector_store, "_documents", []))
+    payload = {
+        "documents": [
+            {
+                "content": "Drove SOC2 automation and reduced security review cycles by 50%.",
+                "metadata": {"source": "playbook", "topic": "security"},
+            },
+            {
+                "content": "Introduced hiring rubric that increased offer acceptance to 75%.",
+                "metadata": {"source": "manager-notes"},
+            },
+        ]
+    }
+    response = client.post("/knowledge", json=payload)
+    assert response.status_code == 201
+    data = response.json()
+    assert data == {"ingested": 2}
+    updated_docs = len(getattr(vector_store, "_documents", []))
+    assert updated_docs == existing_docs + 2
+
+
 def test_frontend_served_at_root():
     client = build_client()
     response = client.get("/")

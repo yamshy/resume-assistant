@@ -59,6 +59,15 @@ class ChatResponse(BaseModel):
     history: list[ChatMessage]
 
 
+class KnowledgeDocument(BaseModel):
+    content: str = Field(..., min_length=10, max_length=4000)
+    metadata: Dict[str, Any] = Field(default_factory=dict)
+
+
+class KnowledgeIngestRequest(BaseModel):
+    documents: list[KnowledgeDocument] = Field(..., min_length=1, max_length=50)
+
+
 def create_app() -> FastAPI:
     app = FastAPI(title="AI Resume Service", version="0.1.0")
     app.add_middleware(
@@ -113,6 +122,7 @@ def create_app() -> FastAPI:
         monitor=monitor,
     )
     app.state.generator = generator
+    app.state.vector_store = vector_store
 
     @app.post("/generate", response_model=Resume)
     async def generate_resume(request: GenerateRequest, background_tasks: BackgroundTasks) -> Resume:
@@ -146,6 +156,15 @@ def create_app() -> FastAPI:
         reply = build_chat_reply(request.message, conversation)
         conversation.append(ChatMessage(role="assistant", content=reply))
         return ChatResponse(reply=reply, history=conversation)
+
+    @app.post("/knowledge", status_code=201)
+    async def ingest_knowledge(request: KnowledgeIngestRequest) -> Dict[str, int]:
+        documents = [
+            VectorDocument(content=doc.content, metadata=dict(doc.metadata))
+            for doc in request.documents
+        ]
+        vector_store.add_documents(documents)
+        return {"ingested": len(documents)}
 
     @app.get("/health")
     async def healthcheck() -> Dict[str, str]:

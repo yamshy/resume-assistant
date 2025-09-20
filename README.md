@@ -39,6 +39,68 @@ The FastAPI app also serves a lightweight web chat interface that talks to the `
 `http://localhost:8000/` in a browser to load the UI. Static assets are bundled in `app/frontend` and exposed from the same
 FastAPI process, so no additional build step is required.
 
+### Populating the Knowledge Base
+
+The resume generator relies on a semantic vector store to recall notable achievements, skills, and company context during
+generation. Seed it with your own content by POSTing documents to the `/knowledge` endpoint. Each document accepts free-form
+text plus optional metadata for filtering or provenance tracking:
+
+```bash
+curl -X POST http://localhost:8000/knowledge \
+  -H "Content-Type: application/json" \
+  -d '{
+    "documents": [
+      {
+        "content": "Scaled Kubernetes infrastructure to 500+ nodes while reducing incident response time by 30%.",
+        "metadata": {"source": "portfolio", "tags": ["sre", "kubernetes"]}
+      },
+      {
+        "content": "Led migration from on-prem ETL to dbt + Snowflake, cutting pipeline costs by 45%.",
+        "metadata": {"source": "case-study"}
+      }
+    ]
+  }'
+```
+
+The default in-memory store persists for the lifetime of the process. Point `VectorStore` at a persistent backend (e.g. ChromaDB)
+for long-lived deployments.
+
+### Generating a Tailored Resume
+
+With the knowledge base populated, call the `/generate` endpoint with the target job posting and a structured profile. The
+generator orchestrates retrieval, LLM routing, semantic validation, and monitoring before returning an ATS-friendly resume:
+
+```bash
+curl -X POST http://localhost:8000/generate \
+  -H "Content-Type: application/json" \
+  -d '{
+    "job_posting": "Site Reliability Engineer responsible for scaling observability across multi-region Kubernetes.",
+    "profile": {
+      "full_name": "Alex Candidate",
+      "email": "alex@example.com",
+      "phone": "+1 555-0200",
+      "location": "Remote",
+      "skills": ["Kubernetes", "Prometheus", "Terraform"],
+      "years_experience": 8,
+      "experience": [
+        {
+          "company": "ScaleOps",
+          "role": "Senior SRE",
+          "start_date": "2019-02-01",
+          "achievements": [
+            "Automated cluster remediation playbooks that cut paging volume by 40%",
+            "Improved deployment reliability to 99.95% uptime across three regions"
+          ]
+        }
+      ]
+    }
+  }'
+```
+
+The response includes structured sections (`experiences`, `education`, `skills`), confidence scores, and metadata (latency,
+token estimates, cache hits). Persist or render `Resume.to_text()` to deliver a finalized document. Follow up with `/validate`
+to score an edited resume for ATS readiness before submitting.
+
 ### Docker Compose
 A production-friendly stack is available via Docker Compose:
 ```bash
