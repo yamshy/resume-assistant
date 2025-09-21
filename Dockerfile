@@ -15,7 +15,7 @@ RUN apt-get update \
 RUN pip install --no-cache-dir "uv>=0.4,<0.5"
 
 COPY pyproject.toml uv.lock ./
-RUN uv pip install --system --frozen --no-build-isolation -r pyproject.toml
+RUN uv pip install --system --no-build-isolation -r pyproject.toml
 
 COPY app ./app
 COPY main.py ./
