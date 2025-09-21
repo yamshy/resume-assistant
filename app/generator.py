@@ -41,6 +41,7 @@ class ResumeGenerator:
     async def generate(self, job_posting: str, user_profile: Dict[str, Any]) -> Resume:
         cache_hit = False
         cached_resume: Optional[Resume] = None
+        selected_model: Optional[str] = None
 
         if self.cache:
             cached_resume = await self.cache.get(job_posting, user_profile)
@@ -51,11 +52,11 @@ class ResumeGenerator:
             resume = cached_resume
         else:
             context = await self._build_context(job_posting, user_profile)
-            model = self.router.select_model(job_posting, user_profile)
+            selected_model = self.router.select_model(job_posting, user_profile)
             start = time.perf_counter()
-            resume = await self.llm.generate(model, job_posting, context)
+            resume = await self.llm.generate(selected_model, job_posting, context)
             latency = time.perf_counter() - start
-            resume.metadata.setdefault("model", model)
+            resume.metadata.setdefault("model", selected_model)
             resume.metadata["latency"] = latency
             resume.metadata["cached"] = False
             resume.metadata["tokens"] = self._estimate_tokens(resume)
@@ -68,7 +69,10 @@ class ResumeGenerator:
         tokens_value = resume.metadata.get("tokens", 0)
         tokens = int(tokens_value) if isinstance(tokens_value, (int, float)) else 0
         resume.metadata["cached"] = cache_hit
-        resume.metadata.setdefault("model", self.router.select_model(job_posting, user_profile))
+        if "model" not in resume.metadata:
+            if selected_model is None:
+                selected_model = self.router.select_model(job_posting, user_profile)
+            resume.metadata["model"] = selected_model
         resume.metadata.setdefault("tokens", tokens)
         return resume
 
