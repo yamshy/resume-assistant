@@ -1,3 +1,10 @@
+## [1.0.2](https://github.com/yamshy/resume-assistant/compare/v1.0.1...v1.0.2) (2025-09-21)
+
+
+### Bug Fixes
+
+* **deps:** update dependency fastapi to v0.117.1 ([77c3aff](https://github.com/yamshy/resume-assistant/commit/77c3affd1a20f2539e7abb483c9f68802a5680d6))
+
 ## [1.0.1](https://github.com/yamshy/resume-assistant/compare/v1.0.0...v1.0.1) (2025-09-21)
 
 
