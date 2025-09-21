@@ -36,14 +36,14 @@ class InMemoryVectorStore:
         if not self._documents:
             return []
         query_embedding = self.embedder.encode([query])[0]
-        scored: list[tuple[float, VectorDocument]] = []
-        for doc, embedding in zip(self._documents, self._embeddings):
+        scored: list[tuple[float, int, VectorDocument]] = []
+        for idx, (doc, embedding) in enumerate(zip(self._documents, self._embeddings)):
             score = cosine_similarity(query_embedding, embedding)
-            heapq.heappush(scored, (score, doc))
+            heapq.heappush(scored, (score, -idx, doc))
             if len(scored) > k:
                 heapq.heappop(scored)
         scored.sort(reverse=True)
-        return [doc for _, doc in scored]
+        return [doc for _, _, doc in scored]
 
 
 VectorStore = InMemoryVectorStore
