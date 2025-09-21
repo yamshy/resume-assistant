@@ -1,3 +1,10 @@
+## [1.0.3](https://github.com/yamshy/resume-assistant/compare/v1.0.2...v1.0.3) (2025-09-21)
+
+
+### Bug Fixes
+
+* avoid redundant routing for cached resumes ([c632555](https://github.com/yamshy/resume-assistant/commit/c632555cce90c151f9d0a551ce6d09e254e882a8))
+
 ## [1.0.2](https://github.com/yamshy/resume-assistant/compare/v1.0.1...v1.0.2) (2025-09-21)
 
 
