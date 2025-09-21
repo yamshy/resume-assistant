@@ -1,3 +1,11 @@
+## [1.0.1](https://github.com/yamshy/resume-assistant/compare/v1.0.0...v1.0.1) (2025-09-21)
+
+
+### Bug Fixes
+
+* **deps:** update dependency redis to v5.3.1 ([6d93836](https://github.com/yamshy/resume-assistant/commit/6d93836f5e3b749f00120f5e6c3ba13c1727b030))
+* remove unsupported uv pip frozen flag ([f7f7121](https://github.com/yamshy/resume-assistant/commit/f7f712171a8401a95122dac0c4f350eb2ed8581b))
+
 # 1.0.0 (2025-09-20)
 
 
