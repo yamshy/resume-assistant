@@ -1,3 +1,10 @@
+# [1.3.0](https://github.com/yamshy/resume-assistant/compare/v1.2.0...v1.3.0) (2025-09-22)
+
+
+### Features
+
+* tighten claim grounding for skills and roles ([d166c0c](https://github.com/yamshy/resume-assistant/commit/d166c0cbe12e5eb15fe0d781d35e9ff93282a4d0))
+
 # [1.2.0](https://github.com/yamshy/resume-assistant/compare/v1.1.0...v1.2.0) (2025-09-22)
 
 
