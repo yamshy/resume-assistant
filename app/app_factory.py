@@ -24,6 +24,7 @@ except Exception:  # pragma: no cover
 else:
     redis_async = redis_async_module
 
+from .agents import ResumeIngestionAgent
 from .cache import SemanticCache
 from .embeddings import SemanticEmbedder
 from .generator import ResumeGenerator
@@ -103,7 +104,8 @@ def create_app() -> FastAPI:
     )
 
     knowledge_store = KnowledgeStore(_resolve_knowledge_store_path())
-    ingestor = ResumeIngestor()
+    ingestion_agent = ResumeIngestionAgent()
+    ingestor = ResumeIngestor(agent=ingestion_agent)
 
     redis_client = _create_redis()
     cache = SemanticCache(redis_client, embedder) if redis_client else None
@@ -123,6 +125,7 @@ def create_app() -> FastAPI:
     app.state.vector_store = vector_store
     app.state.knowledge_store = knowledge_store
     app.state.resume_ingestor = ingestor
+    app.state.resume_ingestion_agent = ingestion_agent
 
     @app.post("/chat", response_model=ChatResponse)
     async def chat_turn(request: ChatRequest) -> ChatResponse:
@@ -191,7 +194,7 @@ def create_app() -> FastAPI:
                 detail="Uploaded resumes were empty or unreadable.",
             )
 
-        parsed_resumes = [ingestor.parse(name, body, notes) for name, body in payloads]
+        parsed_resumes = await ingestor.parse_many(payloads, notes)
         store_result = knowledge_store.add_resumes(parsed_resumes)
 
         documents: list[VectorDocument] = []
