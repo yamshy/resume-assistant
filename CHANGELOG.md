@@ -1,3 +1,10 @@
+# [1.2.0](https://github.com/yamshy/resume-assistant/compare/v1.1.0...v1.2.0) (2025-09-22)
+
+
+### Features
+
+* add agent orchestration for resume generation ([cc89120](https://github.com/yamshy/resume-assistant/commit/cc8912038bf37019fb53abc25d5afaed55881d5a))
+
 # [1.1.0](https://github.com/yamshy/resume-assistant/compare/v1.0.4...v1.1.0) (2025-09-22)
 
 
