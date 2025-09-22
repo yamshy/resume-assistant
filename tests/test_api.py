@@ -127,10 +127,9 @@ def test_frontend_served_at_root():
     body = response.text
     assert "chat-transcript" in body
     assert "chat-form" in body
-    assert "knowledge-form" in body
-    assert "generate-form" in body
-    assert "knowledge-files" in body
-    assert "job-description" in body
+    assert "resume-upload" in body
+    assert "upload-resumes" in body
+    assert "/generate" in body
 
 
 def test_chat_endpoint_returns_grounded_response():
