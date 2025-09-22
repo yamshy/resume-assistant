@@ -6,7 +6,7 @@ A production-focused resume tailoring service that combines structured LLM outpu
 - **Structured Generation** – All LLM responses are parsed into strict Pydantic models to guarantee ATS compliant formats.
 - **Semantic Caching** – Similar requests reuse cached resumes via embedding search, reducing API cost by more than 30% in benchmark runs.
 - **Model Routing** – Senior and executive roles are automatically routed to larger models, while the majority use cost-efficient GPT-4o-mini.
-- **Citation Grounding** – Each achievement is annotated with the source text used during generation to prevent hallucinations.
+- **Citation Grounding** – Each achievement, skill, and company/role claim is annotated with the source text used during generation to prevent hallucinations.
 - **Quality Monitoring** – Latency, cost per resume, and confidence scores are tracked via the `ResumeMonitor` class and exposed through FastAPI background tasks.
 
 ## Getting Started
@@ -65,6 +65,14 @@ curl -X POST http://localhost:8000/knowledge \
 
 The response summarises how many resumes were processed, the new skills indexed, and a profile snapshot used for subsequent
 generation. Extracted achievements are embedded into the retrieval store so they can be cited during drafting.
+
+### Grounding Requirements
+
+The claim validator now enforces that every skill and company/role listed on a generated resume is supported by the supplied
+context. Ingestion payloads and custom profile overrides must expose `profile.skills` and `profile.experience` (including the
+`company`, `role`, and supporting `achievements`) so validation can attach citations and confidence scores. When the evidence is
+missing, the validator drives the overall confidence to zero, prompting the generation agent to request additional grounding
+before finalising the resume.
 
 ### Generating a Tailored Resume
 
