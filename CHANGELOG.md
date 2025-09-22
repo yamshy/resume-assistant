@@ -1,3 +1,10 @@
+# [1.1.0](https://github.com/yamshy/resume-assistant/compare/v1.0.4...v1.1.0) (2025-09-22)
+
+
+### Features
+
+* add agent-driven resume ingestion ([1cd28b3](https://github.com/yamshy/resume-assistant/commit/1cd28b31dd6edbde7661dab9195d08cde915f3af))
+
 ## [1.0.4](https://github.com/yamshy/resume-assistant/compare/v1.0.3...v1.0.4) (2025-09-21)
 
 

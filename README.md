@@ -132,6 +132,20 @@ Set `OPENAI_API_KEY` in your environment before running `docker compose up` if y
 service falls back to the deterministic template generator. When you're done experimenting, run `docker compose down` to stop
 the stack and release resources.
 
+### Resume Ingestion Agent Configuration
+
+The `/knowledge` endpoint now delegates resume parsing to an agent that coordinates a "plan → extract → verify" loop with the
+selected LLM. The agent still falls back to deterministic heuristics when no OpenAI key is present, but operators can tune its
+behaviour with environment variables:
+
+- `INGESTION_AGENT_MODEL` – Chat/completions model used for plan/extract/verify stages (default `gpt-4o-mini`).
+- `INGESTION_AGENT_TEMPERATURE` – Sampling temperature applied to each stage (default `0.1` to prioritise determinism).
+- `INGESTION_AGENT_MAX_RETRIES` – Maximum retries for failed LLM calls (default `1`).
+
+Override these settings when you need a larger model for noisy documents or want to harden the workflow with additional
+retries. Tool heuristics (email, phone, skills, experience extraction) remain available to the agent regardless of model choice
+so it can correct incomplete outputs.
+
 ## Testing
 Run the automated test suite with:
 ```bash
