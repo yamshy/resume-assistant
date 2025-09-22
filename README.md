@@ -8,6 +8,7 @@ A production-focused resume tailoring service that combines structured LLM outpu
 - **Model Routing** – Senior and executive roles are automatically routed to larger models, while the majority use cost-efficient GPT-4o-mini.
 - **Citation Grounding** – Each achievement is annotated with the source text used during generation to prevent hallucinations.
 - **Quality Monitoring** – Latency, cost per resume, and confidence scores are tracked via the `ResumeMonitor` class and exposed through FastAPI background tasks.
+- **Agent Planning** – A reusable `ResumeGenerationAgent` coordinates retrieval, drafting, validation, and revision loops so every resume is iteratively improved before delivery.
 
 ## Getting Started
 
@@ -83,6 +84,35 @@ curl -X POST http://localhost:8000/generate \
 The response includes structured sections (`experiences`, `education`, `skills`), confidence scores, and metadata (latency,
 token estimates, cache hits). Persist or render `Resume.to_text()` to deliver a finalized document. Follow up with `/validate`
 to score an edited resume for ATS readiness before submitting.
+
+#### Agent-driven orchestration
+
+The `/generate` workflow is powered by `ResumeGenerationAgent`, which uses the active LLM (resolved via `resolve_llm()` by default)
+to execute four explicit steps: context retrieval, draft generation, semantic validation, and revision. Tool hooks provided by
+`ResumeGenerator` let the agent look up cached resumes, run vector searches, invoke the validator, and record metrics through
+`ResumeMonitor`. Each generation attempt updates the resume metadata with latency, token estimates, and validator feedback so
+operators can audit how the draft evolved.
+
+Two configuration knobs control the loop:
+
+- `confidence_threshold` – minimum overall confidence score required before the agent accepts a draft (default `0.8`). Lower it
+  to move faster on noisier data or raise it to demand stronger grounding before caching a result.
+- `max_retries` – how many times the agent will re-invoke the LLM with validator feedback when scores fall below the threshold or
+  grounding checks fail (default `2`). Increase this for stricter QA at the cost of additional latency and tokens.
+
+Example instantiation:
+
+```python
+generator = ResumeGenerator(
+    cache=semantic_cache,
+    vector_store=vector_store,
+    confidence_threshold=0.85,
+    max_retries=3,
+)
+```
+
+In this configuration the agent will request up to three drafts, injecting validator guidance between attempts and recording the
+outcome of each pass through `ResumeMonitor`.
 
 ### Running in Docker
 

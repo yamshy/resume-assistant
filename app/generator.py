@@ -3,13 +3,13 @@
 from __future__ import annotations
 
 import json
-import time
 from typing import Any, Dict, Mapping, Optional, Sequence
 
 import tiktoken
 
+from .agents import ResumeGenerationAgent, ResumeGenerationTools
 from .cache import SemanticCache
-from .llm import ResumeLLM, resolve_llm
+from .llm import ResumeLLM
 from .models import Resume
 from .monitoring import ResumeMonitor
 from .router import ModelRouter
@@ -29,51 +29,42 @@ class ResumeGenerator:
         validator: Optional[ClaimValidator] = None,
         monitor: Optional[ResumeMonitor] = None,
         confidence_threshold: float = 0.8,
+        max_retries: int = 2,
     ) -> None:
         self.cache = cache
         self.vector_store = vector_store
-        self.llm = llm or resolve_llm()
         self.router = router or ModelRouter()
         self.validator = validator or ClaimValidator()
         self.monitor = monitor or ResumeMonitor()
         self.confidence_threshold = confidence_threshold
+        self.agent = ResumeGenerationAgent(
+            llm=llm,
+            validator=self.validator,
+            monitor=self.monitor,
+            max_retries=max_retries,
+            confidence_threshold=confidence_threshold,
+        )
 
     async def generate(self, job_posting: str, user_profile: Dict[str, Any]) -> Resume:
-        cache_hit = False
-        cached_resume: Optional[Resume] = None
-        selected_model: Optional[str] = None
+        async def cache_lookup(job: str, profile: Dict[str, Any]) -> Optional[Resume]:
+            if not self.cache:
+                return None
+            return await self.cache.get(job, profile)
 
-        if self.cache:
-            cached_resume = await self.cache.get(job_posting, user_profile)
-            if cached_resume:
-                cache_hit = True
-
-        if cached_resume:
-            resume = cached_resume
-        else:
-            context = await self._build_context(job_posting, user_profile)
-            selected_model = self.router.select_model(job_posting, user_profile)
-            start = time.perf_counter()
-            resume = await self.llm.generate(selected_model, job_posting, context)
-            latency = time.perf_counter() - start
-            resume.metadata.setdefault("model", selected_model)
-            resume.metadata["latency"] = latency
-            resume.metadata["cached"] = False
-            resume.metadata["tokens"] = self._estimate_tokens(resume)
-            resume = await self.validator.validate(resume, context)
+        async def cache_store(job: str, profile: Dict[str, Any], resume: Resume) -> None:
             if self.cache and resume.confidence_scores.get("overall", 0) >= self.confidence_threshold:
-                await self.cache.set(job_posting, user_profile, resume)
-        if cache_hit:
-            resume.metadata.setdefault("latency", 0.0)
-            resume.metadata.setdefault("tokens", self._estimate_tokens(resume))
-        tokens_value = resume.metadata.get("tokens", 0)
-        tokens = int(tokens_value) if isinstance(tokens_value, (int, float)) else 0
-        resume.metadata["cached"] = cache_hit
-        if "model" not in resume.metadata:
-            if selected_model is None:
-                selected_model = self.router.select_model(job_posting, user_profile)
-            resume.metadata["model"] = selected_model
-        resume.metadata.setdefault("tokens", tokens)
+                await self.cache.set(job, profile, resume)
+
+        tools = ResumeGenerationTools(
+            cache_lookup=cache_lookup if self.cache else None,
+            cache_store=cache_store if self.cache else None,
+            build_context=self._build_context,
+            select_model=self.router.select_model,
+            estimate_tokens=self._estimate_tokens,
+            monitor=self.monitor.track_generation,
+        )
+
+        resume = await self.agent.generate(job_posting, user_profile, tools)
         return resume
 
     async def chat(

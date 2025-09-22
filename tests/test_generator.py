@@ -76,5 +76,19 @@ async def test_generator_uses_cache(profile):
 
     assert llm.calls == 1, "LLM should only be invoked once thanks to caching"
     assert router.calls == 1, "Router should not be consulted again for a cached resume"
+    assert resume_first.metadata.get("cached") is False
+    assert resume_first.metadata.get("validation_passed") is True
+    assert resume_first.metadata.get("plan") == [
+        "context_retrieval",
+        "draft_generation",
+        "validation",
+        "revision",
+    ]
     assert resume_second.metadata.get("cached") is True
+    assert resume_second.metadata.get("plan") == [
+        "context_retrieval",
+        "draft_generation",
+        "validation",
+        "revision",
+    ]
     assert resume_first.confidence_scores.get("overall", 0) >= 0.7
