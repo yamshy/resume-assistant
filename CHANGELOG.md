@@ -1,3 +1,10 @@
+# [1.4.0](https://github.com/yamshy/resume-assistant/compare/v1.3.1...v1.4.0) (2025-09-22)
+
+
+### Features
+
+* streamline workspace chat composer ([8492f09](https://github.com/yamshy/resume-assistant/commit/8492f097eb853c9fc2c761a27d3b2a5dd86bfd28))
+
 ## [1.3.1](https://github.com/yamshy/resume-assistant/compare/v1.3.0...v1.3.1) (2025-09-22)
 
 
