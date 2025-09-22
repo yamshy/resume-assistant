@@ -1,3 +1,10 @@
+## [1.3.1](https://github.com/yamshy/resume-assistant/compare/v1.3.0...v1.3.1) (2025-09-22)
+
+
+### Bug Fixes
+
+* **deps:** update dependency pytest to v8.4.2 ([#26](https://github.com/yamshy/resume-assistant/issues/26)) ([5404f07](https://github.com/yamshy/resume-assistant/commit/5404f073ed0bef25dc0a6dfa389555c17d73178b))
+
 # [1.3.0](https://github.com/yamshy/resume-assistant/compare/v1.2.0...v1.3.0) (2025-09-22)
 
 
