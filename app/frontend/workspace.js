@@ -1,12 +1,10 @@
 const transcript = document.getElementById("chat-transcript");
 const chatForm = document.getElementById("chat-form");
 const chatInput = document.getElementById("chat-input");
-const knowledgeForm = document.getElementById("knowledge-form");
-const knowledgeFiles = document.getElementById("knowledge-files");
-const knowledgeNotes = document.getElementById("knowledge-notes");
-const generateForm = document.getElementById("generate-form");
-const jobDescription = document.getElementById("job-description");
+const resumeUploadInput = document.getElementById("resume-upload");
+const uploadButton = document.getElementById("upload-resumes");
 const statusMessage = document.getElementById("status-message");
+const sendButton = chatForm?.querySelector("button[type='submit']") ?? null;
 
 const initialGreeting =
   "Welcome! Upload a few of your past resumes so I can build a knowledge base, then paste a job description to create a tailored draft.";
@@ -129,31 +127,18 @@ function maybeShowProfileSnapshot(profile) {
   });
 }
 
-chatForm.addEventListener("submit", async (event) => {
-  event.preventDefault();
-  const message = chatInput.value.trim();
-  if (!message) {
-    return;
-  }
-
+async function handleChatMessage(message) {
   appendTranscriptMessage("user", message);
   conversationHistory.push({ role: "user", content: message });
-  chatInput.value = "";
-  chatInput.focus();
-
-  const submitButton = chatForm.querySelector("button[type='submit']");
-  if (submitButton) {
-    submitButton.disabled = true;
-  }
 
   setStatus("Thinking through your request...", "pending");
 
   try {
     const requestPayload = {
-      messages: conversationHistory.map((message) => {
-        const payload = { role: message.role, content: message.content };
-        if (message.metadata) {
-          payload.metadata = message.metadata;
+      messages: conversationHistory.map((entry) => {
+        const payload = { role: entry.role, content: entry.content };
+        if (entry.metadata) {
+          payload.metadata = entry.metadata;
         }
         return payload;
       }),
@@ -177,36 +162,56 @@ chatForm.addEventListener("submit", async (event) => {
     conversationHistory.push(assistantEntry);
 
     sessionState = payload?.session || sessionState;
+    maybeShowProfileSnapshot(payload?.profile_snapshot);
     setStatus("Conversation updated.", "success");
   } catch (error) {
     appendTranscriptMessage("system", "I couldn't reach the chat endpoint. Please try again.");
     setStatus(`Chat failed: ${error.message}`, "error");
-  } finally {
-    if (submitButton) {
-      submitButton.disabled = false;
-    }
   }
-});
+}
 
-knowledgeForm.addEventListener("submit", async (event) => {
-  event.preventDefault();
-  if (!knowledgeFiles.files.length) {
-    setStatus("Select at least one resume file to ingest.", "error");
+async function handleGenerationRequest(displayMessage, jobDescription) {
+  appendTranscriptMessage("user", displayMessage);
+  setStatus("Generating a tailored resume...", "pending");
+
+  try {
+    const resume = await postJSON("/generate", { job_posting: jobDescription });
+    const card = createResultCard("Generated resume", resume);
+    appendTranscriptMessage(
+      "assistant",
+      "Here's a structured resume draft based on the job description.",
+      { detailElement: card },
+    );
+    setStatus("Resume generated.", "success");
+  } catch (error) {
+    appendTranscriptMessage(
+      "system",
+      "I couldn't generate a resume. Upload resumes to the knowledge base or try again with more detail.",
+    );
+    setStatus(`Generation failed: ${error.message}`, "error");
+  }
+}
+
+async function handleKnowledgeUpload(files) {
+  if (!files.length) {
     return;
   }
 
-  const submitButton = knowledgeForm.querySelector("button[type='submit']");
-  if (submitButton) {
-    submitButton.disabled = true;
-  }
+  const summaryMessage = files.length === 1
+    ? `Uploaded ${files[0].name} for ingestion.`
+    : `Uploaded ${files.length} resumes: ${files.map((file) => file.name).join(", ")}.`;
+  appendTranscriptMessage("user", summaryMessage);
 
   const formData = new FormData();
-  Array.from(knowledgeFiles.files).forEach((file) => {
+  files.forEach((file) => {
     formData.append("resumes", file, file.name);
   });
-  const notes = knowledgeNotes.value.trim();
-  if (notes) {
-    formData.append("notes", notes);
+
+  if (uploadButton) {
+    uploadButton.disabled = true;
+  }
+  if (sendButton) {
+    sendButton.disabled = true;
   }
 
   setStatus("Processing resumes...", "pending");
@@ -227,27 +232,21 @@ knowledgeForm.addEventListener("submit", async (event) => {
 
     const detailCard = document.createElement("div");
     detailCard.className = "result-card";
+
     const skillsParagraph = document.createElement("p");
     skillsParagraph.textContent = skills.length
       ? `New skills captured: ${skills.join(", ")}`
       : "No new skills detected in this upload.";
     detailCard.appendChild(skillsParagraph);
 
-    if (result.profile_snapshot) {
-      const heading = document.createElement("h3");
-      heading.textContent = "Profile snapshot";
-      const snapshotPre = document.createElement("pre");
-      snapshotPre.textContent = JSON.stringify(result.profile_snapshot, null, 2);
-      detailCard.appendChild(heading);
-      detailCard.appendChild(snapshotPre);
-      lastProfileDigest = JSON.stringify(result.profile_snapshot);
-    }
+    const achievementsParagraph = document.createElement("p");
+    achievementsParagraph.textContent = `Achievements captured: ${achievements}`;
+    detailCard.appendChild(achievementsParagraph);
 
     appendTranscriptMessage("assistant", summaryParts.join(" "), { detailElement: detailCard });
 
+    maybeShowProfileSnapshot(result.profile_snapshot);
     setStatus("Resumes ingested successfully.", "success");
-    knowledgeForm.reset();
-    knowledgeFiles.value = "";
   } catch (error) {
     appendTranscriptMessage(
       "system",
@@ -255,46 +254,62 @@ knowledgeForm.addEventListener("submit", async (event) => {
     );
     setStatus(`Ingestion failed: ${error.message}`, "error");
   } finally {
-    if (submitButton) {
-      submitButton.disabled = false;
+    if (uploadButton) {
+      uploadButton.disabled = false;
+    }
+    if (sendButton) {
+      sendButton.disabled = false;
+    }
+    if (resumeUploadInput) {
+      resumeUploadInput.value = "";
     }
   }
-});
+}
 
-generateForm.addEventListener("submit", async (event) => {
+chatForm.addEventListener("submit", async (event) => {
   event.preventDefault();
-  const description = jobDescription.value.trim();
-  if (!description) {
-    setStatus("Paste a job description to generate a resume.", "error");
+  const rawMessage = chatInput.value;
+  const message = rawMessage.trim();
+  if (!message) {
     return;
   }
 
-  const submitButton = generateForm.querySelector("button[type='submit']");
-  if (submitButton) {
-    submitButton.disabled = true;
+  chatInput.value = "";
+  chatInput.focus();
+
+  if (sendButton) {
+    sendButton.disabled = true;
   }
 
-  setStatus("Generating a tailored resume...", "pending");
-
   try {
-    const resume = await postJSON("/generate", { job_posting: description });
-    const card = createResultCard("Generated resume", resume);
-    appendTranscriptMessage(
-      "assistant",
-      "Here's a structured resume draft based on the job description.",
-      { detailElement: card },
-    );
-    setStatus("Resume generated.", "success");
-    generateForm.reset();
-  } catch (error) {
-    appendTranscriptMessage(
-      "system",
-      "I couldn't generate a resume. Upload resumes to the knowledge base or try again with more detail.",
-    );
-    setStatus(`Generation failed: ${error.message}`, "error");
+    if (message.toLowerCase().startsWith("/generate")) {
+      const description = message.replace(/^\/generate\s*/i, "").trim();
+      if (!description) {
+        appendTranscriptMessage(
+          "system",
+          "Include the job description after /generate so I know what to tailor.",
+        );
+        setStatus("Add a job description after /generate.", "error");
+      } else {
+        await handleGenerationRequest(message, description);
+      }
+    } else {
+      await handleChatMessage(message);
+    }
   } finally {
-    if (submitButton) {
-      submitButton.disabled = false;
+    if (sendButton) {
+      sendButton.disabled = false;
     }
   }
 });
+
+if (uploadButton && resumeUploadInput) {
+  uploadButton.addEventListener("click", () => {
+    resumeUploadInput.click();
+  });
+
+  resumeUploadInput.addEventListener("change", async () => {
+    const files = Array.from(resumeUploadInput.files || []);
+    await handleKnowledgeUpload(files);
+  });
+}
