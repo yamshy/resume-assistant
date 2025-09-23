@@ -5,14 +5,43 @@ from textwrap import dedent
 from fastapi.testclient import TestClient
 
 from app import create_app
+from app.ingestion import ParsedExperience, ParsedResume
 from app.routes.generation import router as generation_router
 from app.routes.knowledge import router as knowledge_router
 
 
-def build_client() -> TestClient:
+class StubResumeIngestor:
+    async def parse_many(self, payloads, notes):  # noqa: D401
+        resumes: list[ParsedResume] = []
+        for index, (source, _text) in enumerate(payloads, start=1):
+            resumes.append(
+                ParsedResume(
+                    source=source,
+                    full_name="Taylor Candidate",
+                    email="taylor@example.com",
+                    phone="+1 555-0100",
+                    skills=["Python", "Terraform", f"Skill-{index}"],
+                    experiences=[
+                        ParsedExperience(
+                            company="Acme Corp",
+                            role="Senior Platform Engineer",
+                            achievements=[
+                                "Reduced deployment failures by 45%",
+                                "Migrated infrastructure as code to Terraform modules covering 200+ services",
+                            ],
+                        )
+                    ],
+                )
+            )
+        return resumes
+
+
+def build_client(*, install_stub_ingestor: bool = True) -> TestClient:
     temp_dir = tempfile.mkdtemp(prefix="resume-assistant-test-")
     os.environ["KNOWLEDGE_STORE_PATH"] = os.path.join(temp_dir, "knowledge.json")
     app = create_app()
+    if install_stub_ingestor:
+        app.state.resume_ingestor = StubResumeIngestor()
     return TestClient(app)
 
 
@@ -127,6 +156,25 @@ def test_knowledge_ingest_endpoint_adds_documents():
     updated_docs = len(getattr(vector_store, "_documents", []))
     expected_minimum = data["achievements_indexed"] + len(data["skills_indexed"])
     assert updated_docs >= existing_docs + expected_minimum
+
+
+def test_knowledge_ingest_endpoint_requires_openai_key():
+    client = build_client(install_stub_ingestor=False)
+
+    resume_body = dedent(
+        """
+        Alex Example
+        alex@example.com | +1 555-0200
+        Principal SRE at CloudWorks
+        - Drove SOC2 automation and reduced security review cycles by 50%
+        """
+    ).strip()
+
+    files = [("resumes", ("alex_resume.txt", resume_body, "text/plain"))]
+    response = client.post("/knowledge", files=files)
+
+    assert response.status_code == 503
+    assert response.json()["detail"] == "OpenAI API key required for resume ingestion"
 
 
 def test_frontend_served_at_root():

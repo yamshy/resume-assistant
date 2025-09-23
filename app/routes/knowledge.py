@@ -6,6 +6,7 @@ from typing import Any
 
 from fastapi import APIRouter, File, Form, HTTPException, Request, UploadFile
 
+from app.agents.ingestion_agent import MissingIngestionLLMError, ResumeIngestionError
 from app.vectorstore import VectorDocument
 
 router = APIRouter()
@@ -36,11 +37,22 @@ async def ingest_knowledge(
             detail="Uploaded resumes were empty or unreadable.",
         )
 
-    ingestor = request.app.state.resume_ingestor
+    ingestor = getattr(request.app.state, "resume_ingestor", None)
+    if ingestor is None:
+        raise HTTPException(
+            status_code=503,
+            detail="OpenAI API key required for resume ingestion",
+        )
     knowledge_store = request.app.state.knowledge_store
     vector_store = request.app.state.vector_store
 
-    parsed_resumes = await ingestor.parse_many(payloads, notes)
+    try:
+        parsed_resumes = await ingestor.parse_many(payloads, notes)
+    except (MissingIngestionLLMError, ResumeIngestionError) as exc:
+        raise HTTPException(
+            status_code=503,
+            detail="OpenAI API key required for resume ingestion",
+        ) from exc
     store_result = knowledge_store.add_resumes(parsed_resumes)
 
     documents: list[VectorDocument] = []

@@ -1,153 +1,145 @@
 import pytest
 
 from app.agents.ingestion_agent import (
-    AgentTool,
     ExtractionModel,
+    MissingIngestionLLMError,
     PlanModel,
     PlanStepModel,
     ResumeIngestionAgent,
     VerificationFeedback,
-    default_tool_registry,
 )
 from app.ingestion import ParsedExperience, ParsedResume, ResumeIngestor
 
 
+class StubCompletions:
+    def __init__(self, responses: dict[str, object]) -> None:
+        self._responses = responses
+        self.calls: list[str] = []
+
+    async def create(self, model, response_model, messages, temperature, max_retries):  # noqa: D401
+        system_message = messages[0]["content"]
+        stage = system_message.split("stage: ")[1].split(".")[0]
+        self.calls.append(stage)
+        return self._responses[stage]
+
+
+class StubChat:
+    def __init__(self, completions: StubCompletions) -> None:
+        self.completions = completions
+
+
+class StubClient:
+    def __init__(self, responses: dict[str, object]) -> None:
+        self._completions = StubCompletions(responses)
+        self.chat = StubChat(self._completions)
+
+    @property
+    def calls(self) -> list[str]:
+        return self._completions.calls
+
+
+class StubLLM:
+    def __init__(self, responses: dict[str, object]) -> None:
+        self.client = StubClient(responses)
+
+    @property
+    def calls(self) -> list[str]:
+        return self.client.calls
+
+
 @pytest.mark.asyncio
-async def test_ingestion_agent_runs_plan_and_tools(monkeypatch):
+async def test_ingestion_agent_uses_llm_responses():
     resume_text = """
     Alex Example
     alex@example.com | +1 555-0200
-    Skills: Kubernetes, Terraform, Observability
     Principal SRE at CloudWorks
-    - Drove SOC2 automation and reduced security review cycles by 50%
-    - Built global observability platform adopted by 45 teams
+    - Reduced latency by 30% through observability improvements
     """.strip()
 
-    llm_calls: list[str] = []
-    tools = default_tool_registry()
-    original_email_tool = tools["extract_email"]
-    email_invocations: list[str] = []
+    responses = {
+        "plan": PlanModel(
+            goal="Extract resume fields",
+            steps=[
+                PlanStepModel(
+                    name="collect_contacts",
+                    description="Ensure contact information is captured",
+                )
+            ],
+        ),
+        "extract": ExtractionModel(
+            full_name="Alex Example",
+            email="alex@example.com",
+            phone="+1 555-0200",
+            skills=["Python", "python", "Go"],
+            experiences=[
+                {
+                    "company": "CloudWorks",
+                    "role": "Principal SRE",
+                    "achievements": ["  Reduced latency by 30% through observability improvements  "],
+                }
+            ],
+        ),
+        "verify": VerificationFeedback(corrections={"phone": "+1 555-0300"}),
+    }
 
-    def recording_email_tool(text: str) -> str | None:
-        email_invocations.append(text)
-        return original_email_tool.func(text)
+    stub_llm = StubLLM(responses)
+    agent = ResumeIngestionAgent(llm=stub_llm, model="stub-model", temperature=0, max_retries=0)
 
-    tools["extract_email"] = AgentTool(
-        name=original_email_tool.name,
-        description=original_email_tool.description,
-        func=recording_email_tool,
-    )
-
-    agent = ResumeIngestionAgent(tool_registry=tools)
-
-    async def fake_call_llm(self, stage, payload, response_model):  # type: ignore[override]
-        llm_calls.append(stage)
-        if stage == "plan":
-            return PlanModel(
-                goal="Extract resume fields",
-                steps=[
-                    PlanStepModel(
-                        name="contacts",
-                        description="Call extract_email tool",
-                        tool="extract_email",
-                    )
-                ],
-            )
-        if stage == "extract":
-            return ExtractionModel(full_name="Alex Example", skills=["Python"], experiences=[])
-        if stage == "verify":
-            return VerificationFeedback(missing_fields=["email"])
-        return None
-
-    monkeypatch.setattr(ResumeIngestionAgent, "_call_llm", fake_call_llm, raising=False)
-
-    parsed = await agent.ingest("resume.txt", resume_text)
+    parsed = await agent.ingest("resume.txt", resume_text, notes="Highlights reliability work")
 
     assert isinstance(parsed, ParsedResume)
     assert parsed.full_name == "Alex Example"
     assert parsed.email == "alex@example.com"
-    assert parsed.skills
-    assert parsed.experiences
-    assert llm_calls == ["plan", "extract", "verify"]
-    assert email_invocations, "Expected email tool to be invoked"
+    assert parsed.phone == "+1 555-0300"
+    assert parsed.skills == ["Python", "Go"]
+    assert parsed.experiences[0].company == "CloudWorks"
+    assert parsed.experiences[0].achievements == [
+        "Reduced latency by 30% through observability improvements"
+    ]
+    assert stub_llm.calls == ["plan", "extract", "verify"]
 
 
 @pytest.mark.asyncio
-async def test_ingestor_and_agent_normalise_identically(monkeypatch):
-    resume_text = """
-    Taylor Example
-    taylor@example.com | +1 555-222-0100
-    Skills: Python, Rust, Go
-    Experience Highlights
-    - Championed observability improvements across the platform
-    """.strip()
-
-    agent = ResumeIngestionAgent(tool_registry=default_tool_registry())
-
-    async def fake_call_llm(self, stage, payload, response_model):  # type: ignore[override]
-        if stage == "plan":
-            return PlanModel(
-                goal="Ensure resume fields are extracted",
-                steps=[
-                    PlanStepModel(
-                        name="collect",
-                        description="Collect skills and experience blocks",
-                        tool="extract_skills",
-                    )
+async def test_ingestor_normalises_agent_payload():
+    class StubAgent:
+        async def ingest(self, source: str, text: str, notes: str | None = None) -> object:
+            return {
+                "full_name": "Taylor Example",
+                "email": "taylor@example.com",
+                "phone": "+1 555-0400",
+                "skills": ["Python", "python", "Go"],
+                "experiences": [
+                    ParsedExperience(
+                        company="Fallback Labs",
+                        role="Engineer",
+                        achievements=[" Reduced incidents by 40% ", ""],
+                        start_date="2021",
+                    ),
+                    {
+                        "company": "Legacy Corp",
+                        "role": "Lead",
+                        "achievements": ["Scaled platform availability"],
+                        "location": "Remote",
+                    },
                 ],
-            )
-        if stage == "extract":
-            return ExtractionModel(
-                full_name=None,
-                email=None,
-                phone=None,
-                skills=["Python", "python", "Rust"],
-                experiences=[],
-            )
-        if stage == "verify":
-            return VerificationFeedback()
-        return None
+            }
 
-    monkeypatch.setattr(ResumeIngestionAgent, "_call_llm", fake_call_llm, raising=False)
+    ingestor = ResumeIngestor(agent=StubAgent())
+    parsed = await ingestor.parse("resume.txt", "Taylor Example")
 
-    original_maybe_invoke = ResumeIngestionAgent._maybe_invoke
-
-    async def fake_maybe_invoke(self, tool_name, text):
-        if tool_name == "extract_skills":
-            return ["python", "Go", " rust "]
-        if tool_name == "extract_experiences":
-            return [
-                {
-                    "company": "Fallback Labs",
-                    "role": "",
-                    "achievements": ["  Shipped ML platform  ", ""],
-                    "start_date": "2020",
-                    "location": "Remote",
-                },
-                ParsedExperience(
-                    company="Legacy Corp",
-                    role="Engineer",
-                    achievements=["Maintained critical systems", ""],
-                    end_date="2019",
-                ),
-            ]
-        return await original_maybe_invoke(self, tool_name, text)
-
-    monkeypatch.setattr(ResumeIngestionAgent, "_maybe_invoke", fake_maybe_invoke, raising=False)
-
-    parsed_agent = await agent.ingest("resume.txt", resume_text)
-
-    ingestor = ResumeIngestor(agent=agent)
-    parsed_ingestor = await ingestor.parse("resume.txt", resume_text)
-
-    assert parsed_agent == parsed_ingestor
-    assert parsed_agent.skills == ["Python", "Rust", "Go"]
-    assert [exp.company for exp in parsed_agent.experiences] == [
+    assert parsed.full_name == "Taylor Example"
+    assert parsed.skills == ["Python", "Go"]
+    assert [exp.company for exp in parsed.experiences] == [
         "Fallback Labs",
         "Legacy Corp",
     ]
-    assert parsed_agent.experiences[0].role == "Professional"
-    assert parsed_agent.experiences[0].achievements == ["Shipped ML platform"]
-    assert parsed_agent.experiences[0].location == "Remote"
-    assert parsed_agent.experiences[1].achievements == ["Maintained critical systems"]
-    assert parsed_agent.experiences[1].end_date == "2019"
+    assert parsed.experiences[0].achievements == ["Reduced incidents by 40%"]
+    assert parsed.experiences[1].location == "Remote"
+
+
+def test_ingestion_agent_requires_llm_client():
+    class NoClientLLM:
+        pass
+
+    with pytest.raises(MissingIngestionLLMError):
+        ResumeIngestionAgent(llm=NoClientLLM())

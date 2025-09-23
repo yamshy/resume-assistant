@@ -8,7 +8,7 @@ from typing import TYPE_CHECKING, Any, Iterable, Sequence
 from .ingestion_utils import coerce_experiences, dedupe_skills
 
 if TYPE_CHECKING:  # pragma: no cover - import used only for typing
-    from .agents import AgentTool, ResumeIngestionAgent
+    from .agents import ResumeIngestionAgent
 
 
 @dataclass
@@ -56,21 +56,8 @@ class ParsedResume:
 class ResumeIngestor:
     """Thin wrapper around :class:`ResumeIngestionAgent` with normalised output."""
 
-    def __init__(
-        self,
-        *,
-        agent: "ResumeIngestionAgent" | None = None,
-        tools: dict[str, "AgentTool"] | None = None,
-    ) -> None:
-        if agent is not None and tools is not None:
-            raise ValueError("Specify either an agent or tools, not both.")
-        if agent is None:
-            from .agents import ResumeIngestionAgent, default_tool_registry
-
-            registry = tools if tools is not None else default_tool_registry()
-            self.agent = ResumeIngestionAgent(tool_registry=registry)
-        else:
-            self.agent = agent
+    def __init__(self, agent: "ResumeIngestionAgent") -> None:
+        self.agent = agent
 
     async def parse(self, source: str, text: str, notes: str | None = None) -> ParsedResume:
         """Parse a resume body into structured components via the ingestion agent."""
