@@ -1,18 +1,85 @@
 import os
 import tempfile
+from contextlib import ExitStack
 from textwrap import dedent
+from unittest.mock import patch
 
 from fastapi.testclient import TestClient
 
 from app import create_app
+from app.ingestion import ParsedExperience, ParsedResume
 from app.routes.generation import router as generation_router
 from app.routes.knowledge import router as knowledge_router
 
 
-def build_client() -> TestClient:
+class StubIngestionAgent:
+    def __init__(self, *, client=None, **_: object) -> None:
+        self.client = client
+
+    async def ingest(self, source: str, text: str, notes: str | None = None) -> ParsedResume:
+        del notes
+        lines = [line.strip() for line in text.splitlines() if line.strip()]
+        full_name = lines[0] if lines else None
+        email = None
+        phone = None
+        for line in lines:
+            if "@" in line:
+                for segment in line.split("|"):
+                    candidate = segment.strip()
+                    if "@" in candidate and email is None:
+                        email = candidate
+                    if any(char.isdigit() for char in candidate) and phone is None:
+                        phone = candidate
+            if email and phone:
+                break
+        skills: list[str] = []
+        for line in lines:
+            if line.lower().startswith("skills:"):
+                _, _, trailing = line.partition(":")
+                skills.extend(
+                    token.strip() for token in trailing.split(",") if token.strip()
+                )
+        achievements = [
+            line.lstrip("-*• ").strip()
+            for line in lines
+            if line.startswith("-") or line.startswith("•")
+        ]
+        experiences = []
+        if achievements:
+            experiences.append(
+                ParsedExperience(
+                    company="Stub Company",
+                    role="Stub Role",
+                    achievements=[ach for ach in achievements if ach],
+                )
+            )
+        return ParsedResume(
+            source=source,
+            full_name=full_name,
+            email=email,
+            phone=phone,
+            skills=list(dict.fromkeys(skills)),
+            experiences=experiences,
+        )
+
+
+def build_client(*, with_ingestion_stub: bool = True) -> TestClient:
     temp_dir = tempfile.mkdtemp(prefix="resume-assistant-test-")
     os.environ["KNOWLEDGE_STORE_PATH"] = os.path.join(temp_dir, "knowledge.json")
-    app = create_app()
+    if with_ingestion_stub:
+        with ExitStack() as stack:
+            stack.enter_context(
+                patch("app.app_factory.ResumeIngestionAgent", StubIngestionAgent)
+            )
+            stack.enter_context(
+                patch("app.agents.ResumeIngestionAgent", StubIngestionAgent)
+            )
+            stack.enter_context(
+                patch("app.agents.ingestion_agent.ResumeIngestionAgent", StubIngestionAgent)
+            )
+            app = create_app()
+    else:
+        app = create_app()
     return TestClient(app)
 
 
@@ -127,6 +194,25 @@ def test_knowledge_ingest_endpoint_adds_documents():
     updated_docs = len(getattr(vector_store, "_documents", []))
     expected_minimum = data["achievements_indexed"] + len(data["skills_indexed"])
     assert updated_docs >= existing_docs + expected_minimum
+
+
+def test_knowledge_endpoint_requires_openai_key_when_unconfigured():
+    os.environ.pop("OPENAI_API_KEY", None)
+    client = build_client(with_ingestion_stub=False)
+
+    resume_body = dedent(
+        """
+        Taylor Candidate
+        taylor@example.com | +1 555-0100
+        Skills: Python, AWS, Terraform
+        """
+    ).strip()
+
+    files = [("resumes", ("resume.txt", resume_body, "text/plain"))]
+    response = client.post("/knowledge", files=files)
+
+    assert response.status_code == 503
+    assert response.json()["detail"] == "OpenAI API key required for resume ingestion"
 
 
 def test_frontend_served_at_root():

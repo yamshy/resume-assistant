@@ -73,18 +73,7 @@ def coerce_experiences(
             )
         )
 
-    if normalised:
-        return normalised
-
-    summary = " ".join(line.strip() for line in text.splitlines() if line.strip())
-    achievements = [summary[:240]] if summary else []
-    return [
-        ParsedExperience(
-            company="Uploaded Resume",
-            role="Professional",
-            achievements=achievements,
-        )
-    ]
+    return normalised
 
 
 def _coerce_single_experience(entry: Any) -> dict[str, Any] | None:

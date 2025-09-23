@@ -9,7 +9,11 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 
-from .agents import ResumeIngestionAgent
+from .agents import (
+    IngestionAgentError,
+    MissingIngestionLLMError,
+    ResumeIngestionAgent,
+)
 from .dependencies import build_dependencies
 from .generator import ResumeGenerator
 from .ingestion import ResumeIngestor
@@ -38,8 +42,16 @@ def create_app() -> FastAPI:
     dependencies = build_dependencies()
 
     ingestion_client = resolve_ingestion_client()
-    ingestion_agent = ResumeIngestionAgent(client=ingestion_client)
-    ingestor = ResumeIngestor(agent=ingestion_agent)
+    ingestion_agent: ResumeIngestionAgent | None = None
+    ingestor: ResumeIngestor | None = None
+    ingestion_error: IngestionAgentError | None = None
+    try:
+        ingestion_agent = ResumeIngestionAgent(client=ingestion_client)
+        ingestor = ResumeIngestor(agent=ingestion_agent)
+    except MissingIngestionLLMError as exc:
+        ingestion_error = exc
+    except IngestionAgentError as exc:
+        ingestion_error = exc
     generator = ResumeGenerator(
         cache=dependencies.cache,
         vector_store=dependencies.vector_store,
@@ -59,6 +71,7 @@ def create_app() -> FastAPI:
     app.state.generator = generator
     app.state.resume_ingestor = ingestor
     app.state.resume_ingestion_agent = ingestion_agent
+    app.state.resume_ingestion_error = ingestion_error
 
     app.include_router(generation_router)
     app.include_router(knowledge_router)
