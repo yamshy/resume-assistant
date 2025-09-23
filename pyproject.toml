@@ -9,7 +9,7 @@ dependencies = [
     "instructor==1.7.0",
     "openai==1.108.2",
     "anthropic==0.68.0",
-    "pydantic==2.10.0",
+    "pydantic==2.11.9",
     "redis==6.4.0",
     "python-multipart==0.0.20",
     "langsmith==0.2.7",
