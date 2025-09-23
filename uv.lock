@@ -245,15 +245,15 @@ wheels = [
 
 [[package]]
 name = "fakeredis"
-version = "2.23.2"
+version = "2.31.3"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "redis" },
     { name = "sortedcontainers" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/8f/d2/e094974d8822e5434a504447e92a719d439b9aff57497891ce2e0ba788bd/fakeredis-2.23.2.tar.gz", hash = "sha256:d649c409abe46c63690b6c35d3c460e4ce64c69a52cea3f02daff2649378f878", size = 132956, upload-time = "2024-05-18T16:56:30.846Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/96/1e/27170815a9768d2eaf72e66dfad38047b55ea278df84b539ad0045ca1538/fakeredis-2.31.3.tar.gz", hash = "sha256:76dfb92855f0787a4936a5b4fdb1905c5909ec790e62dff2b8896b412905deb0", size = 170984, upload-time = "2025-09-22T12:24:54.471Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/c8/41/a381828c92a09bf10a54a35555232e692978897bae400e87292ad369c047/fakeredis-2.23.2-py3-none-any.whl", hash = "sha256:3721946b955930c065231befd24a9cdc68b339746e93848ef01a010d98e4eb4f", size = 87923, upload-time = "2024-05-18T16:56:28.534Z" },
+    { url = "https://files.pythonhosted.org/packages/07/d6/7cad31e16b7d8343ed7abf5ddb039a063b32a300def1aa487d91b4a5c831/fakeredis-2.31.3-py3-none-any.whl", hash = "sha256:12aa54a3fb00984c18b28956addb91683aaf55b2dc2ef4b09d49bd481032e57a", size = 118398, upload-time = "2025-09-22T12:24:52.751Z" },
 ]
 
 [[package]]
@@ -1128,7 +1128,7 @@ dev = [
 [package.metadata]
 requires-dist = [
     { name = "anthropic", specifier = "==0.68.0" },
-    { name = "fakeredis", marker = "extra == 'dev'", specifier = "==2.23.2" },
+    { name = "fakeredis", marker = "extra == 'dev'", specifier = "==2.31.3" },
     { name = "fastapi", extras = ["standard"], specifier = "==0.117.1" },
     { name = "instructor", specifier = "==1.7.0" },
     { name = "langsmith", specifier = "==0.2.7" },
