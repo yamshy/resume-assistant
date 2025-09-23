@@ -204,6 +204,15 @@ wheels = [
 ]
 
 [[package]]
+name = "diskcache"
+version = "5.6.3"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/3f/21/1c1ffc1a039ddcc459db43cc108658f32c57d271d7289a2794e401d0fdb6/diskcache-5.6.3.tar.gz", hash = "sha256:2c3a3fa2743d8535d832ec61c2054a1641f41775aa7c556758a109941e33e4fc", size = 67916, upload-time = "2023-08-31T06:12:00.316Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/3f/27/4570e78fc0bf5ea0ca45eb1de3818a23787af9b390c0b0a0033a1b8236f9/diskcache-5.6.3-py3-none-any.whl", hash = "sha256:5e31b2d5fbad117cc363ebaf6b689474db18a1f6438bc82358b024abd4c2ca19", size = 45550, upload-time = "2023-08-31T06:11:58.822Z" },
+]
+
+[[package]]
 name = "distro"
 version = "1.9.0"
 source = { registry = "https://pypi.org/simple" }
@@ -457,10 +466,11 @@ wheels = [
 
 [[package]]
 name = "instructor"
-version = "1.7.0"
+version = "1.11.3"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "aiohttp" },
+    { name = "diskcache" },
     { name = "docstring-parser" },
     { name = "jinja2" },
     { name = "jiter" },
@@ -472,9 +482,9 @@ dependencies = [
     { name = "tenacity" },
     { name = "typer" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/b5/5f/5326d811f8cd59fc4fffbd629c91eeb82a345a2375ad34500c2755aab4d8/instructor-1.7.0.tar.gz", hash = "sha256:51b308ae9c5e4d56096514be785ac4f28f710c91bed80af74412fc21593431b3", size = 57079, upload-time = "2024-11-27T16:07:33.686Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/6a/af/428b5d7a6a6eca5738c51706795a395099c141779cd1bbb9a6e2b0d3a94d/instructor-1.11.3.tar.gz", hash = "sha256:6f58fea6fadfa228c411ecdedad4662230c456718f4a770a97a806dcb36b3287", size = 69879936, upload-time = "2025-09-09T15:44:31.548Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/07/84/2351df1678678f4a0a2c251f986d05e0ba090199f7a9f39e6d152b314946/instructor-1.7.0-py3-none-any.whl", hash = "sha256:0bff965d71a5398aed9d3f728e07ffb7b5050569c81f306c0e5a8d022071fe29", size = 70145, upload-time = "2024-11-27T16:07:32.364Z" },
+    { url = "https://files.pythonhosted.org/packages/4c/5f/54783e5b1a497de204a0a59b5e22549f67f5f1aceaa08e00db21b1107ce4/instructor-1.11.3-py3-none-any.whl", hash = "sha256:9ecd7a3780a045506165debad2ddcc4a30e1057f06997973185f356b0a42c6e3", size = 155501, upload-time = "2025-09-09T15:44:26.139Z" },
 ]
 
 [[package]]
@@ -1118,7 +1128,7 @@ requires-dist = [
     { name = "anthropic", specifier = "==0.68.0" },
     { name = "fakeredis", marker = "extra == 'dev'", specifier = "==2.31.3" },
     { name = "fastapi", extras = ["standard"], specifier = "==0.117.1" },
-    { name = "instructor", specifier = "==1.7.0" },
+    { name = "instructor", specifier = "==1.11.3" },
     { name = "langsmith", specifier = "==0.2.7" },
     { name = "mypy", marker = "extra == 'dev'", specifier = "==1.13.0" },
     { name = "openai", specifier = "==1.108.2" },
