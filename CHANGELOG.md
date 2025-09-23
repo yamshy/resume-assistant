@@ -1,3 +1,10 @@
+## [1.4.3](https://github.com/yamshy/resume-assistant/compare/v1.4.2...v1.4.3) (2025-09-23)
+
+
+### Bug Fixes
+
+* **deps:** update dependency ruff to v0.13.1 ([36bc89e](https://github.com/yamshy/resume-assistant/commit/36bc89e496f48430d7c2e023ea5537dd3ad7aacb))
+
 ## [1.4.2](https://github.com/yamshy/resume-assistant/compare/v1.4.1...v1.4.2) (2025-09-23)
 
 
