@@ -194,6 +194,12 @@ body {
   line-height: 1.5;
 }
 
+.upload-configuration-note {
+  margin: 0;
+  font-size: 0.85rem;
+  color: #b91c1c;
+}
+
 .hint-command {
   font-weight: 600;
   color: var(--accent-dark);

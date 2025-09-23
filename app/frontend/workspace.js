@@ -5,6 +5,13 @@ const resumeUploadInput = document.getElementById("resume-upload");
 const uploadButton = document.getElementById("upload-resumes");
 const statusMessage = document.getElementById("status-message");
 const sendButton = chatForm?.querySelector("button[type='submit']") ?? null;
+const composerHint = chatForm?.querySelector(".composer-hint") ?? null;
+
+const knowledgeUploadFallbackMessage =
+  "Something went wrong while ingesting resumes. Double-check the files and try again.";
+const missingOpenAIKeyNote = "Set the OPENAI_API_KEY environment variable to enable resume ingestion.";
+
+let uploadConfigurationNote = null;
 
 const initialGreeting =
   "Welcome! Upload a few of your past resumes so I can build a knowledge base, then paste a job description to create a tailored draft.";
@@ -33,6 +40,50 @@ function appendTranscriptMessage(role, text, options = {}) {
   transcript.appendChild(article);
   transcript.scrollTop = transcript.scrollHeight;
   return article;
+}
+
+function getErrorMessage(error) {
+  if (!error) {
+    return "";
+  }
+  if (typeof error === "string") {
+    return error.trim();
+  }
+  if (typeof error.message === "string") {
+    return error.message.trim();
+  }
+  return "";
+}
+
+function mentionsMissingOpenAIKey(message) {
+  if (!message) {
+    return false;
+  }
+  const normalized = message.toLowerCase();
+  return normalized.includes("openai api key") || normalized.includes("openai_api_key");
+}
+
+function showUploadConfigurationNote(message) {
+  if (!chatForm) {
+    return;
+  }
+  if (!uploadConfigurationNote) {
+    uploadConfigurationNote = document.createElement("p");
+    uploadConfigurationNote.className = "upload-configuration-note";
+    if (composerHint) {
+      chatForm.insertBefore(uploadConfigurationNote, composerHint);
+    } else {
+      chatForm.appendChild(uploadConfigurationNote);
+    }
+  }
+  uploadConfigurationNote.textContent = message;
+}
+
+function hideUploadConfigurationNote() {
+  if (uploadConfigurationNote?.parentElement) {
+    uploadConfigurationNote.parentElement.removeChild(uploadConfigurationNote);
+  }
+  uploadConfigurationNote = null;
 }
 
 function createResultCard(title, content) {
@@ -247,12 +298,19 @@ async function handleKnowledgeUpload(files) {
 
     maybeShowProfileSnapshot(result.profile_snapshot);
     setStatus("Resumes ingested successfully.", "success");
+    hideUploadConfigurationNote();
   } catch (error) {
-    appendTranscriptMessage(
-      "system",
-      "Something went wrong while ingesting resumes. Double-check the files and try again.",
-    );
-    setStatus(`Ingestion failed: ${error.message}`, "error");
+    const errorMessage = getErrorMessage(error);
+    const displayMessage = errorMessage || knowledgeUploadFallbackMessage;
+
+    appendTranscriptMessage("system", displayMessage);
+    setStatus(`Ingestion failed: ${displayMessage}`, "error");
+
+    if (mentionsMissingOpenAIKey(displayMessage)) {
+      showUploadConfigurationNote(missingOpenAIKeyNote);
+    } else {
+      hideUploadConfigurationNote();
+    }
   } finally {
     if (uploadButton) {
       uploadButton.disabled = false;
