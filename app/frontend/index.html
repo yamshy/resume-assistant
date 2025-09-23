@@ -7,60 +7,68 @@
     <link rel="stylesheet" href="/static/styles.css" />
   </head>
   <body>
-    <div class="chat-shell">
-      <section class="chat-panel" aria-label="Resume assistant chat">
-        <header class="chat-panel__header">
-          <h1>Resume Assistant</h1>
-          <p class="chat-panel__tagline">
-            Chat with the resume assistant, upload past resumes, and generate drafts tailored to any job posting.
+    <main class="workspace" aria-label="Resume assistant workspace">
+      <header class="workspace__header">
+        <div class="workspace__headline">
+          <p class="workspace__eyebrow">Resume Assistant</p>
+          <h1>Guide ingestion and generation from a single conversation</h1>
+          <p class="workspace__subtitle">
+            Start in ingestion mode to teach me about your experience, then switch to generation when you're ready for a tailored
+            draft. You can always send a quick message if you need a human-in-the-loop adjustment.
           </p>
-        </header>
-        <div class="chat-panel__body">
-          <section
-            id="chat-transcript"
-            class="transcript"
-            aria-live="polite"
-            aria-label="Conversation history"
-          >
-            <article class="message assistant">
-              <div class="message-role">Assistant</div>
-              <p>
-                Welcome! Upload a few of your past resumes so I can build a knowledge base, then paste a job description to
-                create a tailored draft.
-              </p>
-            </article>
-          </section>
-          <form id="chat-form" class="chat-composer" autocomplete="off">
-            <input
-              id="resume-upload"
-              name="resumes"
-              type="file"
-              accept=".txt,.md,.pdf,.doc,.docx,.rtf"
-              multiple
-              hidden
-            />
-            <div class="composer-main">
-              <button type="button" id="upload-resumes" class="chat-attach">Upload resumes</button>
-              <label for="chat-input" class="sr-only">Message</label>
-              <input
-                id="chat-input"
-                class="chat-input"
-                name="message"
-                type="text"
-                placeholder="Ask about your profile or share a job requirement..."
-                required
-              />
-              <button type="submit" class="chat-send">Send</button>
-            </div>
-            <p class="composer-hint">
-              Tip: Upload resumes whenever you gain new experience. Type <span class="hint-command">/generate</span> followed by a
-              job description to create a tailored resume draft.
-            </p>
-          </form>
         </div>
-        <p id="status-message" class="status-message" role="status" aria-live="polite"></p>
+        <div class="mode-toggle" role="tablist" aria-label="Workflow mode">
+          <button class="mode-toggle__option is-active" data-mode="ingest" aria-selected="true">Ingestion</button>
+          <button class="mode-toggle__option" data-mode="generate" aria-selected="false">Generation</button>
+        </div>
+      </header>
+      <section class="workspace__body">
+        <section
+          id="chat-transcript"
+          class="transcript"
+          aria-live="polite"
+          aria-label="Conversation history"
+        ></section>
+        <form id="chat-form" class="composer" autocomplete="off">
+          <input
+            id="resume-upload"
+            name="resumes"
+            type="file"
+            accept=".txt,.md,.pdf,.doc,.docx,.rtf"
+            multiple
+            hidden
+          />
+          <div id="drop-zone" class="drop-zone" tabindex="0" role="button" aria-label="Add files">
+            <div class="drop-zone__icon" aria-hidden="true">📎</div>
+            <div class="drop-zone__text">
+              <p class="drop-zone__label" data-mode-label>Drop resumes or click to upload</p>
+              <p class="drop-zone__hint">PDF, DOCX, RTF, Markdown, or plain text</p>
+            </div>
+            <button type="button" id="upload-resumes" class="drop-zone__action">Browse files</button>
+          </div>
+          <ul id="selected-files" class="selected-files" aria-live="polite"></ul>
+          <label for="text-input" class="sr-only">Workspace input</label>
+          <textarea
+            id="text-input"
+            class="composer__textarea"
+            name="message"
+            rows="4"
+            placeholder="Paste resume updates or describe what you need..."
+          ></textarea>
+          <div class="composer__controls">
+            <button type="submit" class="composer__primary" data-action="workflow">Ingest content</button>
+            <button type="submit" class="composer__secondary" data-action="chat">Send message</button>
+          </div>
+          <p id="composer-hint" class="composer__hint">
+            Tip: In ingestion mode you can drop multiple resumes or paste a quick highlight for me to store.
+          </p>
+          <p class="composer__legacy-note">
+            Legacy shortcut: type <span class="hint-command">/generate</span> followed by a job description if you prefer commands.
+          </p>
+        </form>
       </section>
-    </div>
+      <p id="status-message" class="status-message" role="status" aria-live="polite"></p>
+    </main>
     <script src="/static/workspace.js" type="module"></script>
   </body>
 </html>
