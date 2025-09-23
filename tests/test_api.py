@@ -5,6 +5,8 @@ from textwrap import dedent
 from fastapi.testclient import TestClient
 
 from app import create_app
+from app.routes.generation import router as generation_router
+from app.routes.knowledge import router as knowledge_router
 
 
 def build_client() -> TestClient:
@@ -12,6 +14,14 @@ def build_client() -> TestClient:
     os.environ["KNOWLEDGE_STORE_PATH"] = os.path.join(temp_dir, "knowledge.json")
     app = create_app()
     return TestClient(app)
+
+
+def test_route_modules_expose_expected_paths() -> None:
+    generation_paths = {route.path for route in generation_router.routes}
+    assert {"/chat", "/generate", "/validate"}.issubset(generation_paths)
+
+    knowledge_paths = {route.path for route in knowledge_router.routes}
+    assert "/knowledge" in knowledge_paths
 
 
 def test_generate_endpoint_returns_structured_resume():
