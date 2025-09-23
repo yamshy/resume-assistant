@@ -1,3 +1,10 @@
+## [1.4.1](https://github.com/yamshy/resume-assistant/compare/v1.4.0...v1.4.1) (2025-09-23)
+
+
+### Bug Fixes
+
+* **deps:** update dependency anthropic to v0.68.0 ([#18](https://github.com/yamshy/resume-assistant/issues/18)) ([2f70ef2](https://github.com/yamshy/resume-assistant/commit/2f70ef2d8ebdc460feba8e0860595b0c085253ee))
+
 # [1.4.0](https://github.com/yamshy/resume-assistant/compare/v1.3.1...v1.4.0) (2025-09-22)
 
 
