@@ -25,51 +25,62 @@ body {
   min-height: 100vh;
   display: flex;
   justify-content: center;
-  padding: 32px 16px 48px;
+  align-items: center;
+  padding: 32px 16px;
 }
 
-.app-shell {
+.chat-shell {
+  width: min(1040px, 100%);
+}
+
+.chat-panel {
+  background: var(--panel-bg);
+  border-radius: 28px;
+  box-shadow: var(--shadow);
   width: min(960px, 100%);
   display: flex;
   flex-direction: column;
-  gap: 24px;
+  overflow: hidden;
+  height: min(90vh, 960px);
 }
 
-.app-header {
-  background: var(--panel-bg);
-  border-radius: 20px;
-  padding: 28px 32px;
-  box-shadow: var(--shadow);
+.chat-panel__header {
+  padding: 32px 36px 24px;
+  border-bottom: 1px solid var(--border);
 }
 
-.app-header h1 {
+.chat-panel__header h1 {
   margin: 0;
   font-size: clamp(1.8rem, 2.2vw, 2.4rem);
 }
 
-.app-tagline {
+.chat-panel__tagline {
   margin: 12px 0 0;
   font-size: 1rem;
   color: var(--text-secondary);
   line-height: 1.6;
 }
 
-.workspace {
+.chat-panel__body {
+  flex: 1;
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: 24px;
+  padding: 24px 36px 32px;
+  min-height: 0;
 }
 
 .transcript {
-  background: var(--panel-bg);
-  border-radius: 24px;
+  flex: 1;
+  background: rgba(59, 130, 246, 0.05);
+  border-radius: 20px;
+  border: 1px solid var(--border);
   padding: 24px;
-  box-shadow: var(--shadow);
   display: flex;
   flex-direction: column;
   gap: 16px;
-  max-height: 620px;
   overflow-y: auto;
+  min-height: 0;
 }
 
 .message {
@@ -103,13 +114,12 @@ body {
 }
 
 .chat-composer {
-  background: var(--panel-bg);
-  border-radius: 24px;
-  padding: 16px 20px;
-  box-shadow: var(--shadow);
+  margin: 0;
+  padding: 18px 0 0;
   display: flex;
   flex-direction: column;
   gap: 12px;
+  border-top: 1px solid var(--border);
 }
 
 .composer-main {
@@ -206,11 +216,12 @@ body {
 }
 
 .status-message {
-  margin: -8px 0 0;
-  text-align: center;
+  margin: 0;
+  padding: 0 36px 28px;
+  text-align: left;
   font-size: 0.95rem;
   color: var(--text-secondary);
-  min-height: 20px;
+  min-height: 24px;
 }
 
 .status-message.is-success {
@@ -265,15 +276,25 @@ body {
 
 @media (max-width: 960px) {
   body {
-    padding: 24px 12px 36px;
+    padding: 20px 12px;
+    align-items: stretch;
   }
 
-  .app-shell {
+  .chat-panel {
+    height: auto;
+  }
+
+  .chat-panel__header {
+    padding: 24px 20px 20px;
+  }
+
+  .chat-panel__body {
+    padding: 20px;
     gap: 20px;
   }
 
   .transcript {
-    max-height: unset;
+    padding: 20px;
   }
 
   .composer-main {
@@ -289,5 +310,9 @@ body {
 
   .chat-send {
     width: 100%;
+  }
+
+  .status-message {
+    padding: 0 20px 20px;
   }
 }
