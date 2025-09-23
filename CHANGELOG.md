@@ -1,3 +1,10 @@
+## [1.4.5](https://github.com/yamshy/resume-assistant/compare/v1.4.4...v1.4.5) (2025-09-23)
+
+
+### Bug Fixes
+
+* **deps:** update dependency fakeredis to v2.31.3 ([#27](https://github.com/yamshy/resume-assistant/issues/27)) ([66610cd](https://github.com/yamshy/resume-assistant/commit/66610cd4b4c6e8c770298b939f2c30cef3719a5f))
+
 ## [1.4.4](https://github.com/yamshy/resume-assistant/compare/v1.4.3...v1.4.4) (2025-09-23)
 
 
