@@ -1,3 +1,10 @@
+## [1.6.1](https://github.com/yamshy/resume-assistant/compare/v1.6.0...v1.6.1) (2025-09-23)
+
+
+### Bug Fixes
+
+* **deps:** update dependency redis to v6 ([#67](https://github.com/yamshy/resume-assistant/issues/67)) ([67e53ac](https://github.com/yamshy/resume-assistant/commit/67e53acefa133f7351499ce4cebb5dccbb6d8204))
+
 # [1.6.0](https://github.com/yamshy/resume-assistant/compare/v1.5.0...v1.6.0) (2025-09-23)
 
 
