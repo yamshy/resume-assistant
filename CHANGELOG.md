@@ -1,3 +1,10 @@
+## [1.4.2](https://github.com/yamshy/resume-assistant/compare/v1.4.1...v1.4.2) (2025-09-23)
+
+
+### Bug Fixes
+
+* **deps:** update dependency openai to v1.108.2 ([#55](https://github.com/yamshy/resume-assistant/issues/55)) ([da297c4](https://github.com/yamshy/resume-assistant/commit/da297c4d9622d31814420db302e5cb4b68b3b515))
+
 ## [1.4.1](https://github.com/yamshy/resume-assistant/compare/v1.4.0...v1.4.1) (2025-09-23)
 
 
