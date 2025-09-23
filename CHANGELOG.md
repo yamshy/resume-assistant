@@ -1,3 +1,10 @@
+# [1.6.0](https://github.com/yamshy/resume-assistant/compare/v1.5.0...v1.6.0) (2025-09-23)
+
+
+### Features
+
+* redesign workspace into single chat panel ([#70](https://github.com/yamshy/resume-assistant/issues/70)) ([f5776fd](https://github.com/yamshy/resume-assistant/commit/f5776fd883ff73eb7d1d83b0b38f9339f0eb4cda))
+
 # [1.5.0](https://github.com/yamshy/resume-assistant/compare/v1.4.5...v1.5.0) (2025-09-23)
 
 
