@@ -5,6 +5,8 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from typing import TYPE_CHECKING, Any, Iterable, Sequence
 
+from .ingestion_utils import coerce_experiences, dedupe_skills
+
 if TYPE_CHECKING:  # pragma: no cover - import used only for typing
     from .agents import AgentTool, ResumeIngestionAgent
 
@@ -103,8 +105,8 @@ class ResumeIngestor:
             experiences_input = resume.get("experiences", [])
         else:  # pragma: no cover - defensive guard for unexpected outputs
             raise TypeError("Unsupported resume payload from agent")
-        experiences = self._coerce_experiences(experiences_input, text)
-        skills = self._dedupe_skills(skills)
+        experiences = coerce_experiences(experiences_input, text)
+        skills = dedupe_skills(skills)
         return ParsedResume(
             source=source,
             full_name=full_name,
@@ -114,61 +116,3 @@ class ResumeIngestor:
             experiences=experiences,
         )
 
-    def _coerce_experiences(
-        self, experiences: Sequence[Any], text: str
-    ) -> list[ParsedExperience]:
-        parsed: list[ParsedExperience] = []
-        for entry in experiences:
-            if isinstance(entry, ParsedExperience):
-                parsed.append(
-                    ParsedExperience(
-                        company=entry.company,
-                        role=entry.role,
-                        achievements=list(entry.achievements),
-                        start_date=entry.start_date,
-                        end_date=entry.end_date,
-                        location=entry.location,
-                    )
-                )
-                continue
-            if isinstance(entry, dict):
-                achievements = [
-                    str(achievement).strip()
-                    for achievement in entry.get("achievements", [])
-                    if str(achievement).strip()
-                ]
-                parsed.append(
-                    ParsedExperience(
-                        company=str(entry.get("company") or "Experience"),
-                        role=str(entry.get("role") or "Professional"),
-                        achievements=achievements,
-                        start_date=entry.get("start_date"),
-                        end_date=entry.get("end_date"),
-                        location=entry.get("location"),
-                    )
-                )
-                continue
-        if parsed:
-            return parsed
-        summary = " ".join(line.strip() for line in text.splitlines() if line.strip())
-        achievements = [summary[:240]] if summary else []
-        return [
-            ParsedExperience(
-                company="Uploaded Resume",
-                role="Professional",
-                achievements=achievements,
-            )
-        ]
-
-    def _dedupe_skills(self, skills: Sequence[str]) -> list[str]:
-        deduped: list[str] = []
-        seen: set[str] = set()
-        for skill in skills:
-            cleaned = skill.strip()
-            if not cleaned:
-                continue
-            key = cleaned.lower()
-            if key not in seen:
-                seen.add(key)
-                deduped.append(cleaned)
-        return deduped
