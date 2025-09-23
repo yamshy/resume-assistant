@@ -1,3 +1,5 @@
+from types import SimpleNamespace
+
 import pytest
 
 from app.agents.ingestion_agent import (
@@ -70,6 +72,28 @@ async def test_ingestion_agent_runs_plan_and_tools(monkeypatch):
     assert parsed.experiences
     assert llm_calls == ["plan", "extract", "verify"]
     assert email_invocations, "Expected email tool to be invoked"
+
+
+@pytest.mark.asyncio
+async def test_call_llm_uses_explicit_client(monkeypatch):
+    agent = ResumeIngestionAgent(tool_registry=default_tool_registry())
+
+    class FakeCompletions:
+        def __init__(self) -> None:
+            self.calls: list[dict[str, object]] = []
+
+        async def create(self, **kwargs):
+            self.calls.append(kwargs)
+            return PlanModel(goal="ingest")
+
+    completions = FakeCompletions()
+    agent._client = SimpleNamespace(chat=SimpleNamespace(completions=completions))
+
+    result = await agent._call_llm("plan", {"payload": True}, PlanModel)
+
+    assert isinstance(result, PlanModel)
+    assert result.goal == "ingest"
+    assert completions.calls, "Expected structured client to receive a call"
 
 
 @pytest.mark.asyncio
@@ -151,3 +175,21 @@ async def test_ingestor_and_agent_normalise_identically(monkeypatch):
     assert parsed_agent.experiences[0].location == "Remote"
     assert parsed_agent.experiences[1].achievements == ["Maintained critical systems"]
     assert parsed_agent.experiences[1].end_date == "2019"
+
+
+def test_ingestor_resolves_ingestion_client(monkeypatch):
+    captured: dict[str, object] = {}
+
+    class FakeAgent:
+        def __init__(self, *, tool_registry, client):
+            captured["client"] = client
+            self.tool_registry = tool_registry
+
+    monkeypatch.setattr("app.ingestion.resolve_ingestion_client", lambda: "sentinel-client")
+    monkeypatch.setattr("app.agents.ResumeIngestionAgent", FakeAgent)
+    monkeypatch.setattr("app.agents.ingestion_agent.ResumeIngestionAgent", FakeAgent)
+
+    ingestor = ResumeIngestor(tools={})
+
+    assert isinstance(ingestor.agent, FakeAgent)
+    assert captured["client"] == "sentinel-client"

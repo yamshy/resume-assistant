@@ -6,8 +6,12 @@ from dataclasses import dataclass, field
 from typing import TYPE_CHECKING, Any, Iterable, Sequence
 
 from .ingestion_utils import coerce_experiences, dedupe_skills
+from .llm import resolve_ingestion_client
 
 if TYPE_CHECKING:  # pragma: no cover - import used only for typing
+    from instructor import AsyncInstructor
+    from openai import AsyncOpenAI
+
     from .agents import AgentTool, ResumeIngestionAgent
 
 
@@ -61,6 +65,7 @@ class ResumeIngestor:
         *,
         agent: "ResumeIngestionAgent" | None = None,
         tools: dict[str, "AgentTool"] | None = None,
+        client: "AsyncInstructor | AsyncOpenAI | None" = None,
     ) -> None:
         if agent is not None and tools is not None:
             raise ValueError("Specify either an agent or tools, not both.")
@@ -68,7 +73,11 @@ class ResumeIngestor:
             from .agents import ResumeIngestionAgent, default_tool_registry
 
             registry = tools if tools is not None else default_tool_registry()
-            self.agent = ResumeIngestionAgent(tool_registry=registry)
+            ingestion_client = client if client is not None else resolve_ingestion_client()
+            self.agent = ResumeIngestionAgent(
+                tool_registry=registry,
+                client=ingestion_client,
+            )
         else:
             self.agent = agent
 

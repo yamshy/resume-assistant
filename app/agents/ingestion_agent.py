@@ -8,13 +8,16 @@ import logging
 import os
 import re
 from dataclasses import dataclass
-from typing import Any, Awaitable, Callable, Dict, Iterable, TypeVar
+from typing import Any, Awaitable, Callable, Dict, Iterable, TypeVar, cast
 
+from instructor import AsyncInstructor, from_openai
+from openai import AsyncOpenAI
+from openai.types.chat import ChatCompletionMessageParam
 from pydantic import BaseModel, Field, ValidationError
 
 from ..ingestion import ParsedExperience, ParsedResume
 from ..ingestion_utils import coerce_experiences, dedupe_skills
-from ..llm import resolve_llm
+from ..llm import resolve_ingestion_client
 
 LOGGER = logging.getLogger(__name__)
 
@@ -109,13 +112,13 @@ class ResumeIngestionAgent:
     def __init__(
         self,
         *,
-        llm: Any | None = None,
+        client: AsyncInstructor | AsyncOpenAI | None = None,
         tool_registry: ToolRegistry | None = None,
         model: str | None = None,
         temperature: float | None = None,
         max_retries: int | None = None,
     ) -> None:
-        self._llm = llm or resolve_llm()
+        self._client: AsyncInstructor | None = self._prepare_client(client)
         self.model = model or os.getenv("INGESTION_AGENT_MODEL", "gpt-4o-mini")
         default_temp = float(os.getenv("INGESTION_AGENT_TEMPERATURE", "0.1"))
         default_retries = int(os.getenv("INGESTION_AGENT_MAX_RETRIES", "1"))
@@ -123,6 +126,18 @@ class ResumeIngestionAgent:
         self.max_retries = max_retries if max_retries is not None else default_retries
         registry = tool_registry or default_tool_registry()
         self.tools: ToolRegistry = {name: tool for name, tool in registry.items()}
+
+    def _prepare_client(
+        self, client: AsyncInstructor | AsyncOpenAI | None
+    ) -> AsyncInstructor | None:
+        resolved = client if client is not None else resolve_ingestion_client()
+        if resolved is None:
+            return None
+        if isinstance(resolved, AsyncOpenAI):
+            return from_openai(resolved)
+        if isinstance(resolved, AsyncInstructor):
+            return resolved
+        raise TypeError("Unsupported ingestion client type")
 
     async def ingest(self, source: str, text: str, notes: str | None = None) -> ParsedResume:
         plan = await self._plan(text, notes)
@@ -281,10 +296,10 @@ class ResumeIngestionAgent:
         payload: dict[str, Any],
         response_model: type[TModel],
     ) -> TModel | None:
-        client = getattr(self._llm, "client", None)
+        client = self._client
         if client is None:
             return None
-        messages = [
+        messages: list[dict[str, str]] = [
             {
                 "role": "system",
                 "content": (
@@ -298,11 +313,12 @@ class ResumeIngestionAgent:
                 "content": json.dumps(payload, ensure_ascii=False, indent=2),
             },
         ]
+        typed_messages = cast(list[ChatCompletionMessageParam], messages)
         try:
             response = await client.chat.completions.create(
                 model=self.model,
                 response_model=response_model,
-                messages=messages,
+                messages=typed_messages,
                 temperature=self.temperature,
                 max_retries=self.max_retries,
             )
