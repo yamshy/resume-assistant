@@ -1,3 +1,10 @@
+## [1.4.4](https://github.com/yamshy/resume-assistant/compare/v1.4.3...v1.4.4) (2025-09-23)
+
+
+### Bug Fixes
+
+* surface upload errors and api key hint ([#63](https://github.com/yamshy/resume-assistant/issues/63)) ([2f6f7c7](https://github.com/yamshy/resume-assistant/commit/2f6f7c7369ead376a9885c89cf540853a4f7b991))
+
 ## [1.4.3](https://github.com/yamshy/resume-assistant/compare/v1.4.2...v1.4.3) (2025-09-23)
 
 
