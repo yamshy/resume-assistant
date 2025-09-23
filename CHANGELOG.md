@@ -1,3 +1,10 @@
+## [1.7.1](https://github.com/yamshy/resume-assistant/compare/v1.7.0...v1.7.1) (2025-09-23)
+
+
+### Bug Fixes
+
+* **deps:** update dependency instructor to v1.11.3 ([#30](https://github.com/yamshy/resume-assistant/issues/30)) ([ff06f83](https://github.com/yamshy/resume-assistant/commit/ff06f83305c43f7c1f9c9f8e37989a9462019632))
+
 # [1.7.0](https://github.com/yamshy/resume-assistant/compare/v1.6.1...v1.7.0) (2025-09-23)
 
 
