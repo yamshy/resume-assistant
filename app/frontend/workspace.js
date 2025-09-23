@@ -1,11 +1,16 @@
 const transcript = document.getElementById("chat-transcript");
-const chatForm = document.getElementById("chat-form");
-const chatInput = document.getElementById("chat-input");
-const resumeUploadInput = document.getElementById("resume-upload");
+const workspaceForm = document.getElementById("chat-form");
+const textInput = document.getElementById("text-input");
+const fileInput = document.getElementById("resume-upload");
+const dropZone = document.getElementById("drop-zone");
 const uploadButton = document.getElementById("upload-resumes");
+const selectedFilesList = document.getElementById("selected-files");
 const statusMessage = document.getElementById("status-message");
-const sendButton = chatForm?.querySelector("button[type='submit']") ?? null;
-const composerHint = chatForm?.querySelector(".composer-hint") ?? null;
+const modeButtons = document.querySelectorAll(".mode-toggle__option");
+const workflowButton = workspaceForm?.querySelector("[data-action='workflow']") ?? null;
+const chatButton = workspaceForm?.querySelector("[data-action='chat']") ?? null;
+const composerHint = document.getElementById("composer-hint");
+const dropLabel = document.querySelector("[data-mode-label]");
 
 const knowledgeUploadFallbackMessage =
   "Something went wrong while ingesting resumes. Double-check the files and try again.";
@@ -14,13 +19,37 @@ const missingOpenAIKeyNote = "Set the OPENAI_API_KEY environment variable to ena
 let uploadConfigurationNote = null;
 
 const initialGreeting =
-  "Welcome! Upload a few of your past resumes so I can build a knowledge base, then paste a job description to create a tailored draft.";
+  "Welcome! Use Ingestion to upload resumes or paste highlights so I can learn your story. Switch to Generation when you're ready for a tailored draft, and feel free to chat with me any time.";
 
 const conversationHistory = [{ role: "assistant", content: initialGreeting }];
 let sessionState = null;
 let lastProfileDigest = null;
+let currentMode = "ingest";
+let pendingFiles = [];
+let fileSequence = 0;
+
+const modeConfig = {
+  ingest: {
+    dropLabel: "Drop resumes or click to upload",
+    placeholder: "Paste resume updates or describe recent achievements...",
+    hint: "Tip: Add multiple resumes or type a quick update to grow your knowledge base.",
+    primaryLabel: "Ingest content",
+    buttonLabel: "Browse resumes",
+  },
+  generate: {
+    dropLabel: "Drop a job posting or click to upload",
+    placeholder: "Paste the job description or outline the role you're targeting...",
+    hint: "Tip: The assistant blends your profile with the job description to craft a draft resume.",
+    primaryLabel: "Generate resume",
+    buttonLabel: "Browse posting",
+  },
+};
 
 function appendTranscriptMessage(role, text, options = {}) {
+  if (!transcript) {
+    return null;
+  }
+
   const article = document.createElement("article");
   article.className = `message ${role}`;
 
@@ -64,16 +93,16 @@ function mentionsMissingOpenAIKey(message) {
 }
 
 function showUploadConfigurationNote(message) {
-  if (!chatForm) {
+  if (!workspaceForm) {
     return;
   }
   if (!uploadConfigurationNote) {
     uploadConfigurationNote = document.createElement("p");
     uploadConfigurationNote.className = "upload-configuration-note";
     if (composerHint) {
-      chatForm.insertBefore(uploadConfigurationNote, composerHint);
+      workspaceForm.insertBefore(uploadConfigurationNote, composerHint);
     } else {
-      chatForm.appendChild(uploadConfigurationNote);
+      workspaceForm.appendChild(uploadConfigurationNote);
     }
   }
   uploadConfigurationNote.textContent = message;
@@ -110,6 +139,9 @@ function createResultCard(title, content) {
 }
 
 function setStatus(message, state) {
+  if (!statusMessage) {
+    return;
+  }
   statusMessage.textContent = message;
   statusMessage.classList.remove("is-success", "is-error", "is-pending");
   if (state) {
@@ -164,7 +196,7 @@ async function parseErrorMessage(response) {
 }
 
 function maybeShowProfileSnapshot(profile) {
-  if (!profile) {
+  if (!profile || !transcript) {
     return;
   }
   const digest = JSON.stringify(profile);
@@ -243,26 +275,20 @@ async function handleGenerationRequest(displayMessage, jobDescription) {
   }
 }
 
-async function handleKnowledgeUpload(files) {
+async function handleKnowledgeUpload(files, options = {}) {
   if (!files.length) {
-    return;
+    return false;
   }
 
-  const summaryMessage = files.length === 1
-    ? `Uploaded ${files[0].name} for ingestion.`
-    : `Uploaded ${files.length} resumes: ${files.map((file) => file.name).join(", ")}.`;
+  const summaryMessage = options.summaryMessage || buildDefaultIngestionSummary(files);
   appendTranscriptMessage("user", summaryMessage);
 
   const formData = new FormData();
   files.forEach((file) => {
-    formData.append("resumes", file, file.name);
+    formData.append("resumes", file, file.name || "resume.txt");
   });
-
-  if (uploadButton) {
-    uploadButton.disabled = true;
-  }
-  if (sendButton) {
-    sendButton.disabled = true;
+  if (options.notes) {
+    formData.append("notes", options.notes);
   }
 
   setStatus("Processing resumes...", "pending");
@@ -299,6 +325,7 @@ async function handleKnowledgeUpload(files) {
     maybeShowProfileSnapshot(result.profile_snapshot);
     setStatus("Resumes ingested successfully.", "success");
     hideUploadConfigurationNote();
+    return true;
   } catch (error) {
     const errorMessage = getErrorMessage(error);
     const displayMessage = errorMessage || knowledgeUploadFallbackMessage;
@@ -311,63 +338,344 @@ async function handleKnowledgeUpload(files) {
     } else {
       hideUploadConfigurationNote();
     }
-  } finally {
-    if (uploadButton) {
-      uploadButton.disabled = false;
-    }
-    if (sendButton) {
-      sendButton.disabled = false;
-    }
-    if (resumeUploadInput) {
-      resumeUploadInput.value = "";
-    }
+    return false;
   }
 }
 
-chatForm.addEventListener("submit", async (event) => {
-  event.preventDefault();
-  const rawMessage = chatInput.value;
-  const message = rawMessage.trim();
-  if (!message) {
+function buildDefaultIngestionSummary(files) {
+  if (!files.length) {
+    return "Sharing resume updates for ingestion.";
+  }
+  if (files.length === 1) {
+    const name = files[0].name || "resume";
+    return `Uploaded ${name} for ingestion.`;
+  }
+  const names = files.map((file) => file.name || "resume");
+  return `Uploaded ${files.length} files: ${names.join(", ")}.`;
+}
+
+function setMode(mode) {
+  if (!modeConfig[mode]) {
     return;
   }
+  currentMode = mode;
 
-  chatInput.value = "";
-  chatInput.focus();
-
-  if (sendButton) {
-    sendButton.disabled = true;
-  }
-
-  try {
-    if (message.toLowerCase().startsWith("/generate")) {
-      const description = message.replace(/^\/generate\s*/i, "").trim();
-      if (!description) {
-        appendTranscriptMessage(
-          "system",
-          "Include the job description after /generate so I know what to tailor.",
-        );
-        setStatus("Add a job description after /generate.", "error");
-      } else {
-        await handleGenerationRequest(message, description);
-      }
-    } else {
-      await handleChatMessage(message);
-    }
-  } finally {
-    if (sendButton) {
-      sendButton.disabled = false;
-    }
-  }
-});
-
-if (uploadButton && resumeUploadInput) {
-  uploadButton.addEventListener("click", () => {
-    resumeUploadInput.click();
+  modeButtons.forEach((button) => {
+    const isActive = button.dataset.mode === mode;
+    button.classList.toggle("is-active", isActive);
+    button.setAttribute("aria-selected", isActive ? "true" : "false");
   });
 
-  resumeUploadInput.addEventListener("change", async () => {
-    const files = Array.from(resumeUploadInput.files || []);
-    await handleKnowledgeUpload(files);
+  if (dropLabel) {
+    dropLabel.textContent = modeConfig[mode].dropLabel;
+  }
+  if (textInput) {
+    textInput.placeholder = modeConfig[mode].placeholder;
+  }
+  if (composerHint) {
+    composerHint.textContent = modeConfig[mode].hint;
+  }
+  if (workflowButton) {
+    workflowButton.textContent = modeConfig[mode].primaryLabel;
+  }
+  if (uploadButton) {
+    uploadButton.textContent = modeConfig[mode].buttonLabel;
+  }
+  if (dropZone) {
+    dropZone.dataset.mode = mode;
+  }
+  if (fileInput) {
+    fileInput.multiple = mode === "ingest";
+  }
+}
+
+function addFiles(files) {
+  const additions = Array.from(files || []);
+  if (!additions.length) {
+    return;
+  }
+  additions.forEach((file) => {
+    if (!(file instanceof File)) {
+      return;
+    }
+    pendingFiles.push({ id: `file-${Date.now()}-${fileSequence++}`, file });
+  });
+  updateSelectedFilesList();
+  setStatus(`${pendingFiles.length} file${pendingFiles.length === 1 ? "" : "s"} ready.`, "success");
+}
+
+function removeFile(id) {
+  pendingFiles = pendingFiles.filter((entry) => entry.id !== id);
+  updateSelectedFilesList();
+}
+
+function updateSelectedFilesList() {
+  if (!selectedFilesList) {
+    return;
+  }
+  selectedFilesList.innerHTML = "";
+  pendingFiles.forEach((entry) => {
+    const listItem = document.createElement("li");
+    listItem.textContent = `${entry.file.name || "untitled"} (${formatFileSize(entry.file.size)})`;
+
+    const removeButton = document.createElement("button");
+    removeButton.type = "button";
+    removeButton.setAttribute("aria-label", `Remove ${entry.file.name || "file"}`);
+    removeButton.textContent = "×";
+    removeButton.addEventListener("click", () => {
+      removeFile(entry.id);
+    });
+
+    listItem.appendChild(removeButton);
+    selectedFilesList.appendChild(listItem);
   });
 }
+
+function clearPendingFiles() {
+  pendingFiles = [];
+  if (fileInput) {
+    fileInput.value = "";
+  }
+  updateSelectedFilesList();
+}
+
+function formatFileSize(bytes) {
+  if (!Number.isFinite(bytes) || bytes <= 0) {
+    return "0 KB";
+  }
+  const size = bytes / 1024;
+  if (size < 1024) {
+    return `${size.toFixed(1)} KB`;
+  }
+  return `${(size / 1024).toFixed(1)} MB`;
+}
+
+function setComposerBusy(isBusy) {
+  if (!workspaceForm) {
+    return;
+  }
+  workspaceForm.classList.toggle("is-busy", isBusy);
+  if (workflowButton) {
+    workflowButton.disabled = isBusy;
+  }
+  if (chatButton) {
+    chatButton.disabled = isBusy;
+  }
+  if (uploadButton) {
+    uploadButton.disabled = isBusy;
+  }
+  if (textInput) {
+    textInput.disabled = isBusy;
+  }
+  if (fileInput) {
+    fileInput.disabled = isBusy;
+  }
+}
+
+function buildIngestionSummary(files, notes) {
+  const existingFiles = files.map((entry) => entry.file);
+  if (!existingFiles.length && !notes) {
+    return "Sharing resume updates for ingestion.";
+  }
+
+  const parts = [];
+  if (existingFiles.length === 1) {
+    parts.push(`Uploaded ${existingFiles[0].name || "a resume"} for ingestion.`);
+  } else if (existingFiles.length > 1) {
+    const names = existingFiles.map((file) => file.name || "resume");
+    parts.push(`Uploaded ${existingFiles.length} files: ${names.join(", ")}.`);
+  }
+  if (notes) {
+    const snippet = truncateText(notes).replace(/\s+/g, " ");
+    parts.push(`Included typed updates: "${snippet}".`);
+  }
+  return parts.join(" ") || "Sharing resume updates for ingestion.";
+}
+
+function buildGenerationSummary(files, notes) {
+  const existingFiles = files.map((entry) => entry.file);
+  const parts = [];
+  if (existingFiles.length === 1) {
+    parts.push(`Uploaded ${existingFiles[0].name || "a job posting"} for generation.`);
+  } else if (existingFiles.length > 1) {
+    const names = existingFiles.map((file) => file.name || "job posting");
+    parts.push(`Uploaded ${existingFiles.length} postings: ${names.join(", ")}.`);
+  }
+  if (notes) {
+    const snippet = truncateText(notes).replace(/\s+/g, " ");
+    parts.push(`Shared job description details: "${snippet}".`);
+  }
+  if (!parts.length) {
+    return "Provided a job description for generation.";
+  }
+  return parts.join(" ");
+}
+
+async function readFilesAsText(files) {
+  const results = [];
+  for (const entry of files) {
+    try {
+      const text = await entry.file.text();
+      const cleaned = text.trim();
+      if (cleaned) {
+        results.push({
+          name: entry.file.name || "uploaded.txt",
+          text: cleaned,
+        });
+      }
+    } catch (error) {
+      console.error("Failed to read file", entry.file.name, error);
+    }
+  }
+  return results;
+}
+
+function truncateText(text, length = 140) {
+  if (text.length <= length) {
+    return text;
+  }
+  return `${text.slice(0, length - 1)}…`;
+}
+
+if (uploadButton && fileInput) {
+  uploadButton.addEventListener("click", () => {
+    fileInput.click();
+  });
+}
+
+if (fileInput) {
+  fileInput.addEventListener("change", () => {
+    addFiles(fileInput.files);
+    fileInput.value = "";
+  });
+}
+
+if (dropZone && fileInput) {
+  dropZone.addEventListener("click", () => {
+    if (dropZone.classList.contains("is-disabled")) {
+      return;
+    }
+    fileInput.click();
+  });
+  dropZone.addEventListener("keydown", (event) => {
+    if (event.key === "Enter" || event.key === " ") {
+      event.preventDefault();
+      fileInput.click();
+    }
+  });
+  dropZone.addEventListener("dragover", (event) => {
+    event.preventDefault();
+    dropZone.classList.add("is-active");
+  });
+  dropZone.addEventListener("dragleave", () => {
+    dropZone.classList.remove("is-active");
+  });
+  dropZone.addEventListener("drop", (event) => {
+    event.preventDefault();
+    dropZone.classList.remove("is-active");
+    addFiles(event.dataTransfer?.files || []);
+  });
+}
+
+modeButtons.forEach((button) => {
+  button.addEventListener("click", () => {
+    const mode = button.dataset.mode;
+    if (mode && mode !== currentMode) {
+      setMode(mode);
+      setStatus("", null);
+    }
+  });
+});
+
+if (workspaceForm) {
+  workspaceForm.addEventListener("submit", async (event) => {
+    event.preventDefault();
+
+    const submitter = event.submitter;
+    const action = submitter?.dataset.action || "workflow";
+    const rawMessage = textInput?.value ?? "";
+    const message = rawMessage.trim();
+
+    if (action === "chat") {
+      if (!message) {
+        setStatus("Add a message to chat with the assistant.", "error");
+        return;
+      }
+      if (textInput) {
+        textInput.value = "";
+      }
+      setComposerBusy(true);
+      try {
+        await handleChatMessage(message);
+      } finally {
+        setComposerBusy(false);
+      }
+      return;
+    }
+
+    if (currentMode === "ingest") {
+      if (!pendingFiles.length && !message) {
+        setStatus("Add resumes or paste updates before ingesting.", "error");
+        return;
+      }
+      const filesToUpload = pendingFiles.map((entry) => entry.file);
+      if (message) {
+        const pseudoFile = new File([message], `pasted-resume-${Date.now()}.txt`, { type: "text/plain" });
+        filesToUpload.push(pseudoFile);
+      }
+      const summaryMessage = buildIngestionSummary(pendingFiles, message);
+      setComposerBusy(true);
+      try {
+        const success = await handleKnowledgeUpload(filesToUpload, {
+          notes: message,
+          summaryMessage,
+        });
+        if (success) {
+          if (textInput) {
+            textInput.value = "";
+          }
+          clearPendingFiles();
+        }
+      } finally {
+        setComposerBusy(false);
+      }
+      return;
+    }
+
+    if (currentMode === "generate") {
+      if (!pendingFiles.length && !message) {
+        setStatus("Paste a job description or upload a posting to generate a draft.", "error");
+        return;
+      }
+      setComposerBusy(true);
+      try {
+        const fileTexts = await readFilesAsText(pendingFiles);
+        let jobDescription = message;
+        if (fileTexts.length) {
+          const combinedFileText = fileTexts
+            .map((entry) => `# Source: ${entry.name}\n${entry.text}`)
+            .join("\n\n");
+          jobDescription = jobDescription
+            ? `${jobDescription.trim()}\n\n${combinedFileText}`
+            : combinedFileText;
+        }
+        if (!jobDescription || !jobDescription.trim()) {
+          setStatus("Uploaded content was empty. Try again with more detail.", "error");
+          return;
+        }
+        const summaryMessage = buildGenerationSummary(pendingFiles, message);
+        if (textInput) {
+          textInput.value = "";
+        }
+        clearPendingFiles();
+        await handleGenerationRequest(summaryMessage, jobDescription);
+      } finally {
+        setComposerBusy(false);
+      }
+    }
+  });
+}
+
+appendTranscriptMessage("assistant", initialGreeting);
+setMode(currentMode);
+updateSelectedFilesList();
