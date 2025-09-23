@@ -30,7 +30,7 @@ from .embeddings import SemanticEmbedder
 from .generator import ResumeGenerator
 from .ingestion import ResumeIngestor
 from .knowledge_store import KnowledgeStore
-from .llm import resolve_llm
+from .llm import resolve_ingestion_client, resolve_llm
 from .memory import InMemoryRedis
 from .models import Resume
 from .monitoring import ResumeMonitor
@@ -104,7 +104,8 @@ def create_app() -> FastAPI:
     )
 
     knowledge_store = KnowledgeStore(_resolve_knowledge_store_path())
-    ingestion_agent = ResumeIngestionAgent()
+    ingestion_client = resolve_ingestion_client()
+    ingestion_agent = ResumeIngestionAgent(client=ingestion_client)
     ingestor = ResumeIngestor(agent=ingestion_agent)
 
     redis_client = _create_redis()

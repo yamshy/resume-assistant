@@ -8,12 +8,15 @@ import logging
 import os
 import re
 from dataclasses import dataclass
-from typing import Any, Awaitable, Callable, Dict, Iterable, Sequence, TypeVar
+from typing import Any, Awaitable, Callable, Dict, Iterable, Sequence, TypeVar, cast
 
+import instructor
+from instructor.client import Instructor
+from openai import AsyncOpenAI
 from pydantic import BaseModel, Field, ValidationError
 
 from ..ingestion import ParsedExperience, ParsedResume
-from ..llm import resolve_llm
+from ..llm import resolve_ingestion_client
 
 LOGGER = logging.getLogger(__name__)
 
@@ -94,13 +97,13 @@ class ResumeIngestionAgent:
     def __init__(
         self,
         *,
-        llm: Any | None = None,
+        client: AsyncOpenAI | Instructor | None = None,
         tool_registry: ToolRegistry | None = None,
         model: str | None = None,
         temperature: float | None = None,
         max_retries: int | None = None,
     ) -> None:
-        self._llm = llm or resolve_llm()
+        self._client = self._initialise_client(client)
         self.model = model or os.getenv("INGESTION_AGENT_MODEL", "gpt-4o-mini")
         default_temp = float(os.getenv("INGESTION_AGENT_TEMPERATURE", "0.1"))
         default_retries = int(os.getenv("INGESTION_AGENT_MAX_RETRIES", "1"))
@@ -108,6 +111,18 @@ class ResumeIngestionAgent:
         self.max_retries = max_retries if max_retries is not None else default_retries
         registry = tool_registry or default_tool_registry()
         self.tools: ToolRegistry = {name: tool for name, tool in registry.items()}
+
+    def _initialise_client(
+        self, client: AsyncOpenAI | Instructor | None
+    ) -> Instructor | None:
+        if isinstance(client, Instructor):
+            return client
+        if isinstance(client, AsyncOpenAI):
+            return instructor.from_openai(client)
+        resolved = resolve_ingestion_client()
+        if resolved is None:
+            return None
+        return instructor.from_openai(resolved)
 
     async def ingest(self, source: str, text: str, notes: str | None = None) -> ParsedResume:
         plan = await self._plan(text, notes)
@@ -314,9 +329,10 @@ class ResumeIngestionAgent:
         payload: dict[str, Any],
         response_model: type[TModel],
     ) -> TModel | None:
-        client = getattr(self._llm, "client", None)
+        client = self._client
         if client is None:
             return None
+        structured_client = cast(Any, client)
         messages = [
             {
                 "role": "system",
@@ -332,7 +348,7 @@ class ResumeIngestionAgent:
             },
         ]
         try:
-            response = await client.chat.completions.create(
+            response = await structured_client.chat.completions.create(
                 model=self.model,
                 response_model=response_model,
                 messages=messages,

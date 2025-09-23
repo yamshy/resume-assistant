@@ -123,6 +123,14 @@ class TemplateResumeLLM:
         )[:500]
 
 
+def resolve_ingestion_client() -> AsyncOpenAI | None:
+    """Return an OpenAI client for ingestion flows when credentials exist."""
+
+    if not os.getenv("OPENAI_API_KEY"):
+        return None
+    return AsyncOpenAI()
+
+
 def resolve_llm() -> ResumeLLM:
     if os.getenv("OPENAI_API_KEY"):
         return InstructorLLM()
