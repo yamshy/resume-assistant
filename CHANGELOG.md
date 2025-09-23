@@ -1,3 +1,10 @@
+# [1.5.0](https://github.com/yamshy/resume-assistant/compare/v1.4.5...v1.5.0) (2025-09-23)
+
+
+### Features
+
+* add ingestion client resolver for ingestion agent ([#69](https://github.com/yamshy/resume-assistant/issues/69)) ([7cfd3ee](https://github.com/yamshy/resume-assistant/commit/7cfd3eed01b4662188c8c1c47e2f38bc4c386212))
+
 ## [1.4.5](https://github.com/yamshy/resume-assistant/compare/v1.4.4...v1.4.5) (2025-09-23)
 
 
