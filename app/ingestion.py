@@ -63,10 +63,12 @@ class ResumeIngestor:
         if agent is not None and tools is not None:
             raise ValueError("Specify either an agent or tools, not both.")
         if agent is None:
-            from .agents import ResumeIngestionAgent, default_tool_registry
+            from .agents import ResumeIngestionAgent
 
-            registry = tools if tools is not None else default_tool_registry()
-            self.agent = ResumeIngestionAgent(tool_registry=registry)
+            kwargs: dict[str, Any] = {}
+            if tools is not None:
+                kwargs["tool_registry"] = tools
+            self.agent = ResumeIngestionAgent(**kwargs)
         else:
             self.agent = agent
 

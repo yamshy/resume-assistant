@@ -1,12 +1,18 @@
 """Agent implementations for coordinating LLM powered workflows."""
 
 from .generation_agent import ResumeGenerationAgent, ResumeGenerationTools
-from .ingestion_agent import AgentTool, ResumeIngestionAgent, default_tool_registry
+from .ingestion_agent import (
+    AgentTool,
+    MissingIngestionLLMError,
+    ResumeIngestionAgent,
+    ResumeIngestionError,
+)
 
 __all__ = [
     "AgentTool",
+    "MissingIngestionLLMError",
     "ResumeIngestionAgent",
-    "default_tool_registry",
+    "ResumeIngestionError",
     "ResumeGenerationAgent",
     "ResumeGenerationTools",
 ]

@@ -24,7 +24,7 @@ except Exception:  # pragma: no cover
 else:
     redis_async = redis_async_module
 
-from .agents import ResumeIngestionAgent
+from .agents import MissingIngestionLLMError, ResumeIngestionAgent, ResumeIngestionError
 from .cache import SemanticCache
 from .embeddings import SemanticEmbedder
 from .generator import ResumeGenerator
@@ -104,8 +104,14 @@ def create_app() -> FastAPI:
     )
 
     knowledge_store = KnowledgeStore(_resolve_knowledge_store_path())
-    ingestion_agent = ResumeIngestionAgent()
-    ingestor = ResumeIngestor(agent=ingestion_agent)
+    ingestion_agent = None
+    ingestor = None
+    try:
+        ingestion_agent = ResumeIngestionAgent()
+        ingestor = ResumeIngestor(agent=ingestion_agent)
+    except (MissingIngestionLLMError, ResumeIngestionError):
+        ingestion_agent = None
+        ingestor = None
 
     redis_client = _create_redis()
     cache = SemanticCache(redis_client, embedder) if redis_client else None
@@ -177,6 +183,12 @@ def create_app() -> FastAPI:
         resumes: list[UploadFile] = File(..., description="Resume files to ingest"),
         notes: str = Form(default=""),
     ) -> Dict[str, Any]:
+        if ingestor is None:
+            raise HTTPException(
+                status_code=503,
+                detail="OpenAI API key required for resume ingestion",
+            )
+
         if not resumes:
             raise HTTPException(status_code=400, detail="At least one resume file is required.")
 
@@ -194,7 +206,13 @@ def create_app() -> FastAPI:
                 detail="Uploaded resumes were empty or unreadable.",
             )
 
-        parsed_resumes = await ingestor.parse_many(payloads, notes)
+        try:
+            parsed_resumes = await ingestor.parse_many(payloads, notes)
+        except (MissingIngestionLLMError, ResumeIngestionError) as exc:
+            raise HTTPException(
+                status_code=503,
+                detail="OpenAI API key required for resume ingestion",
+            ) from exc
         store_result = knowledge_store.add_resumes(parsed_resumes)
 
         documents: list[VectorDocument] = []
