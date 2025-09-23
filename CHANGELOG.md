@@ -1,3 +1,10 @@
+# [1.8.0](https://github.com/yamshy/resume-assistant/compare/v1.7.1...v1.8.0) (2025-09-23)
+
+
+### Features
+
+* redesign workspace ui ([#72](https://github.com/yamshy/resume-assistant/issues/72)) ([7f68ca5](https://github.com/yamshy/resume-assistant/commit/7f68ca56eba21807493566eb0c4b389cf77d5af5))
+
 ## [1.7.1](https://github.com/yamshy/resume-assistant/compare/v1.7.0...v1.7.1) (2025-09-23)
 
 
