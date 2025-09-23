@@ -8,7 +8,7 @@ import logging
 import os
 import re
 from dataclasses import dataclass
-from typing import Any, Awaitable, Callable, Dict, Iterable, Sequence, TypeVar, cast
+from typing import Any, Awaitable, Callable, Dict, Iterable, TypeVar, cast
 
 import instructor
 from instructor.client import Instructor
@@ -16,6 +16,7 @@ from openai import AsyncOpenAI
 from pydantic import BaseModel, Field, ValidationError
 
 from ..ingestion import ParsedExperience, ParsedResume
+from ..ingestion_utils import coerce_experiences, dedupe_skills
 from ..llm import resolve_ingestion_client
 
 LOGGER = logging.getLogger(__name__)
@@ -34,6 +35,20 @@ class AgentTool:
 
 
 ToolRegistry = Dict[str, AgentTool]
+
+
+def _merge_and_dedupe_skills(
+    existing: Iterable[Any], additional: Iterable[Any] | str | None,
+) -> list[str]:
+    """Combine skill sources while removing duplicates."""
+
+    combined: list[Any] = list(existing)
+    if additional:
+        if isinstance(additional, str):
+            combined.append(additional)
+        else:
+            combined.extend(list(additional))
+    return dedupe_skills(combined)
 
 
 class PlanStepModel(BaseModel):
@@ -195,9 +210,9 @@ class ResumeIngestionAgent:
                     setattr(extraction, field, value)
             for field in feedback.missing_fields:
                 await self._recover_field(field, extraction, text)
-        experiences = self._coerce_experiences(extraction.experiences, text)
-        fallback_skills = await self._maybe_invoke("extract_skills", text) or []
-        skills = self._merge_skills(extraction.skills, fallback_skills)
+        experiences = coerce_experiences(extraction.experiences, text)
+        fallback_skills = await self._maybe_invoke("extract_skills", text)
+        skills = _merge_and_dedupe_skills(extraction.skills, fallback_skills)
         return ParsedResume(
             source=source,
             full_name=extraction.full_name or infer_full_name(text),
@@ -226,8 +241,8 @@ class ResumeIngestionAgent:
             extraction.email = await self._maybe_invoke("extract_email", text)
         if not extraction.phone:
             extraction.phone = await self._maybe_invoke("extract_phone", text)
-        heuristic_skills = await self._maybe_invoke("extract_skills", text) or []
-        extraction.skills = self._merge_skills(extraction.skills, heuristic_skills)
+        heuristic_skills = await self._maybe_invoke("extract_skills", text)
+        extraction.skills = _merge_and_dedupe_skills(extraction.skills, heuristic_skills)
         if not extraction.experiences:
             heuristic_experiences = await self._maybe_invoke("extract_experiences", text) or []
             extraction.experiences = [
@@ -274,54 +289,6 @@ class ResumeIngestionAgent:
                 normalised.append(ExtractionExperienceModel(**experience))
                 continue
         return normalised
-
-    def _coerce_experiences(
-        self, experiences: Sequence[ExtractionExperienceModel] | None, text: str
-    ) -> list[ParsedExperience]:
-        parsed: list[ParsedExperience] = []
-        entries = experiences or []
-        for experience in entries:
-            achievements = [
-                achievement.strip()
-                for achievement in experience.achievements
-                if achievement and achievement.strip()
-            ]
-            parsed.append(
-                ParsedExperience(
-                    company=experience.company or "Experience",
-                    role=experience.role or "Professional",
-                    achievements=achievements,
-                    start_date=experience.start_date,
-                    end_date=experience.end_date,
-                    location=experience.location,
-                )
-            )
-        if parsed:
-            return parsed
-        summary = " ".join(line.strip() for line in text.splitlines() if line.strip())
-        achievements = [summary[:240]] if summary else []
-        return [
-            ParsedExperience(
-                company="Uploaded Resume",
-                role="Professional",
-                achievements=achievements,
-            )
-        ]
-
-    def _merge_skills(
-        self, existing: Iterable[str], additional: Iterable[str] | None
-    ) -> list[str]:
-        skills: list[str] = []
-        seen: set[str] = set()
-        for entry in list(existing) + list(additional or []):
-            cleaned = entry.strip() if isinstance(entry, str) else str(entry).strip()
-            if not cleaned:
-                continue
-            key = cleaned.lower()
-            if key not in seen:
-                seen.add(key)
-                skills.append(cleaned)
-        return skills
 
     async def _call_llm(
         self,
