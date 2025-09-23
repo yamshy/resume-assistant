@@ -7,57 +7,59 @@
     <link rel="stylesheet" href="/static/styles.css" />
   </head>
   <body>
-    <div class="app-shell">
-      <header class="app-header">
-        <h1>Resume Assistant</h1>
-        <p class="app-tagline">
-          Chat with the resume assistant, upload past resumes, and generate drafts tailored to any job posting.
-        </p>
-      </header>
-      <main class="workspace">
-        <section
-          id="chat-transcript"
-          class="transcript"
-          aria-live="polite"
-          aria-label="Conversation history"
-        >
-          <article class="message assistant">
-            <div class="message-role">Assistant</div>
-            <p>
-              Welcome! Upload a few of your past resumes so I can build a knowledge base, then paste a job description to create
-              a tailored draft.
+    <div class="chat-shell">
+      <section class="chat-panel" aria-label="Resume assistant chat">
+        <header class="chat-panel__header">
+          <h1>Resume Assistant</h1>
+          <p class="chat-panel__tagline">
+            Chat with the resume assistant, upload past resumes, and generate drafts tailored to any job posting.
+          </p>
+        </header>
+        <div class="chat-panel__body">
+          <section
+            id="chat-transcript"
+            class="transcript"
+            aria-live="polite"
+            aria-label="Conversation history"
+          >
+            <article class="message assistant">
+              <div class="message-role">Assistant</div>
+              <p>
+                Welcome! Upload a few of your past resumes so I can build a knowledge base, then paste a job description to
+                create a tailored draft.
+              </p>
+            </article>
+          </section>
+          <form id="chat-form" class="chat-composer" autocomplete="off">
+            <input
+              id="resume-upload"
+              name="resumes"
+              type="file"
+              accept=".txt,.md,.pdf,.doc,.docx,.rtf"
+              multiple
+              hidden
+            />
+            <div class="composer-main">
+              <button type="button" id="upload-resumes" class="chat-attach">Upload resumes</button>
+              <label for="chat-input" class="sr-only">Message</label>
+              <input
+                id="chat-input"
+                class="chat-input"
+                name="message"
+                type="text"
+                placeholder="Ask about your profile or share a job requirement..."
+                required
+              />
+              <button type="submit" class="chat-send">Send</button>
+            </div>
+            <p class="composer-hint">
+              Tip: Upload resumes whenever you gain new experience. Type <span class="hint-command">/generate</span> followed by a
+              job description to create a tailored resume draft.
             </p>
-          </article>
-        </section>
-      </main>
-      <form id="chat-form" class="chat-composer" autocomplete="off">
-        <input
-          id="resume-upload"
-          name="resumes"
-          type="file"
-          accept=".txt,.md,.pdf,.doc,.docx,.rtf"
-          multiple
-          hidden
-        />
-        <div class="composer-main">
-          <button type="button" id="upload-resumes" class="chat-attach">Upload resumes</button>
-          <label for="chat-input" class="sr-only">Message</label>
-          <input
-            id="chat-input"
-            class="chat-input"
-            name="message"
-            type="text"
-            placeholder="Ask about your profile or share a job requirement..."
-            required
-          />
-          <button type="submit" class="chat-send">Send</button>
+          </form>
         </div>
-        <p class="composer-hint">
-          Tip: Upload resumes whenever you gain new experience. Type <span class="hint-command">/generate</span> followed by a job
-          description to create a tailored resume draft.
-        </p>
-      </form>
-      <p id="status-message" class="status-message" role="status" aria-live="polite"></p>
+        <p id="status-message" class="status-message" role="status" aria-live="polite"></p>
+      </section>
     </div>
     <script src="/static/workspace.js" type="module"></script>
   </body>
