@@ -1,3 +1,10 @@
+# [1.7.0](https://github.com/yamshy/resume-assistant/compare/v1.6.1...v1.7.0) (2025-09-23)
+
+
+### Features
+
+* require llm for resume ingestion ([#71](https://github.com/yamshy/resume-assistant/issues/71)) ([fadbc4c](https://github.com/yamshy/resume-assistant/commit/fadbc4cfb26948e75d84804caf8a77f3b1c383ca))
+
 ## [1.6.1](https://github.com/yamshy/resume-assistant/compare/v1.6.0...v1.6.1) (2025-09-23)
 
 
