@@ -38,13 +38,14 @@ def create_app() -> FastAPI:
     dependencies = build_dependencies()
 
     try:
-        ingestion_agent = ResumeIngestionAgent()
+        agent = ResumeIngestionAgent()
     except MissingIngestionLLMError as exc:
         ingestion_agent = None
         ingestor = None
         app.state.resume_ingestion_error = exc
     else:
-        ingestor = ResumeIngestor(agent=ingestion_agent)
+        ingestion_agent = agent
+        ingestor = ResumeIngestor(agent=agent)
         app.state.resume_ingestion_error = None
     generator = ResumeGenerator(
         cache=dependencies.cache,
