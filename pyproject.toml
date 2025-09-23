@@ -10,7 +10,7 @@ dependencies = [
     "openai==1.108.2",
     "anthropic==0.68.0",
     "pydantic==2.10.0",
-    "redis==5.3.1",
+    "redis==6.4.0",
     "python-multipart==0.0.20",
     "langsmith==0.2.7",
     "tiktoken==0.8.0",
