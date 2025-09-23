@@ -7,6 +7,7 @@ import os
 from typing import Any, Dict, Iterable, Protocol
 
 import instructor
+from instructor import AsyncInstructor
 from openai import AsyncOpenAI
 
 from .models import Experience, Resume
@@ -127,3 +128,12 @@ def resolve_llm() -> ResumeLLM:
     if os.getenv("OPENAI_API_KEY"):
         return InstructorLLM()
     return TemplateResumeLLM()
+
+
+def resolve_ingestion_client() -> AsyncInstructor | None:
+    """Return an Instructor client for ingestion workflows when available."""
+
+    if not os.getenv("OPENAI_API_KEY"):
+        return None
+    base_client = AsyncOpenAI()
+    return instructor.from_openai(base_client)

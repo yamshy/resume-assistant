@@ -13,7 +13,7 @@ from .agents import ResumeIngestionAgent
 from .dependencies import build_dependencies
 from .generator import ResumeGenerator
 from .ingestion import ResumeIngestor
-from .llm import resolve_llm
+from .llm import resolve_ingestion_client, resolve_llm
 from .routes.generation import router as generation_router
 from .routes.knowledge import router as knowledge_router
 
@@ -37,7 +37,8 @@ def create_app() -> FastAPI:
 
     dependencies = build_dependencies()
 
-    ingestion_agent = ResumeIngestionAgent()
+    ingestion_client = resolve_ingestion_client()
+    ingestion_agent = ResumeIngestionAgent(client=ingestion_client)
     ingestor = ResumeIngestor(agent=ingestion_agent)
     generator = ResumeGenerator(
         cache=dependencies.cache,
