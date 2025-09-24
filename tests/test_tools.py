@@ -41,14 +41,14 @@ def test_resume_renderer_formats_sections():
             "name": "Ada Lovelace",
             "headline": "Computing Pioneer",
             "summary": "Inventive technologist and analyst.",
-            "skills": ["Python", "LangGraph"],
+            "skills": ["Python", "Temporal"],
             "experience": [
                 {"role": "Researcher", "company": "Analytical Engines", "impact": "Built prototypes."}
             ],
         }
     )
     assert "Ada Lovelace" in resume
-    assert "LangGraph" in resume
+    assert "Temporal" in resume
     assert "Analytical Engines" in resume
 
 

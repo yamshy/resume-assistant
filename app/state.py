@@ -1,30 +1,10 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Annotated, Any, Dict, List, Literal, Optional, TypedDict
+from typing import Any, Dict, List, Literal, Optional
 from uuid import uuid4
 
-from langchain_core.messages import BaseMessage, HumanMessage
-from langgraph.graph.message import add_messages
-
-
-def _merge_dict(existing: Optional[Dict[str, Any]], new: Optional[Dict[str, Any]]) -> Dict[str, Any]:
-    base: Dict[str, Any] = dict(existing or {})
-    for key, value in (new or {}).items():
-        base[key] = value
-    return base
-
-
-def _extend_list(existing: Optional[List[str]], new: Optional[List[str]]) -> List[str]:
-    return list(existing or []) + list(new or [])
-
-
-def _merge_metrics(existing: Optional[Dict[str, float]], new: Optional[Dict[str, float]]) -> Dict[str, float]:
-    base: Dict[str, float] = dict(existing or {})
-    for key, value in (new or {}).items():
-        base[key] = float(value)
-    return base
-
+from pydantic import BaseModel, Field
 
 PipelineStage = Literal[
     "route",
@@ -47,18 +27,26 @@ TaskType = Literal[
 ]
 
 
-class ResumeGraphState(TypedDict, total=False):
-    """LangGraph-compatible state shared across subgraphs."""
+class ResumeMessage(BaseModel):
+    """Normalized chat message stored inside the workflow state."""
 
-    messages: Annotated[List[BaseMessage], add_messages]
-    artifacts: Annotated[Dict[str, Any], _merge_dict]
-    audit_trail: Annotated[List[str], _extend_list]
-    metrics: Annotated[Dict[str, float], _merge_metrics]
+    role: Literal["human", "assistant", "system"]
+    content: str
+    model: Optional[str] = None
+
+
+class ResumeWorkflowState(BaseModel):
+    """Serializable workflow state tracked across Temporal executions."""
+
     task: TaskType
-    stage: PipelineStage
-    status: Literal["pending", "in_progress", "complete", "error"]
+    stage: PipelineStage = "route"
+    status: Literal["pending", "in_progress", "complete", "error"] = "pending"
     request_id: str
-    flags: Annotated[Dict[str, Any], _merge_dict]
+    messages: List[ResumeMessage] = Field(default_factory=list)
+    artifacts: Dict[str, Any] = Field(default_factory=dict)
+    audit_trail: List[str] = Field(default_factory=list)
+    metrics: Dict[str, float] = Field(default_factory=dict)
+    flags: Dict[str, Any] = Field(default_factory=dict)
 
 
 @dataclass(slots=True)
@@ -76,21 +64,19 @@ DEFAULT_AUDIT_EVENT = "graph_initialized"
 def initialize_state(
     *,
     task: TaskType,
-    messages: Optional[List[BaseMessage]] = None,
+    messages: Optional[List[ResumeMessage]] = None,
     request_id: Optional[str] = None,
     artifacts: Optional[Dict[str, Any]] = None,
     flags: Optional[Dict[str, Any]] = None,
-) -> ResumeGraphState:
+) -> ResumeWorkflowState:
     """Create a fully-populated state payload for a new graph invocation."""
 
     resolved_request_id = request_id or str(uuid4())
-    initial_messages: List[BaseMessage] = list(messages or [])
+    initial_messages: List[ResumeMessage] = list(messages or [])
     if not initial_messages:
-        initial_messages.append(HumanMessage(content="Resume request created."))
-    return ResumeGraphState(
+        initial_messages.append(ResumeMessage(role="human", content="Resume request created."))
+    return ResumeWorkflowState(
         task=task,
-        stage="route",
-        status="pending",
         request_id=resolved_request_id,
         messages=initial_messages,
         artifacts=dict(artifacts or {}),
@@ -100,23 +86,24 @@ def initialize_state(
     )
 
 
-def summarize_state(state: ResumeGraphState) -> Dict[str, Any]:
+def summarize_state(state: ResumeWorkflowState) -> Dict[str, Any]:
     """Produce a lightweight dict for logging/telemetry in tests."""
 
     return {
-        "task": state.get("task"),
-        "stage": state.get("stage"),
-        "status": state.get("status"),
-        "artifacts": sorted(state.get("artifacts", {}).keys()),
-        "metrics": dict(state.get("metrics", {})),
-        "audit": list(state.get("audit_trail", [])),
+        "task": state.task,
+        "stage": state.stage,
+        "status": state.status,
+        "artifacts": sorted(state.artifacts.keys()),
+        "metrics": dict(state.metrics),
+        "audit": list(state.audit_trail),
     }
 
 
 __all__ = [
     "AgentConfig",
     "PipelineStage",
-    "ResumeGraphState",
+    "ResumeMessage",
+    "ResumeWorkflowState",
     "TaskType",
     "DEFAULT_AUDIT_EVENT",
     "initialize_state",

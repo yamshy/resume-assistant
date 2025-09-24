@@ -1,30 +1,31 @@
 version: "3.9"
 
 services:
-  langgraph:
-    build: .
-    ports:
-      - "8124:8124"
+  temporal:
+    image: temporalio/auto-setup:1.23.0
     environment:
-      LANGGRAPH_CONFIG: /app/langgraph.json
-    command: [
-      "langgraph",
-      "server",
-      "start",
-      "--config",
-      "/app/langgraph.json",
-      "--host",
-      "0.0.0.0",
-      "--port",
-      "8124"
-    ]
-    volumes:
-      - ./data:/data
-
-  redis:
-    image: redis:7-alpine
+      - DB=sqlite
     ports:
-      - "6379:6379"
-    command: ["redis-server", "--appendonly", "yes"]
-    volumes:
-      - ./data/redis:/data
+      - "7233:7233"
+
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile.api
+    environment:
+      TEMPORAL_HOST: temporal:7233
+      TEMPORAL_NAMESPACE: default
+    depends_on:
+      - temporal
+    ports:
+      - "8080:8080"
+
+  worker:
+    build:
+      context: .
+      dockerfile: Dockerfile.worker
+    environment:
+      TEMPORAL_HOST: temporal:7233
+      TEMPORAL_NAMESPACE: default
+    depends_on:
+      - temporal
