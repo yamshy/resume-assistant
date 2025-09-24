@@ -1,3 +1,10 @@
+## [1.14.1](https://github.com/yamshy/resume-assistant/compare/v1.14.0...v1.14.1) (2025-09-24)
+
+
+### Bug Fixes
+
+* guard live OpenAI tests with secrets context ([#105](https://github.com/yamshy/resume-assistant/issues/105)) ([ecfbe83](https://github.com/yamshy/resume-assistant/commit/ecfbe83e6bfd7d4b203356c3436e30ce4dca3c91))
+
 # [1.14.0](https://github.com/yamshy/resume-assistant/compare/v1.13.2...v1.14.0) (2025-09-24)
 
 
