@@ -1,3 +1,15 @@
+# [1.10.0](https://github.com/yamshy/resume-assistant/compare/v1.9.1...v1.10.0) (2025-09-24)
+
+
+### Bug Fixes
+
+* harden llm orchestration and ci release workflows ([285a72c](https://github.com/yamshy/resume-assistant/commit/285a72c5bc6264d532ef2afa5f783bf204cf0439))
+
+
+### Features
+
+* rebuild resume orchestration on langgraph llm stack ([60dbdb9](https://github.com/yamshy/resume-assistant/commit/60dbdb9a1882215f1dabeb579f9928bea042800f))
+
 ## [1.9.1](https://github.com/yamshy/resume-assistant/compare/v1.9.0...v1.9.1) (2025-09-24)
 
 
