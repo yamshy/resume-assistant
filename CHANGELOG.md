@@ -1,3 +1,10 @@
+## [1.12.1](https://github.com/yamshy/resume-assistant/compare/v1.12.0...v1.12.1) (2025-09-24)
+
+
+### Bug Fixes
+
+* add default Dockerfile for release build ([#95](https://github.com/yamshy/resume-assistant/issues/95)) ([d00a4bf](https://github.com/yamshy/resume-assistant/commit/d00a4bf9eb8704e6058aa3ba024787efcbbfe315))
+
 # [1.12.0](https://github.com/yamshy/resume-assistant/compare/v1.11.8...v1.12.0) (2025-09-24)
 
 
