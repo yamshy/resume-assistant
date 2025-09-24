@@ -1,3 +1,11 @@
+## [1.11.8](https://github.com/yamshy/resume-assistant/compare/v1.11.7...v1.11.8) (2025-09-24)
+
+
+### Bug Fixes
+
+* **ci:** guard live tests on secret ([#91](https://github.com/yamshy/resume-assistant/issues/91)) ([f270d41](https://github.com/yamshy/resume-assistant/commit/f270d414ca864a31af797450641635cb8b5e4567))
+* **deps:** update dependency langgraph-cli to v0.4.2 ([#90](https://github.com/yamshy/resume-assistant/issues/90)) ([9651b9b](https://github.com/yamshy/resume-assistant/commit/9651b9ba0dca07fb1f1a9da0729d75a2eca26eb9))
+
 ## [1.11.7](https://github.com/yamshy/resume-assistant/compare/v1.11.6...v1.11.7) (2025-09-24)
 
 
