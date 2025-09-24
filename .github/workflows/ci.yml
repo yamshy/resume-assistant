@@ -102,10 +102,10 @@ jobs:
     runs-on: ubuntu-latest
     needs:
       - tests
-    if: ${{ env.OPENAI_API_KEY != '' }}
+    if: ${{ secrets.OPENAI_API_KEY != '' }}
     env:
       UV_PYTHON_VERSION: '3.12'
-      OPENAI_API_KEY: ${{ env.OPENAI_API_KEY }}
+      OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
     steps:
       - name: Check out repository
         uses: actions/checkout@v5
