@@ -1,3 +1,15 @@
+# [1.9.0](https://github.com/yamshy/resume-assistant/compare/v1.8.2...v1.9.0) (2025-09-24)
+
+
+### Bug Fixes
+
+* normalise knowledge store inputs ([#73](https://github.com/yamshy/resume-assistant/issues/73)) ([cd94227](https://github.com/yamshy/resume-assistant/commit/cd94227f486050b627722efbaf6c4d612230959e))
+
+
+### Features
+
+* compute experience duration from dates ([#76](https://github.com/yamshy/resume-assistant/issues/76)) ([939d65b](https://github.com/yamshy/resume-assistant/commit/939d65bf48096d1a1b7d7c2f31e7da4d76f52b9f))
+
 ## [1.8.2](https://github.com/yamshy/resume-assistant/compare/v1.8.1...v1.8.2) (2025-09-24)
 
 
