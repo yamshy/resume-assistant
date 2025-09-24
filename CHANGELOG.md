@@ -1,3 +1,10 @@
+## [1.8.1](https://github.com/yamshy/resume-assistant/compare/v1.8.0...v1.8.1) (2025-09-24)
+
+
+### Bug Fixes
+
+* prevent duplicate generation metrics ([#77](https://github.com/yamshy/resume-assistant/issues/77)) ([5b46da0](https://github.com/yamshy/resume-assistant/commit/5b46da0934674aa4cf8f4661eed45b47dda73ab7))
+
 # [1.8.0](https://github.com/yamshy/resume-assistant/compare/v1.7.1...v1.8.0) (2025-09-23)
 
 
