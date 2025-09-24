@@ -1,3 +1,10 @@
+## [1.9.1](https://github.com/yamshy/resume-assistant/compare/v1.9.0...v1.9.1) (2025-09-24)
+
+
+### Bug Fixes
+
+* **deps:** update dependency langsmith to v0.4.30 ([#31](https://github.com/yamshy/resume-assistant/issues/31)) ([9ebe76c](https://github.com/yamshy/resume-assistant/commit/9ebe76c8f0b3404fca91a27f06dca595ad7ef3ea))
+
 # [1.9.0](https://github.com/yamshy/resume-assistant/compare/v1.8.2...v1.9.0) (2025-09-24)
 
 
