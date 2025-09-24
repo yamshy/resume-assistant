@@ -1,3 +1,10 @@
+# [1.12.0](https://github.com/yamshy/resume-assistant/compare/v1.11.8...v1.12.0) (2025-09-24)
+
+
+### Features
+
+* migrate backend to temporal workflow ([#93](https://github.com/yamshy/resume-assistant/issues/93)) ([0ae8302](https://github.com/yamshy/resume-assistant/commit/0ae8302fe293033bfb425eb9911024453da9bd70))
+
 ## [1.11.8](https://github.com/yamshy/resume-assistant/compare/v1.11.7...v1.11.8) (2025-09-24)
 
 
