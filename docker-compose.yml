@@ -2,7 +2,7 @@ version: "3.9"
 
 services:
   temporal:
-    image: temporalio/auto-setup:1.23.0
+    image: temporalio/auto-setup:1.28.1
     environment:
       - DB=sqlite
     ports:
