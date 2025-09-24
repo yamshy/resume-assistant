@@ -10,7 +10,7 @@ uv sync
 ```
 Run the LangGraph server during development (requires `OPENAI_API_KEY` in scope):
 ```bash
-uv run langgraph server start --config langgraph.json --host 0.0.0.0 --port 8030
+uv run langgraph server start --config langgraph.json --host 0.0.0.0 --port 8124
 ```
 Quality gates to run before review:
 ```bash

@@ -21,7 +21,7 @@ The Resume Assistant now runs as an agentic LangGraph application driven entirel
    ```
 2. Launch the LangGraph server (requires the OpenAI key in scope):
    ```bash
-   uv run langgraph server start --config langgraph.json --host 0.0.0.0 --port 8030
+   uv run langgraph server start --config langgraph.json --host 0.0.0.0 --port 8124
    ```
    The server exposes the compiled supervisor graph under the identifier `resume-supervisor`.
 3. Exercise the workflow locally:
@@ -51,7 +51,7 @@ The container image ships the LangGraph server directly:
 ```bash
 docker compose up --build
 ```
-- `langgraph` serves the supervisor on port `8030`.
+- `langgraph` serves the supervisor on port `8124`.
 - The optional Redis service is ready for attaching a persistent LangGraph checkpointer.
 Provide `OPENAI_API_KEY` (and any other model credentials) via your preferred secret manager before starting the stack.
 

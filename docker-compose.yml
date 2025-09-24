@@ -4,7 +4,7 @@ services:
   langgraph:
     build: .
     ports:
-      - "8030:8030"
+      - "8124:8124"
     environment:
       LANGGRAPH_CONFIG: /app/langgraph.json
     command: [
@@ -16,7 +16,7 @@ services:
       "--host",
       "0.0.0.0",
       "--port",
-      "8030"
+      "8124"
     ]
     volumes:
       - ./data:/data
