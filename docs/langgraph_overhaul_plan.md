@@ -3,7 +3,7 @@
 ## 1. Objectives & Guardrails
 - **Agent-first orchestration**: Replace bespoke planner/executor classes with LangGraph agents that are responsible for reasoning, routing, and invoking tools. All multi-step reasoning must be delegated to agents, avoiding brittle regex-based control flow.
 - **Modular graph topology**: Model ingestion, enrichment, resume synthesis, validation, and delivery as composable LangGraph subgraphs to improve reliability, observability, and testability.
-- **Deterministic interfaces**: Maintain our FastAPI surface while swapping the underlying execution layer. Ensure new components are typed, testable, and respect existing caching, auditing, and compliance requirements.
+- **Deterministic interfaces**: Transition public traffic to the LangGraph Server HTTP API so the frontend can rely on the LangGraph SDK. Ensure new components are typed, testable, and respect existing caching, auditing, and compliance requirements.
 - **Gradual rollout**: Support dual-mode execution (legacy + LangGraph) during migration, enabling phased cut-over and feature parity validation.
 
 ## 2. Current State Snapshot
@@ -15,10 +15,10 @@
 
 ### 3.1 High-Level Graph Topology
 ```
-Client → FastAPI Router → LangGraph App
-                               │
-                               ▼
-                     Supervisor Agent (Router)
+Client → LangGraph Server HTTP API
+              │
+              ▼
+    Supervisor Agent (Router)
                    /            |              \
                   ▼             ▼               ▼
         Ingestion Subgraph   Resume Drafting   Insights & QA Subgraph
@@ -56,7 +56,7 @@ Client → FastAPI Router → LangGraph App
 
 | Area | Legacy Modules | LangGraph Replacement | Notes |
 | --- | --- | --- | --- |
-| API Entry | `main.py`, `router.py` | Add LangGraph app startup & thread management | Continue to serve FastAPI routes; inject LangGraph client. |
+| API Entry | `main.py`, `router.py` | Replace FastAPI app with LangGraph Server deployment (`langgraph.json`, assistants) | Route traffic through LangGraph Server endpoints so clients consume the SDK. |
 | Orchestration | `generator.py`, `ingestion/` | `graphs/supervisor.py`, `graphs/ingestion.py`, `graphs/generation.py` | Each graph compiles to callable interface with `invoke`/`astream`. |
 | Tools | `vectorstore.py`, `resume_builder.py` | `tools/vector.py`, `tools/render.py`, etc. using LangChain tool wrappers | Ensure idempotent operations for retries. |
 | Caching | `cache.py` | Shared service invoked by Publishing node; implement as tool to keep agent-mediated control. |
@@ -67,7 +67,7 @@ Client → FastAPI Router → LangGraph App
 1. **Foundation (Week 1-2)**
    - Introduce LangGraph dependencies and scaffolding (`graphs/` package, shared state models, base tools).
    - Implement ingestion subgraph end-to-end with parity tests against legacy pipeline.
-   - Wire FastAPI route flag to choose legacy vs. LangGraph execution for ingestion flows.
+   - Stand up LangGraph Server locally, proxying legacy FastAPI routes while the SDK-based frontend is wired against the new endpoints.
 
 2. **Drafting & Revision (Week 3-4)**
    - Build drafting and critique subgraphs with revision loop.
@@ -77,12 +77,12 @@ Client → FastAPI Router → LangGraph App
 3. **Compliance & Publishing (Week 5)**
    - Integrate compliance agent and publishing node.
    - Migrate caching, notifications, and auditing into LangGraph tools.
-   - Run load tests to validate checkpoint persistence & scaling characteristics.
+   - Harden LangGraph Server configuration (auth handlers, persistence backends) and run load tests to validate checkpoint persistence & scaling characteristics.
 
 4. **Supervisor & Multi-Agent Routing (Week 6)**
    - Introduce supervisor router controlling subgraph hand-offs.
    - Enable time-travel debugging, finalize LangSmith dashboards, and document operational runbooks.
-   - Switch production default to LangGraph path with rollback toggle.
+   - Cut over production traffic to LangGraph Server endpoints with rollback toggle for legacy FastAPI stack.
 
 5. **Decommission Legacy (Week 7)**
    - Remove deprecated orchestration classes, clean configs, and update developer documentation.
@@ -100,7 +100,7 @@ Client → FastAPI Router → LangGraph App
 
 ## 7. Deliverables
 - LangGraph-based code modules, configuration (`langgraph.json`), and deployment automation.
-- Updated FastAPI integration with feature flag and fallbacks.
+- LangGraph Server deployment replacing FastAPI entrypoint, including feature flags and rollbacks.
 - Documentation: developer guides, operational runbooks, and user-facing changelog entries.
 - Comprehensive regression suite covering ingestion, generation, compliance, and publishing flows.
 
