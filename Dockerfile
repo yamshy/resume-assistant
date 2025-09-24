@@ -24,14 +24,4 @@ EXPOSE 8030
 
 ENV LANGGRAPH_CONFIG=/app/langgraph.json
 
-CMD [
-  "langgraph",
-  "server",
-  "start",
-  "--config",
-  "/app/langgraph.json",
-  "--host",
-  "0.0.0.0",
-  "--port",
-  "8030"
-]
+CMD ["langgraph", "server", "start", "--config", "/app/langgraph.json", "--host", "0.0.0.0", "--port", "8030"]
