@@ -1,3 +1,10 @@
+## [1.11.5](https://github.com/yamshy/resume-assistant/compare/v1.11.4...v1.11.5) (2025-09-24)
+
+
+### Bug Fixes
+
+* **deps:** update dependency mypy to v1.18.2 ([#33](https://github.com/yamshy/resume-assistant/issues/33)) ([31d3153](https://github.com/yamshy/resume-assistant/commit/31d3153a8303843554f88ccb985b89e43e98a8e4))
+
 ## [1.11.4](https://github.com/yamshy/resume-assistant/compare/v1.11.3...v1.11.4) (2025-09-24)
 
 
