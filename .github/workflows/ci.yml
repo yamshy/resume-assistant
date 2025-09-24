@@ -25,7 +25,7 @@ jobs:
         with:
           python-version: '3.12'
       - name: Install dependencies
-        run: uv sync --dev
+        run: uv sync --extra dev --locked
       - name: Run Ruff
         run: uv run --extra dev ruff check
 
@@ -40,7 +40,7 @@ jobs:
         with:
           python-version: '3.12'
       - name: Install dependencies
-        run: uv sync --dev
+        run: uv sync --extra dev --locked
       - name: Run mypy
         run: uv run --extra dev mypy app
 
@@ -58,6 +58,6 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
       - name: Install dependencies
-        run: uv sync --dev
+        run: uv sync --extra dev --locked
       - name: Run pytest
         run: uv run pytest
