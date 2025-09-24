@@ -6,7 +6,7 @@ readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
     "langgraph==0.2.32",
-    "langchain-core==0.3.24",
+    "langchain-core==0.3.76",
     "instructor>=1.7.0",
     "openai==1.109.0",
     "pytest==8.4.2",
