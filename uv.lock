@@ -1,5 +1,5 @@
 version = 1
-revision = 3
+revision = 2
 requires-python = ">=3.12"
 resolution-markers = [
     "python_full_version >= '3.13'",
@@ -489,6 +489,18 @@ dependencies = [
 sdist = { url = "https://files.pythonhosted.org/packages/73/3e/d00eb2b56c3846a0cabd2e5aa71c17a95f882d4f799a6ffe96a19b55eba9/langgraph_checkpoint-2.1.1.tar.gz", hash = "sha256:72038c0f9e22260cb9bff1f3ebe5eb06d940b7ee5c1e4765019269d4f21cf92d", size = 136256, upload-time = "2025-07-17T13:07:52.411Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/4c/dd/64686797b0927fb18b290044be12ae9d4df01670dce6bb2498d5ab65cb24/langgraph_checkpoint-2.1.1-py3-none-any.whl", hash = "sha256:5a779134fd28134a9a83d078be4450bbf0e0c79fdf5e992549658899e6fc5ea7", size = 43925, upload-time = "2025-07-17T13:07:51.023Z" },
+]
+
+[[package]]
+name = "langgraph-cli"
+version = "0.1.50"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "click" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/c3/45/772025dc2a47c4c76cbdef07bb2ae3378a157ca62121da808794d7d82582/langgraph_cli-0.1.50.tar.gz", hash = "sha256:0d602b1e71e2763b94341ea021601613d212ce80397c2a04062820bd187b4ca6", size = 13138, upload-time = "2024-07-22T15:25:12.149Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/4b/f9/5a459972e6696c884a8eb180dab364c85d21175d2c016e9386e045f29ca5/langgraph_cli-0.1.50-py3-none-any.whl", hash = "sha256:094c89a8b27d21419148d99ec026e6fd43d69fb9b0c39f4126dbef8a7d2e411d", size = 15988, upload-time = "2024-07-22T15:25:10.931Z" },
 ]
 
 [[package]]
@@ -1035,6 +1047,7 @@ dependencies = [
     { name = "instructor" },
     { name = "langchain-core" },
     { name = "langgraph" },
+    { name = "langgraph-cli" },
     { name = "openai" },
     { name = "pytest" },
     { name = "pytest-asyncio" },
@@ -1053,6 +1066,7 @@ requires-dist = [
     { name = "instructor", specifier = ">=1.7.0" },
     { name = "langchain-core", specifier = "==0.3.76" },
     { name = "langgraph", specifier = "==0.6.7" },
+    { name = "langgraph-cli", specifier = "==0.1.50" },
     { name = "mypy", marker = "extra == 'dev'", specifier = "==1.18.2" },
     { name = "openai", specifier = "==1.109.0" },
     { name = "pytest", specifier = "==8.4.2" },
