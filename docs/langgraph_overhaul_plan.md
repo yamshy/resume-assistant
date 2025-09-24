@@ -4,7 +4,8 @@
 - **Agent-first orchestration**: Replace bespoke planner/executor classes with LangGraph agents that are responsible for reasoning, routing, and invoking tools. All multi-step reasoning must be delegated to agents, avoiding brittle regex-based control flow.
 - **Modular graph topology**: Model ingestion, enrichment, resume synthesis, validation, and delivery as composable LangGraph subgraphs to improve reliability, observability, and testability.
 - **Deterministic interfaces**: Transition public traffic to the LangGraph Server HTTP API so the frontend can rely on the LangGraph SDK. Ensure new components are typed, testable, and respect existing caching, auditing, and compliance requirements.
-- **Gradual rollout**: Support dual-mode execution (legacy + LangGraph) during migration, enabling phased cut-over and feature parity validation.
+- **Single-step switchover**: Plan for a one-time cutover to the LangGraph-driven AI agent, retiring legacy orchestration the moment the new stack is verified end-to-end.
+- **Complete repository overhaul**: Authorize the AI implementation agent to replace or delete any legacy module, asset, or configuration that does not support the LangGraph architecture; the final tree must contain only the new stack.
 
 ## 2. Current State Snapshot
 - Custom `ResumeGenerationAgent`, `ResumeIngestionAgent`, and related helpers encapsulate workflows with imperative Python logic, synchronous retries, and manual state machines.
@@ -62,31 +63,34 @@ Client → LangGraph Server HTTP API
 | Caching | `cache.py` | Shared service invoked by Publishing node; implement as tool to keep agent-mediated control. |
 | Monitoring | Custom logs | LangSmith instrumentation + structured events from graph runs | Standardize metadata schema. |
 
-## 5. Migration Phases
+## 5. Full Switchover Execution Plan
 
-1. **Foundation (Week 1-2)**
-   - Introduce LangGraph dependencies and scaffolding (`graphs/` package, shared state models, base tools).
-   - Implement ingestion subgraph end-to-end with parity tests against legacy pipeline.
-   - Stand up LangGraph Server locally, proxying legacy FastAPI routes while the SDK-based frontend is wired against the new endpoints.
+The AI implementation agent must complete every step below before the system is activated. No dual-run or legacy fallback is permitted once the cutover occurs.
 
-2. **Drafting & Revision (Week 3-4)**
-   - Build drafting and critique subgraphs with revision loop.
-   - Add HITL checkpoints and streaming support.
-   - Implement evaluator-based regression suite comparing draft quality metrics to baseline.
+1. **LangGraph Stack Assembly**
+   - Add LangGraph and LangSmith dependencies, create the `graphs/` package, and implement shared state models and reducers.
+   - Implement ingestion, drafting, critique, compliance, and publishing subgraphs end-to-end with deterministic tests verifying parity against fixtures representing current production behaviours.
+   - Establish the Supervisor Agent as the single orchestration entrypoint, wiring all subgraphs through structured state transitions.
 
-3. **Compliance & Publishing (Week 5)**
-   - Integrate compliance agent and publishing node.
-   - Migrate caching, notifications, and auditing into LangGraph tools.
-   - Harden LangGraph Server configuration (auth handlers, persistence backends) and run load tests to validate checkpoint persistence & scaling characteristics.
+2. **Tooling & Infrastructure Hardening**
+   - Wrap all existing tools (vector store, knowledge base, renderer, cache, notifications) as LangChain tools with idempotent semantics and explicit error handling.
+   - Configure LangGraph Server with authentication, persistence (Redis/Postgres checkpoints), and streaming hooks; bake configuration into `langgraph.json` and deployment manifests.
+   - Instrument LangSmith tracing, metrics emission, and HITL breakpoints; provide dashboards and operational runbooks.
 
-4. **Supervisor & Multi-Agent Routing (Week 6)**
-   - Introduce supervisor router controlling subgraph hand-offs.
-   - Enable time-travel debugging, finalize LangSmith dashboards, and document operational runbooks.
-   - Cut over production traffic to LangGraph Server endpoints with rollback toggle for legacy FastAPI stack.
+3. **Verification Gauntlet**
+   - Execute regression tests covering ingestion, drafting, revision loop, compliance, publishing, and caching interactions using `pytest` and LangSmith AgentEvals.
+   - Run load and soak tests against LangGraph Server to validate latency, throughput, and checkpoint integrity; capture acceptance thresholds in the runbook.
+   - Review HITL flows in staging, ensuring interrupts, approvals, and resumption paths function without manual intervention from legacy components.
 
-5. **Decommission Legacy (Week 7)**
-   - Remove deprecated orchestration classes, clean configs, and update developer documentation.
-   - Conduct post-mortem to capture lessons and finalize architecture diagrams.
+4. **One-Time Cutover**
+   - Update FastAPI entrypoints to proxy exclusively to LangGraph Server, deprecating legacy orchestration classes and routes.
+   - Migrate deployment infrastructure (Docker, CI/CD) to ship the LangGraph configuration and remove references to superseded modules.
+   - Execute a controlled production deploy, monitor telemetry for two business days, and confirm success criteria before declaring completion.
+
+5. **Post-Switchover Repo Hygiene**
+   - Purge the repository of deprecated orchestration code, configs, Docker artifacts, and scripts; confirm `app/`, `tests/`, and deployment manifests reference only LangGraph components.
+   - Rebuild documentation, onboarding guides, and architecture diagrams so they exclusively describe the LangGraph system; remove outdated guidance.
+   - Transition ongoing maintenance workflows (prompt updates, tool additions) to the Supervisor Agent governance process and record a retrospective capturing the overhaul.
 
 ## 6. Risk Mitigation & Open Questions
 - **Tool determinism**: Ensure tool functions are idempotent; add caching layers or guardrails where side effects occur.
@@ -100,7 +104,7 @@ Client → LangGraph Server HTTP API
 
 ## 7. Deliverables
 - LangGraph-based code modules, configuration (`langgraph.json`), and deployment automation.
-- LangGraph Server deployment replacing FastAPI entrypoint, including feature flags and rollbacks.
+- LangGraph Server deployment replacing FastAPI entrypoint with no legacy rollback path.
+- Repository tree scrubbed of legacy orchestration assets, with lint/type/test pipelines updated for the LangGraph stack only.
 - Documentation: developer guides, operational runbooks, and user-facing changelog entries.
 - Comprehensive regression suite covering ingestion, generation, compliance, and publishing flows.
-
