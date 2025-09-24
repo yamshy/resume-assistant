@@ -62,7 +62,8 @@ async def run_demo() -> None:
         ):
             handle = await client.start_workflow(
                 ResumeWorkflow.run,
-                args=[state, AgentConfig()],
+                state,
+                AgentConfig(),
                 id=state.request_id,
                 task_queue=TASK_QUEUE,
             )
