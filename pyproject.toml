@@ -10,7 +10,7 @@ dependencies = [
     "uvicorn>=0.30.0",
     "httpx>=0.27.0",
     "instructor>=1.7.0",
-    "openai==1.109.0",
+    "openai==1.109.1",
     "pytest==8.4.2",
     "pytest-asyncio==1.2.0",
 ]
