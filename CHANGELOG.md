@@ -1,3 +1,10 @@
+## [1.13.2](https://github.com/yamshy/resume-assistant/compare/v1.13.1...v1.13.2) (2025-09-24)
+
+
+### Bug Fixes
+
+* guard live OpenAI job when secret missing ([#103](https://github.com/yamshy/resume-assistant/issues/103)) ([2483181](https://github.com/yamshy/resume-assistant/commit/2483181498343c834683f77ab05beb23583000ca))
+
 ## [1.13.1](https://github.com/yamshy/resume-assistant/compare/v1.13.0...v1.13.1) (2025-09-24)
 
 
