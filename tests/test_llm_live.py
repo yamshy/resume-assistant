@@ -3,16 +3,22 @@
 from __future__ import annotations
 
 import os
-from typing import Dict, List
+from typing import Final
 
 import pytest
 
 from app.tools.llm import OpenAIResumeLLM
 
-pytestmark = pytest.mark.skipif(
-    not os.getenv("OPENAI_API_KEY"),
-    reason="OPENAI_API_KEY must be set to run live OpenAI tests",
-)
+MODEL_ENV_VAR: Final = "OPENAI_LIVE_TEST_MODEL"
+DEFAULT_MODEL: Final = "gpt-4o-mini"
+
+pytestmark = [
+    pytest.mark.live,
+    pytest.mark.skipif(
+        not os.getenv("OPENAI_API_KEY"),
+        reason="OPENAI_API_KEY must be set to run live OpenAI tests",
+    ),
+]
 
 
 def _assert_non_empty_str(value: str) -> None:
@@ -20,12 +26,8 @@ def _assert_non_empty_str(value: str) -> None:
     assert value.strip(), "expected non-empty string"
 
 
-def test_openai_resume_llm_end_to_end_live() -> None:
-    """Ensure the OpenAI LLM can plan, draft, critique, and review a resume."""
-
-    llm = OpenAIResumeLLM(model="gpt-4o-mini", temperature=0)
-
-    profile: Dict[str, object] = {
+def _make_profile() -> dict[str, object]:
+    return {
         "name": "Jordan Rivera",
         "headline": "Full-stack engineer transitioning into ML ops",
         "skills": ["python", "docker", "ml ops"],
@@ -33,16 +35,36 @@ def test_openai_resume_llm_end_to_end_live() -> None:
             {
                 "role": "Software Engineer",
                 "company": "Acme Corp",
-                "highlights": ["Built CI/CD pipelines", "Led migration to containers"],
+                "highlights": [
+                    "Built CI/CD pipelines",
+                    "Led migration to containers",
+                ],
             }
         ],
     }
-    knowledge_hits: List[Dict[str, object]] = [
+
+
+def _make_knowledge_hits() -> list[dict[str, object]]:
+    return [
         {
             "title": "Recent achievements",
-            "content": "Implemented observability tooling and automated deployment scripts.",
+            "content": (
+                "Implemented observability tooling and automated deployment scripts."
+            ),
         }
     ]
+
+
+def test_openai_resume_llm_end_to_end_live() -> None:
+    """Ensure the OpenAI LLM can plan, draft, critique, and review a resume."""
+
+    llm = OpenAIResumeLLM(
+        model=os.getenv(MODEL_ENV_VAR, DEFAULT_MODEL),
+        temperature=0,
+    )
+
+    profile = _make_profile()
+    knowledge_hits = _make_knowledge_hits()
 
     plan = llm.plan_resume(profile, knowledge_hits)
     _assert_non_empty_str(plan["summary"])
