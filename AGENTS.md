@@ -1,33 +1,33 @@
 # Repository Guidelines
 
 ## Project Structure & Module Organization
-Source code lives in `app/`, with domain modules such as `generator.py`, `router.py`, and integrations like `vectorstore.py`. The FastAPI entrypoint is `main.py`, while reusable fixtures and API checks reside in `tests/`. Docker assets (`Dockerfile`, `docker-compose.yml`) let you run the API, Redis, and Chroma-backed services locally.
+Source code lives in `app/` with LangGraph-native packages such as `graphs/`, `state.py`, and `tools/`. `tools/llm.py` wraps the OpenAI chat model via LangChain, while `tools/vector.py`, `tools/cache.py`, and `tools/notifications.py` expose deterministic utilities. The LangGraph server configuration resides in `langgraph.json`; `main.py` offers a CLI demo. Tests live under `tests/`, relying on stub LLMs for deterministic assertions.
 
 ## Build, Test, and Development Commands
 Install dependencies once with:
 ```bash
 uv sync
 ```
-Run the API during development:
+Run the LangGraph server during development (requires `OPENAI_API_KEY` in scope):
 ```bash
-uv run uvicorn main:app --reload
+uv run langgraph server start --config langgraph.json --host 0.0.0.0 --port 8030
 ```
-Quality gates must pass before review:
+Quality gates to run before review:
 ```bash
 uv run pytest
 uv run --extra dev ruff check
 uv run --extra dev mypy app
 ```
-Use `docker compose up --build` when you need the full stack (API + Redis + Chroma) wired together.
+Use `docker compose up --build` to run the LangGraph Server container with an optional Redis checkpointer.
 
 ## Coding Style & Naming Conventions
-Target Python 3.12 and follow 4-space indentation. Modules and functions use `snake_case`, classes remain in `PascalCase`, and constants in `UPPER_SNAKE_CASE`. Maintain type hints on new public interfaces. Ruff enforces import hygiene and basic linting; run `uv run --extra dev ruff check --fix` for mechanical cleanups, but keep manual refactors separate from feature work. Align docstrings with NumPy-style summaries when documenting public methods.
+Keep Python 3.12, 4-space indentation, `snake_case` functions, `PascalCase` classes, and `UPPER_SNAKE_CASE` constants. Public interfaces should remain type hinted. Comment sparingly: prefer self-explanatory code.
 
 ## Testing Guidelines
-Write tests in `tests/` using `pytest` conventions (`test_*.py` files, `Test*` classes optional). Cover new behaviours with focused unit tests and favour deterministic fixtures over live service calls; `fakeredis` is available for cache-dependent logic. Async code is auto-handled by `pytest-asyncio`, so mark coroutines with `async def` and let the plugin manage the event loop. Ensure negative paths are exercised alongside the happy path before opening a pull request.
+Write `pytest` tests in `tests/`. Prefer exercising compiled graphs and LLM stubs directly instead of crafting HTTP tests. When negative paths require model output, extend the stub LLM to produce deterministic responses. Async code may rely on `pytest-asyncio`'s auto event loop configuration.
 
 ## Commit & Pull Request Guidelines
-Use Conventional Commits such as `feat: add resume caching metrics` or `fix: handle empty knowledge store`. Group related changes into a single commit to keep the history searchable. Pull requests must also use Conventional Commit-style titles so release tooling stays consistent. They should link relevant issues, summarise the change, and call out any configuration updates. Always include evidence that lint, type checks, and tests ran (command output or checklist) and describe any manual QA performed.
+Use Conventional Commits (e.g., `feat: wire llm drafting subgraph` or `fix: tighten compliance prompt`). Group related changes and include updated tests. PRs should link issues, describe functional shifts, highlight configuration updates, and document lint/type/test evidence.
 
 ## Environment & Configuration Tips
-Set `OPENAI_API_KEY` and `ANTHROPIC_API_KEY` to reach real LLM backends; otherwise the service falls back to the deterministic template generator. The knowledge store persists to `data/knowledge/knowledge_store.json` by default—override the location with the `KNOWLEDGE_STORE_PATH` environment variable when running multiple sandboxes. Keep credentials out of commits and share secrets via team-approved managers.
+Provide `OPENAI_API_KEY` (optionally via Infisical) when running the supervisor graph. Replace the stub tooling in tests with production equivalents by constructing a custom `ToolRegistry`. Attach a persistent checkpointer (Redis, Postgres, LangGraph Cloud) through `compile_supervisor_graph(checkpointer=...)` to unlock run replay and HITL pauses. Keep secrets out of commits; rely on the team’s preferred secret manager.

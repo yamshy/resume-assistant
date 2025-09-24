@@ -108,3 +108,9 @@ The AI implementation agent must complete every step below before the system is 
 - Repository tree scrubbed of legacy orchestration assets, with lint/type/test pipelines updated for the LangGraph stack only.
 - Documentation: developer guides, operational runbooks, and user-facing changelog entries.
 - Comprehensive regression suite covering ingestion, generation, compliance, and publishing flows.
+
+## 8. Implementation Status
+- LangGraph supervisor, ingestion, drafting, critique, compliance, and publishing subgraphs implemented under `app/graphs/`, with drafting/critique/compliance now deferring to OpenAI-backed LLM prompts.
+- Tooling migrated to LangGraph-compatible registry (`app/tools/`) including the `OpenAIResumeLLM` for production and `StubResumeLLM` for deterministic tests.
+- Repository entrypoint, Docker assets, and documentation updated to reference `langgraph.json` and the LangGraph Server exclusively.
+- Legacy FastAPI orchestration, agents, and OpenAPI assets removed; tests rewritten to validate the LangGraph pipeline end-to-end.

@@ -1,31 +1,30 @@
 version: "3.9"
 
 services:
-  api:
+  langgraph:
     build: .
     ports:
-      - "8000:8000"
+      - "8030:8030"
     environment:
-      OPENAI_API_KEY: "${OPENAI_API_KEY:-}"
-      REDIS_URL: redis://redis:6379/0
-      KNOWLEDGE_STORE_PATH: /data/knowledge_store.json
-    depends_on:
-      - redis
-      - chroma
+      LANGGRAPH_CONFIG: /app/langgraph.json
+    command: [
+      "langgraph",
+      "server",
+      "start",
+      "--config",
+      "/app/langgraph.json",
+      "--host",
+      "0.0.0.0",
+      "--port",
+      "8030"
+    ]
     volumes:
-      - ./data/knowledge:/data
-    command: ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
+      - ./data:/data
 
   redis:
     image: redis:7-alpine
     ports:
       - "6379:6379"
+    command: ["redis-server", "--appendonly", "yes"]
     volumes:
       - ./data/redis:/data
-
-  chroma:
-    image: chromadb/chroma:latest
-    ports:
-      - "8001:8000"
-    volumes:
-      - ./data/chroma:/chroma/data

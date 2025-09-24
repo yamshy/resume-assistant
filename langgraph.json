@@ -1,0 +1,14 @@
+{
+  "langgraph": {
+    "version": "0.2"
+  },
+  "graphs": {
+    "resume-supervisor": {
+      "entrypoint": "app.graphs.supervisor:compile_supervisor_graph",
+      "description": "Supervisor graph orchestrating ingestion, drafting, critique, compliance, and publishing for resumes.",
+      "interrupts": {
+        "enabled": true
+      }
+    }
+  }
+}

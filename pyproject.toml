@@ -5,16 +5,9 @@ description = "Production-ready AI resume tailoring service"
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
-    "fastapi[standard]==0.117.1",
-    "instructor==1.11.3",
-    "openai==1.108.2",
-    "anthropic==0.68.0",
-    "pydantic==2.10.0",
-    "redis==6.4.0",
-    "python-multipart==0.0.20",
-    "langsmith==0.4.30",
-    "tiktoken==0.8.0",
-    "pyyaml==6.0.2",
+    "langgraph==0.2.32",
+    "langchain-core==0.3.24",
+    "langchain-openai==0.2.12",
     "pytest==8.4.2",
     "pytest-asyncio==0.24.0"
 ]
