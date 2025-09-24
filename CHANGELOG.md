@@ -1,3 +1,10 @@
+## [1.11.3](https://github.com/yamshy/resume-assistant/compare/v1.11.2...v1.11.3) (2025-09-24)
+
+
+### Bug Fixes
+
+* **deps:** update dependency pytest-asyncio to v0.26.0 ([#37](https://github.com/yamshy/resume-assistant/issues/37)) ([ed41fb4](https://github.com/yamshy/resume-assistant/commit/ed41fb4cc21e0917c93ba467dd30015cc50cec65))
+
 ## [1.11.2](https://github.com/yamshy/resume-assistant/compare/v1.11.1...v1.11.2) (2025-09-24)
 
 
