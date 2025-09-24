@@ -1,11 +1,11 @@
 # LangGraph Resume Assistant
 
-The Resume Assistant now runs as an agentic LangGraph application driven entirely by LLM reasoning. Every stage—planning, drafting, critique, and compliance—delegates text-heavy work to an OpenAI-backed model orchestrated through LangChain, while thin Python tools provide deterministic storage, vector search, and notification utilities.
+The Resume Assistant now runs as an agentic LangGraph application driven entirely by LLM reasoning. Every stage—planning, drafting, critique, and compliance—delegates text-heavy work to an OpenAI-backed model instrumented with Instructor for schema-validated outputs, while thin Python tools provide deterministic storage, vector search, and notification utilities.
 
 ## Architecture Overview
 - **Supervisor StateGraph** routes requests across modular subgraphs and enforces revision budgets with LangGraph checkpointing support.
 - **Ingestion Subgraph** normalises raw documents and upserts them into the vector index for later retrieval.
-- **Drafting Subgraph** calls the LLM to build a plan and generate the full markdown resume, folding in retrieval hits and profile context.
+- **Drafting Subgraph** calls the Instructor-wrapped LLM to build a plan and generate the full markdown resume, folding in retrieval hits and profile context.
 - **Critique Subgraph** leverages the LLM to decide whether additional revisions are required, annotating telemetry with the true revision count.
 - **Compliance Subgraph** revisits the LLM with policy guidance (blocklists, tone hints) to approve or reject publication.
 - **Publishing Subgraph** persists artifacts and emits operational notifications; it is deliberately deterministic to keep side effects auditable.
@@ -56,7 +56,8 @@ docker compose up --build
 Provide `OPENAI_API_KEY` (and any other model credentials) via your preferred secret manager before starting the stack.
 
 ## Development Notes
-- Complex text analysis, reasoning, and drafting are handled exclusively by the LLM. Python functions stay focused on data access, storage, or lightweight transformations.
+- Complex text analysis, reasoning, and drafting are handled exclusively by the Instructor-validated LLM. Python functions stay focused on data access, storage, or lightweight transformations.
+- `OpenAIResumeLLM` uses Instructor response models to guarantee structured outputs for planning, critique, compliance, and drafting while automatically retrying invalid generations.
 - Tests use `tests/stubs.StubResumeLLM` to simulate LLM responses deterministically; production runs automatically pivot to the OpenAI-backed `OpenAIResumeLLM`.
 - All telemetry (draft counts, revision totals, audit trails) flows through LangGraph reducers to keep dashboards honest.
 
