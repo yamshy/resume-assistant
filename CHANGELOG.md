@@ -1,3 +1,10 @@
+## [1.11.7](https://github.com/yamshy/resume-assistant/compare/v1.11.6...v1.11.7) (2025-09-24)
+
+
+### Bug Fixes
+
+* include langgraph cli dependency ([#89](https://github.com/yamshy/resume-assistant/issues/89)) ([14c70bc](https://github.com/yamshy/resume-assistant/commit/14c70bc4ce5b324616f3f1e96680b49756876a0a))
+
 ## [1.11.6](https://github.com/yamshy/resume-assistant/compare/v1.11.5...v1.11.6) (2025-09-24)
 
 
