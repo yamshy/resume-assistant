@@ -1,10 +1,13 @@
 from types import SimpleNamespace
 
+import httpx
 import pytest
+from openai import AuthenticationError
 
 from app.agents.ingestion_agent import (
     ExtractionExperienceModel,
     ExtractionModel,
+    IngestionAgentError,
     MissingIngestionLLMError,
     PlanModel,
     PlanStepModel,
@@ -90,12 +93,30 @@ async def test_ingestion_agent_processes_structured_llm_responses() -> None:
 
 
 @pytest.mark.asyncio
-async def test_call_llm_raises_when_completion_fails() -> None:
+async def test_call_llm_raises_ingestion_error_when_completion_fails() -> None:
     class FailingCompletions:
         async def create(self, **kwargs):  # type: ignore[no-untyped-def]
             raise RuntimeError("boom")
 
     client = SimpleNamespace(chat=SimpleNamespace(completions=FailingCompletions()))
+    agent = ResumeIngestionAgent(client=client)
+
+    with pytest.raises(IngestionAgentError):
+        await agent._call_llm("plan", {"payload": True}, PlanModel)
+
+
+@pytest.mark.asyncio
+async def test_call_llm_maps_authentication_errors_to_missing_llm() -> None:
+    class AuthFailingCompletions:
+        async def create(self, **kwargs):  # type: ignore[no-untyped-def]
+            request = httpx.Request("POST", "https://api.openai.com/v1/test")
+            raise AuthenticationError(
+                "Invalid API key",
+                response=httpx.Response(401, request=request),
+                body=None,
+            )
+
+    client = SimpleNamespace(chat=SimpleNamespace(completions=AuthFailingCompletions()))
     agent = ResumeIngestionAgent(client=client)
 
     with pytest.raises(MissingIngestionLLMError):
