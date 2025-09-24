@@ -19,6 +19,8 @@ jobs:
   lint:
     name: Ruff lint
     runs-on: ubuntu-latest
+    env:
+      UV_PYTHON_VERSION: '3.12'
     steps:
       - name: Check out repository
         uses: actions/checkout@v5
@@ -26,6 +28,15 @@ jobs:
         uses: astral-sh/setup-uv@v6
         with:
           python-version: '3.12'
+      - name: Cache uv dependencies
+        uses: actions/cache@v4
+        with:
+          path: |
+            .venv
+            ${{ env.HOME }}/.cache/uv
+          key: ${{ runner.os }}-uv-${{ env.UV_PYTHON_VERSION }}-${{ hashFiles('uv.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-uv-${{ env.UV_PYTHON_VERSION }}-
       - name: Install dependencies
         run: uv sync --extra dev --locked
       - name: Run Ruff
@@ -34,6 +45,8 @@ jobs:
   type-check:
     name: Mypy type check
     runs-on: ubuntu-latest
+    env:
+      UV_PYTHON_VERSION: '3.12'
     steps:
       - name: Check out repository
         uses: actions/checkout@v5
@@ -41,6 +54,15 @@ jobs:
         uses: astral-sh/setup-uv@v6
         with:
           python-version: '3.12'
+      - name: Cache uv dependencies
+        uses: actions/cache@v4
+        with:
+          path: |
+            .venv
+            ${{ env.HOME }}/.cache/uv
+          key: ${{ runner.os }}-uv-${{ env.UV_PYTHON_VERSION }}-${{ hashFiles('uv.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-uv-${{ env.UV_PYTHON_VERSION }}-
       - name: Install dependencies
         run: uv sync --extra dev --locked
       - name: Run mypy
@@ -52,6 +74,8 @@ jobs:
     strategy:
       matrix:
         python-version: ['3.12', '3.13']
+    env:
+      UV_PYTHON_VERSION: ${{ matrix.python-version }}
     steps:
       - name: Check out repository
         uses: actions/checkout@v5
@@ -59,6 +83,15 @@ jobs:
         uses: astral-sh/setup-uv@v6
         with:
           python-version: ${{ matrix.python-version }}
+      - name: Cache uv dependencies
+        uses: actions/cache@v4
+        with:
+          path: |
+            .venv
+            ${{ env.HOME }}/.cache/uv
+          key: ${{ runner.os }}-uv-${{ env.UV_PYTHON_VERSION }}-${{ hashFiles('uv.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-uv-${{ env.UV_PYTHON_VERSION }}-
       - name: Install dependencies
         run: uv sync --extra dev --locked
       - name: Run pytest
@@ -70,6 +103,8 @@ jobs:
     needs:
       - tests
     if: ${{ env.OPENAI_API_KEY != '' }}
+    env:
+      UV_PYTHON_VERSION: '3.12'
     steps:
       - name: Check out repository
         uses: actions/checkout@v5
@@ -77,6 +112,15 @@ jobs:
         uses: astral-sh/setup-uv@v6
         with:
           python-version: '3.12'
+      - name: Cache uv dependencies
+        uses: actions/cache@v4
+        with:
+          path: |
+            .venv
+            ${{ env.HOME }}/.cache/uv
+          key: ${{ runner.os }}-uv-${{ env.UV_PYTHON_VERSION }}-${{ hashFiles('uv.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-uv-${{ env.UV_PYTHON_VERSION }}-
       - name: Install dependencies
         run: uv sync --extra dev --locked
       - name: Run live OpenAI tests
