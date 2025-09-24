@@ -54,3 +54,4 @@ jobs:
             git push
           else
             echo "No schema changes to commit"
+          fi
