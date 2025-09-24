@@ -1,3 +1,10 @@
+## [1.11.2](https://github.com/yamshy/resume-assistant/compare/v1.11.1...v1.11.2) (2025-09-24)
+
+
+### Bug Fixes
+
+* **deps:** update dependency langchain-core to v0.3.76 ([#82](https://github.com/yamshy/resume-assistant/issues/82)) ([1c94ce2](https://github.com/yamshy/resume-assistant/commit/1c94ce26bc55e1ffc71ef84dd94324d1e1eaf6d1))
+
 ## [1.11.1](https://github.com/yamshy/resume-assistant/compare/v1.11.0...v1.11.1) (2025-09-24)
 
 
