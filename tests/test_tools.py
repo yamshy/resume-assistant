@@ -1,5 +1,8 @@
 from __future__ import annotations
 
+import pytest
+from pydantic import ValidationError
+
 from app.tools import (
     NotificationTool,
     PublishingCacheTool,
@@ -7,6 +10,7 @@ from app.tools import (
     ToolRegistry,
     VectorSearchTool,
 )
+from app.tools.llm import DraftResponse, PlanResponse
 from tests.stubs import StubResumeLLM
 
 
@@ -63,3 +67,14 @@ def test_notification_tool_collects_events():
     assert events == [
         {"status": "delivered", "recipient": "qa", "message": "All done"}
     ]
+
+
+def test_plan_response_defaults():
+    plan = PlanResponse(summary="Test summary")
+    assert plan.skills == []
+    assert plan.experience == []
+
+
+def test_draft_response_requires_content():
+    with pytest.raises(ValidationError):
+        DraftResponse(resume_markdown="   ")
