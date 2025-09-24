@@ -1,3 +1,10 @@
+## [1.11.1](https://github.com/yamshy/resume-assistant/compare/v1.11.0...v1.11.1) (2025-09-24)
+
+
+### Bug Fixes
+
+* correct docker cmd syntax ([#86](https://github.com/yamshy/resume-assistant/issues/86)) ([56f0a20](https://github.com/yamshy/resume-assistant/commit/56f0a208ec28d167d8b1a95e5d2c788f69994456))
+
 # [1.11.0](https://github.com/yamshy/resume-assistant/compare/v1.10.0...v1.11.0) (2025-09-24)
 
 
