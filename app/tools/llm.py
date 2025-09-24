@@ -132,7 +132,7 @@ class OpenAIResumeLLM:
         preferred_modes = [
             getattr(instructor.Mode, "JSON_SCHEMA", None),
             getattr(instructor.Mode, "JSON", None),
-            instructor.Mode.TOOLS,
+            getattr(instructor.Mode, "TOOLS", None),
         ]
         last_error: Exception | None = None
 
