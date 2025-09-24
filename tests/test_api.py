@@ -2,7 +2,7 @@ import os
 import tempfile
 from contextlib import ExitStack
 from textwrap import dedent
-from unittest.mock import patch
+from unittest.mock import AsyncMock, patch
 
 from fastapi.testclient import TestClient
 
@@ -92,39 +92,59 @@ def test_route_modules_expose_expected_paths() -> None:
 
 
 def test_generate_endpoint_returns_structured_resume():
-    client = build_client()
+    with patch(
+        "app.monitoring.ResumeMonitor.track_generation", new_callable=AsyncMock
+    ) as mock_track_generation:
+        client = build_client()
 
-    resume_body = dedent(
-        """
-        Taylor Candidate
-        taylor@example.com | +1 555-0100
-        Skills: Python, AWS, Terraform
-        Senior Platform Engineer at Acme Corp
-        - Reduced deployment failures by 45% through CI automation
-        - Migrated infrastructure as code to Terraform modules covering 200+ services
-        """
-    ).strip()
+        resume_body = dedent(
+            """
+            Taylor Candidate
+            taylor@example.com | +1 555-0100
+            Skills: Python, AWS, Terraform
+            Senior Platform Engineer at Acme Corp
+            - Reduced deployment failures by 45% through CI automation
+            - Migrated infrastructure as code to Terraform modules covering 200+ services
+            """
+        ).strip()
 
-    files = [
-        (
-            "resumes",
-            ("taylor_resume.txt", resume_body, "text/plain"),
+        files = [
+            (
+                "resumes",
+                ("taylor_resume.txt", resume_body, "text/plain"),
+            )
+        ]
+        ingest_response = client.post(
+            "/knowledge", files=files, data={"notes": "Promoted to lead the SRE program"}
         )
-    ]
-    ingest_response = client.post("/knowledge", files=files, data={"notes": "Promoted to lead the SRE program"})
-    assert ingest_response.status_code == 201
+        assert ingest_response.status_code == 201
 
-    payload = {
-        "job_posting": "Senior Python Engineer working on cloud automation",
-    }
-    response = client.post("/generate", json=payload)
-    assert response.status_code == 200
-    data = response.json()
-    assert data["full_name"] == "Taylor Candidate"
-    assert data["citations"], "Citations should be populated"
-    assert data["confidence_scores"]["overall"] >= 0
-    assert "Python" in data.get("skills", [])
-    assert data.get("metadata", {}).get("profile_source") == "knowledge-base"
+        payload = {
+            "job_posting": "Senior Python Engineer working on cloud automation",
+        }
+        response = client.post("/generate", json=payload)
+        assert response.status_code == 200
+        data = response.json()
+        assert data["full_name"] == "Taylor Candidate"
+        assert data["citations"], "Citations should be populated"
+        assert data["confidence_scores"]["overall"] >= 0
+        assert "Python" in data.get("skills", [])
+        assert data.get("metadata", {}).get("profile_source") == "knowledge-base"
+        assert mock_track_generation.await_count == 1
+        cache_miss_call = mock_track_generation.await_args_list[0]
+        cache_miss_flag = cache_miss_call.kwargs.get("cache_hit")
+        if cache_miss_flag is None:
+            cache_miss_flag = cache_miss_call.args[-1]
+        assert cache_miss_flag is False
+
+        cached_response = client.post("/generate", json=payload)
+        assert cached_response.status_code == 200
+        assert mock_track_generation.await_count == 2
+        cache_hit_call = mock_track_generation.await_args_list[1]
+        cache_hit_flag = cache_hit_call.kwargs.get("cache_hit")
+        if cache_hit_flag is None:
+            cache_hit_flag = cache_hit_call.args[-1]
+        assert cache_hit_flag is True
 
 
 def test_validate_endpoint_scores_resume():
