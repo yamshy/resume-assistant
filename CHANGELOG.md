@@ -1,3 +1,10 @@
+# [1.13.0](https://github.com/yamshy/resume-assistant/compare/v1.12.2...v1.13.0) (2025-09-24)
+
+
+### Features
+
+* add OpenAPI schema generation workflow ([#102](https://github.com/yamshy/resume-assistant/issues/102)) ([ea81989](https://github.com/yamshy/resume-assistant/commit/ea81989259bba24a12010e592ff6b864766b8272))
+
 ## [1.12.2](https://github.com/yamshy/resume-assistant/compare/v1.12.1...v1.12.2) (2025-09-24)
 
 
