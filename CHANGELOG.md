@@ -1,3 +1,10 @@
+# [1.11.0](https://github.com/yamshy/resume-assistant/compare/v1.10.0...v1.11.0) (2025-09-24)
+
+
+### Features
+
+* integrate instructor structured outputs ([#84](https://github.com/yamshy/resume-assistant/issues/84)) ([fd76889](https://github.com/yamshy/resume-assistant/commit/fd76889c3b1be8162fec329fa74572a42dd5bb02))
+
 # [1.10.0](https://github.com/yamshy/resume-assistant/compare/v1.9.1...v1.10.0) (2025-09-24)
 
 
