@@ -1,3 +1,10 @@
+# [1.14.0](https://github.com/yamshy/resume-assistant/compare/v1.13.2...v1.14.0) (2025-09-24)
+
+
+### Features
+
+* add API health check ([#104](https://github.com/yamshy/resume-assistant/issues/104)) ([7173b4f](https://github.com/yamshy/resume-assistant/commit/7173b4f32e9b1e5408fa8d97a2290c817837dc0f))
+
 ## [1.13.2](https://github.com/yamshy/resume-assistant/compare/v1.13.1...v1.13.2) (2025-09-24)
 
 
