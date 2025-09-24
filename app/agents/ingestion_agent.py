@@ -8,7 +8,7 @@ import os
 from typing import Any, TypeVar, cast
 
 from instructor import AsyncInstructor, from_openai
-from openai import AsyncOpenAI
+from openai import APIStatusError, AsyncOpenAI
 from openai.types.chat import ChatCompletionMessageParam
 from pydantic import BaseModel, Field, ValidationError
 
@@ -181,17 +181,44 @@ class ResumeIngestionAgent:
                 temperature=self.temperature,
                 max_retries=self.max_retries,
             )
+        except APIStatusError as exc:  # pragma: no cover - network failures handled in caller
+            exc_type = type(exc).__name__
+            LOGGER.debug(
+                "LLM call for stage %s failed with %s: %s",
+                stage,
+                exc_type,
+                exc,
+            )
+            status_code = getattr(exc, "status_code", None)
+            if status_code in {401, 403}:
+                raise MissingIngestionLLMError(
+                    "OpenAI API key required for resume ingestion",
+                ) from exc
+            raise IngestionAgentError(
+                f"LLM request failed during {stage} stage",
+            ) from exc
         except Exception as exc:  # pragma: no cover - network failures handled in caller
-            LOGGER.debug("LLM call for stage %s failed: %s", stage, exc)
-            raise MissingIngestionLLMError(
-                "OpenAI API key required for resume ingestion",
+            exc_type = type(exc).__name__
+            LOGGER.debug(
+                "LLM call for stage %s failed with %s: %s",
+                stage,
+                exc_type,
+                exc,
+            )
+            raise IngestionAgentError(
+                f"LLM request failed during {stage} stage",
             ) from exc
         if isinstance(response, response_model):
             return response
         try:
             return response_model.model_validate(response)
         except ValidationError as exc:
-            LOGGER.debug("Failed to validate %s response: %s", stage, exc)
+            LOGGER.debug(
+                "Failed to validate %s response with %s: %s",
+                stage,
+                type(exc).__name__,
+                exc,
+            )
             raise IngestionAgentError(
                 f"LLM returned invalid payload for {stage} stage",
             ) from exc
