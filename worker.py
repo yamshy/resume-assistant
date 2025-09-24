@@ -7,8 +7,8 @@ from temporalio import worker
 from temporalio.client import Client
 
 from app import (
-    ResumeWorkflow,
     TASK_QUEUE,
+    ResumeWorkflow,
     build_default_registry,
     configure_registry,
     list_all_activities,

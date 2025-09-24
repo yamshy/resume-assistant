@@ -6,6 +6,7 @@ from pydantic import BaseModel, ConfigDict, Field
 from temporalio import activity
 
 from ..state import AgentConfig, ResumeMessage
+from ..tools.vector import VectorSearchResult
 from . import get_registry
 
 
@@ -19,7 +20,7 @@ class PlanResumeInput(BaseModel):
 
 class PlanResumeResult(BaseModel):
     draft_plan: Dict[str, Any]
-    knowledge_hits: List[Dict[str, Any]] = Field(default_factory=list)
+    knowledge_hits: List[VectorSearchResult] = Field(default_factory=list)
     audit_event: str
 
 
@@ -28,7 +29,7 @@ class RenderResumeInput(BaseModel):
 
     plan: Dict[str, Any]
     profile: Dict[str, Any]
-    knowledge_hits: List[Dict[str, Any]] = Field(default_factory=list)
+    knowledge_hits: List[VectorSearchResult] = Field(default_factory=list)
     config: AgentConfig
     previous_drafts: float = 0.0
 
@@ -49,7 +50,9 @@ async def plan_resume(payload: PlanResumeInput) -> PlanResumeResult:
         raise ValueError("profile artifact required before drafting")
     registry = get_registry()
     target = str(profile.get("target_role", ""))
-    knowledge_hits = registry.vector_store.similarity_search(target) if target else []
+    knowledge_hits: List[VectorSearchResult] = (
+        registry.vector_store.similarity_search(target) if target else []
+    )
     llm_plan = registry.llm.plan_resume(profile, knowledge_hits)
     drafted_plan = {
         "profile_name": profile.get("name", "Candidate"),

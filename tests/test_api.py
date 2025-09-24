@@ -15,8 +15,12 @@ class DummyHandle:
     async def query(self, _method):
         return self._state
 
-    async def signal(self, _method, approved: bool, notes: str | None = None):
-        self.signals.append((approved, notes))
+    async def signal(self, _method, *args, **kwargs):
+        if "args" in kwargs:
+            approved, notes = kwargs["args"]
+        else:
+            approved, notes = args
+        self.signals.append((bool(approved), notes))
 
     async def result(self):
         return self._state
@@ -29,7 +33,7 @@ class DummyClient:
         self.started_with = None
 
     async def start_workflow(self, *_args, **_kwargs):
-        self.started_with = _args
+        self.started_with = {"args": _args, "kwargs": _kwargs}
         return self.handle
 
     def get_workflow_handle(self, workflow_id: str):

@@ -3,7 +3,7 @@ from __future__ import annotations
 import hashlib
 from typing import Dict
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel
 from temporalio import activity
 
 from . import get_registry

@@ -1,6 +1,11 @@
 from __future__ import annotations
 
-from app.state import DEFAULT_AUDIT_EVENT, ResumeMessage, initialize_state, summarize_state
+from app.state import (
+    DEFAULT_AUDIT_EVENT,
+    ResumeMessage,
+    initialize_state,
+    summarize_state,
+)
 
 
 def test_initialize_state_defaults():

@@ -1,12 +1,15 @@
 import pytest
 from temporalio import worker
-from temporalio.worker.workflow_sandbox import SandboxedWorkflowRunner, SandboxRestrictions
 from temporalio.testing import WorkflowEnvironment
+from temporalio.worker.workflow_sandbox import (
+    SandboxedWorkflowRunner,
+    SandboxRestrictions,
+)
 
 from app import (
-    ResumeWorkflow,
     TASK_QUEUE,
     AgentConfig,
+    ResumeWorkflow,
     configure_registry,
     initialize_state,
     list_all_activities,

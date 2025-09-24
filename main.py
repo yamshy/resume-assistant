@@ -11,8 +11,9 @@ from temporalio.client import Client
 from temporalio.testing import WorkflowEnvironment
 
 from app import (
-    ResumeWorkflow,
     TASK_QUEUE,
+    AgentConfig,
+    ResumeWorkflow,
     build_default_registry,
     configure_registry,
     initialize_state,
@@ -61,9 +62,9 @@ async def run_demo() -> None:
         ):
             handle = await client.start_workflow(
                 ResumeWorkflow.run,
-                state,
-                TASK_QUEUE,
+                args=[state, AgentConfig()],
                 id=state.request_id,
+                task_queue=TASK_QUEUE,
             )
             await handle.signal(ResumeWorkflow.submit_human_decision, True)
             result = await handle.result()

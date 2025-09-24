@@ -9,8 +9,7 @@ from .state import (
     summarize_state,
 )
 from .tools import ToolRegistry, build_default_registry
-from .workflows.resume import ResumeWorkflow, TASK_QUEUE
-
+from .workflows.resume import TASK_QUEUE, ResumeWorkflow
 
 __all__ = [
     "AgentConfig",

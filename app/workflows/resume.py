@@ -8,7 +8,6 @@ from temporalio import workflow
 from ..activities import compliance, critique, drafting, ingestion, publishing
 from ..state import AgentConfig, PipelineStage, ResumeWorkflowState
 
-
 TASK_QUEUE = "resume-assistant"
 
 

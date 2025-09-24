@@ -59,7 +59,10 @@ async def index_documents(payload: IndexDocumentsInput) -> IndexDocumentsResult:
     result = registry.vector_store.upsert(payload.normalized_documents)
     audit_label = f"ingestion.indexed:{result['upserted']}"
     metrics = {"indexed": float(result["upserted"])} if result["upserted"] else {}
-    vector_index = {"count": result["count"], "request_id": payload.request_id}
+    vector_index: Dict[str, int | str] = {
+        "count": int(result["count"]),
+        "request_id": payload.request_id,
+    }
     return IndexDocumentsResult(
         vector_index=vector_index,
         audit_event=audit_label,

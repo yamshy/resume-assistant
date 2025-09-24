@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import asyncio
 import os
-from functools import cache
 from typing import Any, Dict, Optional
 
 from fastapi import Depends, FastAPI, HTTPException, status
@@ -10,9 +9,14 @@ from pydantic import BaseModel, ConfigDict, Field
 from temporalio.client import Client, WorkflowHandle
 from temporalio.common import WorkflowIDReusePolicy
 
-from .. import AgentConfig, ResumeWorkflow, ResumeWorkflowState, TASK_QUEUE, initialize_state
+from .. import (
+    TASK_QUEUE,
+    AgentConfig,
+    ResumeWorkflow,
+    ResumeWorkflowState,
+    initialize_state,
+)
 from ..state import TaskType
-
 
 TEMPORAL_HOST = os.getenv("TEMPORAL_HOST", "127.0.0.1:7233")
 TEMPORAL_NAMESPACE = os.getenv("TEMPORAL_NAMESPACE", "default")
@@ -27,7 +31,7 @@ class StartWorkflowRequest(BaseModel):
 
 class StartWorkflowResponse(BaseModel):
     workflow_id: str
-    run_id: str
+    run_id: Optional[str]
 
 
 class ApprovalRequest(BaseModel):
@@ -45,14 +49,6 @@ class WorkflowResultResponse(BaseModel):
     model_config = ConfigDict(arbitrary_types_allowed=True)
 
     state: ResumeWorkflowState
-
-
-@cache
-def _workflow_options() -> Dict[str, Any]:
-    return {
-        "task_queue": TASK_QUEUE,
-        "id_reuse_policy": WorkflowIDReusePolicy.TERMINATE_IF_RUNNING,
-    }
 
 
 _client_lock = asyncio.Lock()
@@ -92,10 +88,10 @@ async def start_resume_workflow(
     )
     handle = await client.start_workflow(
         ResumeWorkflow.run,
-        state,
-        AgentConfig(),
+        args=[state, AgentConfig()],
         id=state.request_id,
-        **_workflow_options(),
+        task_queue=TASK_QUEUE,
+        id_reuse_policy=WorkflowIDReusePolicy.TERMINATE_IF_RUNNING,
     )
     return StartWorkflowResponse(workflow_id=handle.id, run_id=handle.run_id)
 
@@ -114,7 +110,10 @@ async def submit_human_approval(
     client: Client = Depends(get_temporal_client),
 ) -> None:
     handle = await get_workflow_handle(workflow_id, client)
-    await handle.signal(ResumeWorkflow.submit_human_decision, payload.approved, payload.notes)
+    await handle.signal(
+        ResumeWorkflow.submit_human_decision,
+        args=[payload.approved, payload.notes],
+    )
 
 
 @app.get("/workflows/{workflow_id}/result", response_model=WorkflowResultResponse)

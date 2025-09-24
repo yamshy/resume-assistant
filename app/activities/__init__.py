@@ -4,7 +4,6 @@ from typing import Iterable, List, Optional
 
 from ..tools import ToolRegistry, build_default_registry
 
-
 _REGISTRY: ToolRegistry | None = None
 
 
