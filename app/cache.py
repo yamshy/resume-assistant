@@ -4,12 +4,15 @@ from __future__ import annotations
 
 import hashlib
 import json
+import logging
 from datetime import datetime, timedelta
 from typing import Optional
 
 from .embeddings import SemanticEmbedder
 from .models import Resume
 from .utils import cosine_similarity
+
+logger = logging.getLogger(__name__)
 
 
 class SemanticCache:
@@ -47,7 +50,11 @@ class SemanticCache:
                     cached_raw = cached_raw.decode("utf-8")
                 if not cached_raw:
                     continue
-                cached = json.loads(cached_raw)
+                try:
+                    cached = json.loads(cached_raw)
+                except (json.JSONDecodeError, TypeError):
+                    logger.warning("Skipping corrupt cache entry for key %s", key)
+                    continue
                 cached_embedding = cached.get("embedding")
                 if not cached_embedding:
                     continue
