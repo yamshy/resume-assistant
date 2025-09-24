@@ -10,7 +10,8 @@ dependencies = [
     "instructor>=1.7.0",
     "openai==1.109.0",
     "pytest==8.4.2",
-    "pytest-asyncio==1.2.0"
+    "pytest-asyncio==1.2.0",
+    "langgraph-cli==0.1.50",
 ]
 
 [project.optional-dependencies]
