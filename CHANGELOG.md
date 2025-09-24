@@ -1,3 +1,15 @@
+# [1.15.0](https://github.com/yamshy/resume-assistant/compare/v1.14.2...v1.15.0) (2025-09-24)
+
+
+### Bug Fixes
+
+* resolve failing GitHub workflows ([723cc2a](https://github.com/yamshy/resume-assistant/commit/723cc2ac753923db24aca5256a605439247dbe87))
+
+
+### Features
+
+* change exposed port from 8080 to 8124 ([7e4fce8](https://github.com/yamshy/resume-assistant/commit/7e4fce8e804698e0b1a35012cbed1ec0964a7d0b))
+
 ## [1.14.2](https://github.com/yamshy/resume-assistant/compare/v1.14.1...v1.14.2) (2025-09-24)
 
 
