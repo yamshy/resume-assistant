@@ -3,10 +3,16 @@ from __future__ import annotations
 import pytest
 
 from app.graphs.ingestion import build_ingestion_graph
-from app.tools import NotificationTool, PublishingCacheTool, ResumeRendererTool, ToolRegistry, VectorSearchTool
-from tests.stubs import StubResumeLLM
 from app.state import initialize_state
-from app.tools import ToolInvocationError
+from app.tools import (
+    NotificationTool,
+    PublishingCacheTool,
+    ResumeRendererTool,
+    ToolInvocationError,
+    ToolRegistry,
+    VectorSearchTool,
+)
+from tests.stubs import StubResumeLLM
 
 
 @pytest.fixture()

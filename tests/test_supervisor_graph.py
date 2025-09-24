@@ -1,7 +1,13 @@
 from __future__ import annotations
 
 from app import AgentConfig, build_supervisor, initialize_state
-from app.tools import NotificationTool, PublishingCacheTool, ResumeRendererTool, ToolRegistry, VectorSearchTool
+from app.tools import (
+    NotificationTool,
+    PublishingCacheTool,
+    ResumeRendererTool,
+    ToolRegistry,
+    VectorSearchTool,
+)
 from tests.stubs import StubResumeLLM
 
 

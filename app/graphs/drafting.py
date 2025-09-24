@@ -5,7 +5,7 @@ from typing import Dict, List
 from langchain_core.messages import AIMessage
 from langgraph.graph import END, StateGraph
 
-from ..state import AgentConfig, ResumeGraphState
+from ..state import AgentConfig, PipelineStage, ResumeGraphState
 from ..tools import ToolInvocationError, ToolRegistry
 
 
@@ -58,7 +58,7 @@ def build_drafting_graph(registry: ToolRegistry, config: AgentConfig) -> StateGr
 
     def determine_next_stage(state: ResumeGraphState) -> ResumeGraphState:
         skip_critique = state.get("flags", {}).get("skip_critique", False)
-        next_stage = "compliance" if skip_critique else "critique"
+        next_stage: PipelineStage = "compliance" if skip_critique else "critique"
         return ResumeGraphState(audit_trail=["drafting.completed"], stage=next_stage)
 
     graph.add_node("plan", plan_resume)

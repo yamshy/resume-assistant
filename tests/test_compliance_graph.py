@@ -2,7 +2,13 @@ from __future__ import annotations
 
 from app.graphs.compliance import build_compliance_graph
 from app.state import AgentConfig, initialize_state
-from app.tools import NotificationTool, PublishingCacheTool, ResumeRendererTool, ToolRegistry, VectorSearchTool
+from app.tools import (
+    NotificationTool,
+    PublishingCacheTool,
+    ResumeRendererTool,
+    ToolRegistry,
+    VectorSearchTool,
+)
 from tests.stubs import StubResumeLLM
 
 

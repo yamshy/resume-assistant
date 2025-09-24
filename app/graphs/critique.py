@@ -4,7 +4,7 @@ from typing import Dict
 
 from langgraph.graph import END, StateGraph
 
-from ..state import AgentConfig, ResumeGraphState
+from ..state import AgentConfig, PipelineStage, ResumeGraphState
 from ..tools import ToolRegistry
 
 
@@ -24,7 +24,7 @@ def build_critique_graph(registry: ToolRegistry, config: AgentConfig) -> StateGr
         revision_count = prior_revisions + 1 if needs_revision else prior_revisions
         issues = critique.get("issues", [])
         audit_label = "critique.changes_requested" if needs_revision else "critique.approved"
-        next_stage = "drafting" if needs_revision else "compliance"
+        next_stage: PipelineStage = "drafting" if needs_revision else "compliance"
         metrics = {"revisions": float(revision_count)} if needs_revision else {}
         flags = {"needs_revision": needs_revision, "revision_count": revision_count}
         return ResumeGraphState(

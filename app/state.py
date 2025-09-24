@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from typing import Annotated, Any, Dict, List, Literal, Optional, TypedDict
 from uuid import uuid4
 

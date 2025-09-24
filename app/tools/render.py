@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Dict, Iterable, List
+from typing import Any, Dict, Iterable, List, Sequence
 
 
 @dataclass(slots=True)
@@ -11,21 +11,53 @@ class ResumeRendererTool:
     name: str = "resume_renderer"
     description: str = "Format resume profiles into markdown for downstream delivery."
 
-    def render(self, profile: Dict[str, object]) -> str:
-        headline = profile.get("headline") or "Professional Summary"
-        summary = profile.get("summary") or "No summary provided."
-        skills = self._format_bullets(profile.get("skills", []))
-        experiences = self._format_experience(profile.get("experience", []))
-        sections: List[str] = [f"# {profile.get('name', 'Candidate')}\n", f"## {headline}\n", summary.strip(), "\n", "## Skills", skills, "\n", "## Experience", experiences]
+    def render(self, profile: Dict[str, Any]) -> str:
+        headline = str(profile.get("headline") or "Professional Summary")
+        summary = str(profile.get("summary") or "No summary provided.")
+        skills = self._format_bullets(self._coerce_skills(profile.get("skills")))
+        experiences = self._format_experience(self._coerce_experience(profile.get("experience")))
+        name = str(profile.get("name", "Candidate"))
+        sections: List[str] = [
+            f"# {name}\n",
+            f"## {headline}\n",
+            summary.strip(),
+            "\n",
+            "## Skills",
+            skills,
+            "\n",
+            "## Experience",
+            experiences,
+        ]
         return "\n".join(section for section in sections if section)
 
     @staticmethod
-    def _format_bullets(skills: Iterable[str]) -> str:
+    def _coerce_skills(value: Any) -> Sequence[str]:
+        if isinstance(value, Iterable) and not isinstance(value, (str, bytes)):
+            return [str(item) for item in value]
+        return ()
+
+    @staticmethod
+    def _coerce_experience(value: Any) -> Sequence[Dict[str, str]]:
+        results: List[Dict[str, str]] = []
+        if isinstance(value, Iterable):
+            for item in value:
+                if isinstance(item, dict):
+                    results.append(
+                        {
+                            "role": str(item.get("role", "Role Unknown")),
+                            "company": str(item.get("company", "Company Unknown")),
+                            "impact": str(item.get("impact", "Impact pending")),
+                        }
+                    )
+        return results
+
+    @staticmethod
+    def _format_bullets(skills: Sequence[str]) -> str:
         rows = [f"- {skill}" for skill in skills]
         return "\n".join(rows) if rows else "- Skills pending collection"
 
     @staticmethod
-    def _format_experience(experiences: Iterable[Dict[str, str]]) -> str:
+    def _format_experience(experiences: Sequence[Dict[str, str]]) -> str:
         blocks: List[str] = []
         for exp in experiences:
             role = exp.get("role", "Role Unknown")

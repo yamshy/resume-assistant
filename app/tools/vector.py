@@ -1,7 +1,13 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from typing import Dict, Iterable, List, Tuple
+from typing import Dict, Iterable, List, Tuple, TypedDict
+
+
+class VectorSearchResult(TypedDict):
+    id: str
+    content: str
+    score: float
 
 
 @dataclass(slots=True)
@@ -25,7 +31,7 @@ class VectorSearchTool:
                 updated += 1
         return {"upserted": updated, "count": len(self._documents)}
 
-    def similarity_search(self, query: str, *, top_k: int = 3) -> List[Dict[str, str]]:
+    def similarity_search(self, query: str, *, top_k: int = 3) -> List[VectorSearchResult]:
         """Return the best matching documents ranked by lexical overlap."""
 
         if not self._documents:
@@ -33,20 +39,22 @@ class VectorSearchTool:
 
         tokens = self._tokenize(query)
         scored: List[Tuple[float, str, str]] = []
+        result: List[VectorSearchResult] = []
         for doc_id, content in self._documents.items():
             overlap = self._overlap(tokens, self._tokenize(content))
             if overlap > 0:
                 scored.append((overlap, doc_id, content))
         scored.sort(reverse=True)
         top_results = scored[:top_k]
-        return [
-            {
-                "id": doc_id,
-                "content": content,
-                "score": round(score, 4),
-            }
-            for score, doc_id, content in top_results
-        ]
+        for score, doc_id, content in top_results:
+            result.append(
+                {
+                    "id": doc_id,
+                    "content": content,
+                    "score": round(score, 4),
+                }
+            )
+        return result
 
     @staticmethod
     def _tokenize(text: str) -> List[str]:

@@ -4,7 +4,7 @@ from typing import Dict
 
 from langgraph.graph import END, StateGraph
 
-from ..state import ResumeGraphState
+from ..state import PipelineStage, ResumeGraphState
 from ..tools import ToolInvocationError, ToolRegistry
 
 
@@ -43,7 +43,7 @@ def build_ingestion_graph(registry: ToolRegistry):
         )
 
     def finalize_ingestion(state: ResumeGraphState) -> ResumeGraphState:
-        next_stage = "drafting" if state.get("task") in {"resume_pipeline", "draft", "revise"} else "done"
+        next_stage: PipelineStage = "drafting" if state.get("task") in {"resume_pipeline", "draft", "revise"} else "done"
         return ResumeGraphState(audit_trail=["ingestion.completed"], stage=next_stage)
 
     graph.add_node("normalize", normalize_documents)

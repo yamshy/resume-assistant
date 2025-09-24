@@ -2,12 +2,12 @@ from __future__ import annotations
 
 import json
 from dataclasses import dataclass, field
-from typing import Any, Dict, List, Literal, Protocol
+from typing import Any, Dict, List, Literal, Mapping, Protocol, Sequence
 
 from langchain_core.messages import BaseMessage
 from langchain_core.prompts import ChatPromptTemplate
-from pydantic import BaseModel, Field
 from langchain_openai import ChatOpenAI
+from pydantic import BaseModel, Field
 
 from .errors import ToolInvocationError
 
@@ -15,7 +15,7 @@ from .errors import ToolInvocationError
 class PlanResponse(BaseModel):
     summary: str
     skills: List[str] = Field(default_factory=list)
-    experience: List[Dict[str, Any]] = Field(default_factory=list)
+    experience: Sequence[Mapping[str, Any]] = Field(default_factory=list)
 
 
 class CritiqueResponse(BaseModel):
@@ -32,10 +32,10 @@ class ComplianceResponse(BaseModel):
 class ResumeLLM(Protocol):
     """Interface for LLM-powered resume operations."""
 
-    def plan_resume(self, profile: Dict[str, Any], knowledge_hits: List[Dict[str, Any]]) -> Dict[str, Any]:
+    def plan_resume(self, profile: Dict[str, Any], knowledge_hits: Sequence[Mapping[str, Any]]) -> Dict[str, Any]:
         ...
 
-    def draft_resume(self, plan: Dict[str, Any], profile: Dict[str, Any], knowledge_hits: List[Dict[str, Any]]) -> str:
+    def draft_resume(self, plan: Dict[str, Any], profile: Dict[str, Any], knowledge_hits: Sequence[Mapping[str, Any]]) -> str:
         ...
 
     def critique_resume(self, resume_text: str, profile: Dict[str, Any]) -> Dict[str, Any]:
@@ -150,9 +150,9 @@ class OpenAIResumeLLM:
             self._compliance_prompt | self._client.with_structured_output(ComplianceResponse),
         )
 
-    def plan_resume(self, profile: Dict[str, Any], knowledge_hits: List[Dict[str, Any]]) -> Dict[str, Any]:
+    def plan_resume(self, profile: Dict[str, Any], knowledge_hits: Sequence[Mapping[str, Any]]) -> Dict[str, Any]:
         plan: PlanResponse = self._plan_chain.invoke(
-            {"profile_json": json.dumps(profile), "knowledge_json": json.dumps(knowledge_hits)}
+            {"profile_json": json.dumps(profile), "knowledge_json": json.dumps(list(knowledge_hits))}
         )
         return {
             "summary": plan.summary,
@@ -160,9 +160,9 @@ class OpenAIResumeLLM:
             "experience": plan.experience,
         }
 
-    def draft_resume(self, plan: Dict[str, Any], profile: Dict[str, Any], knowledge_hits: List[Dict[str, Any]]) -> str:
+    def draft_resume(self, plan: Dict[str, Any], profile: Dict[str, Any], knowledge_hits: Sequence[Mapping[str, Any]]) -> str:
         messages: List[BaseMessage] = self._draft_prompt.format_messages(
-            plan_json=json.dumps({"plan": plan, "profile": profile, "knowledge": knowledge_hits})
+            plan_json=json.dumps({"plan": plan, "profile": profile, "knowledge": list(knowledge_hits)})
         )
         response = self._client.invoke(messages)
         content = response.content

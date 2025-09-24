@@ -5,7 +5,12 @@ from __future__ import annotations
 import json
 from pprint import pprint
 
-from app import build_default_registry, build_supervisor, initialize_state, summarize_state
+from app import (
+    build_default_registry,
+    build_supervisor,
+    initialize_state,
+    summarize_state,
+)
 
 
 def build_sample_state():

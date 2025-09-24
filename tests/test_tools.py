@@ -1,6 +1,12 @@
 from __future__ import annotations
 
-from app.tools import NotificationTool, PublishingCacheTool, ResumeRendererTool, ToolRegistry, VectorSearchTool
+from app.tools import (
+    NotificationTool,
+    PublishingCacheTool,
+    ResumeRendererTool,
+    ToolRegistry,
+    VectorSearchTool,
+)
 from tests.stubs import StubResumeLLM
 
 

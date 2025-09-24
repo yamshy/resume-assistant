@@ -5,7 +5,7 @@ from typing import Dict, Optional
 from langgraph.checkpoint.base import BaseCheckpointSaver
 from langgraph.graph import END, StateGraph
 
-from ..state import AgentConfig, ResumeGraphState, TaskType
+from ..state import AgentConfig, PipelineStage, ResumeGraphState, TaskType
 from ..tools import ToolRegistry, build_default_registry
 from .compliance import build_compliance_graph
 from .critique import build_critique_graph
@@ -14,8 +14,8 @@ from .ingestion import build_ingestion_graph
 from .publishing import build_publishing_graph
 
 
-def _initial_stage(task: Optional[TaskType]) -> str:
-    mapping: Dict[Optional[TaskType], str] = {
+def _initial_stage(task: Optional[TaskType]) -> PipelineStage:
+    mapping: Dict[Optional[TaskType], PipelineStage] = {
         "ingest": "ingestion",
         "draft": "drafting",
         "revise": "drafting",
