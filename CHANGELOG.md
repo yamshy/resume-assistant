@@ -1,3 +1,10 @@
+## [1.11.4](https://github.com/yamshy/resume-assistant/compare/v1.11.3...v1.11.4) (2025-09-24)
+
+
+### Bug Fixes
+
+* **deps:** update dependency langgraph to v0.6.7 ([#85](https://github.com/yamshy/resume-assistant/issues/85)) ([2d98775](https://github.com/yamshy/resume-assistant/commit/2d9877538c71b6e22279bf3792258834d2f5654b))
+
 ## [1.11.3](https://github.com/yamshy/resume-assistant/compare/v1.11.2...v1.11.3) (2025-09-24)
 
 
