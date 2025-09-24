@@ -5,13 +5,14 @@ description = "Production-ready AI resume tailoring service"
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
-    "langgraph==0.6.7",
-    "langchain-core==0.3.76",
+    "temporalio>=1.7.0",
+    "fastapi>=0.115.0",
+    "uvicorn>=0.30.0",
+    "httpx>=0.27.0",
     "instructor>=1.7.0",
     "openai==1.109.0",
     "pytest==8.4.2",
     "pytest-asyncio==1.2.0",
-    "langgraph-cli==0.4.2",
 ]
 
 [project.optional-dependencies]

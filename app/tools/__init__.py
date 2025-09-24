@@ -11,7 +11,7 @@ from .render import ResumeRendererTool
 from .vector import VectorSearchTool
 
 
-class LangGraphTool(Protocol):
+class Tool(Protocol):
     name: str
     description: str
 
@@ -26,7 +26,7 @@ class ToolRegistry:
     notifications: NotificationTool
     llm: ResumeLLM
 
-    def as_dict(self) -> Dict[str, LangGraphTool]:
+    def as_dict(self) -> Dict[str, Tool]:
         return {
             "vector_store": self.vector_store,
             "renderer": self.renderer,
@@ -46,7 +46,7 @@ def build_default_registry() -> ToolRegistry:
 
 
 __all__ = [
-    "LangGraphTool",
+    "Tool",
     "NotificationTool",
     "PublishingCacheTool",
     "ResumeRendererTool",
