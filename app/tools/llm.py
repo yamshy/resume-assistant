@@ -128,8 +128,28 @@ class OpenAIResumeLLM:
     _client: Any = field(init=False)
 
     def __post_init__(self) -> None:
-        wrapped_client = instructor.from_openai(OpenAI(), mode=instructor.Mode.JSON_SCHEMA)
-        object.__setattr__(self, "_client", wrapped_client)
+        base_client = OpenAI()
+        preferred_modes = [
+            getattr(instructor.Mode, "JSON_SCHEMA", None),
+            getattr(instructor.Mode, "JSON", None),
+            instructor.Mode.TOOLS,
+        ]
+        last_error: Exception | None = None
+
+        for mode in preferred_modes:
+            if mode is None:
+                continue
+
+            try:
+                wrapped_client = instructor.from_openai(base_client, mode=mode)
+            except AssertionError as error:  # pragma: no cover - relies on instructor internals
+                last_error = error
+                continue
+
+            object.__setattr__(self, "_client", wrapped_client)
+            return
+
+        raise RuntimeError("No compatible Instructor mode found for OpenAI client") from last_error
 
     def _plan_messages(
         self, profile: Mapping[str, Any], knowledge_hits: Sequence[Mapping[str, Any]]
