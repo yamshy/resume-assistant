@@ -39,6 +39,10 @@ class ApprovalRequest(BaseModel):
     notes: Optional[str] = None
 
 
+class HealthResponse(BaseModel):
+    status: str = "ok"
+
+
 class WorkflowStateResponse(BaseModel):
     model_config = ConfigDict(arbitrary_types_allowed=True)
 
@@ -94,6 +98,11 @@ async def start_resume_workflow(
         id_reuse_policy=WorkflowIDReusePolicy.TERMINATE_IF_RUNNING,
     )
     return StartWorkflowResponse(workflow_id=handle.id, run_id=handle.run_id)
+
+
+@app.get("/health", response_model=HealthResponse)
+async def health_check() -> HealthResponse:
+    return HealthResponse()
 
 
 @app.get("/workflows/{workflow_id}", response_model=WorkflowStateResponse)
