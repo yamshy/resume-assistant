@@ -1,5 +1,5 @@
 version = 1
-revision = 2
+revision = 3
 requires-python = ">=3.12"
 resolution-markers = [
     "python_full_version >= '3.13'",
@@ -493,14 +493,15 @@ wheels = [
 
 [[package]]
 name = "langgraph-cli"
-version = "0.1.50"
+version = "0.4.2"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "click" },
+    { name = "langgraph-sdk" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/c3/45/772025dc2a47c4c76cbdef07bb2ae3378a157ca62121da808794d7d82582/langgraph_cli-0.1.50.tar.gz", hash = "sha256:0d602b1e71e2763b94341ea021601613d212ce80397c2a04062820bd187b4ca6", size = 13138, upload-time = "2024-07-22T15:25:12.149Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/86/f1/598f9e1784432d790a937de4c466ba8bed3d18ef6f56fe7394af6bc1f175/langgraph_cli-0.4.2.tar.gz", hash = "sha256:074d93a2ebb9c60629a83bc4c149e837bd09e51222d48daacb498299d818ee9f", size = 778645, upload-time = "2025-09-05T22:55:03.37Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/4b/f9/5a459972e6696c884a8eb180dab364c85d21175d2c016e9386e045f29ca5/langgraph_cli-0.1.50-py3-none-any.whl", hash = "sha256:094c89a8b27d21419148d99ec026e6fd43d69fb9b0c39f4126dbef8a7d2e411d", size = 15988, upload-time = "2024-07-22T15:25:10.931Z" },
+    { url = "https://files.pythonhosted.org/packages/d3/35/92c5a0de3f08bbc245ba7c0b1d5f9a7edd025a1483bf4adde97864419825/langgraph_cli-0.4.2-py3-none-any.whl", hash = "sha256:d83b00f11f9840f153aeba5ad417b09cd7a5aa98ab4ad7f94e45fb089ed73785", size = 38045, upload-time = "2025-09-05T22:55:02.044Z" },
 ]
 
 [[package]]
@@ -1066,7 +1067,7 @@ requires-dist = [
     { name = "instructor", specifier = ">=1.7.0" },
     { name = "langchain-core", specifier = "==0.3.76" },
     { name = "langgraph", specifier = "==0.6.7" },
-    { name = "langgraph-cli", specifier = "==0.1.50" },
+    { name = "langgraph-cli", specifier = "==0.4.2" },
     { name = "mypy", marker = "extra == 'dev'", specifier = "==1.18.2" },
     { name = "openai", specifier = "==1.109.0" },
     { name = "pytest", specifier = "==8.4.2" },
