@@ -16,6 +16,6 @@ RUN uv pip install --system --no-build-isolation -r pyproject.toml
 
 COPY . ./
 
-EXPOSE 8080
+EXPOSE 8124
 
-CMD ["uvicorn", "app.api:app", "--host", "0.0.0.0", "--port", "8080"]
+CMD ["uvicorn", "app.api:app", "--host", "0.0.0.0", "--port", "8124"]
