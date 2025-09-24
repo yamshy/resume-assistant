@@ -5,7 +5,7 @@ from __future__ import annotations
 import json
 from collections import Counter
 from pathlib import Path
-from typing import Any, Iterable
+from typing import Any, Iterable, cast
 
 from .ingestion import ParsedResume
 
@@ -31,7 +31,12 @@ class KnowledgeStore:
         except Exception:
             return
         if isinstance(payload, dict):
-            self._data.update({k: payload.get(k, v) for k, v in self._data.items()})
+            resumes = self._normalise_resumes(payload.get("resumes"))
+            skills = self._normalise_skills(payload.get("skills"))
+            experiences = self._normalise_experiences(payload.get("experiences"))
+            self._data["resumes"] = cast(list[Any], resumes)
+            self._data["skills"] = cast(list[Any], skills)
+            self._data["experiences"] = cast(list[Any], experiences)
 
     def _persist(self) -> None:
         serialisable = {
@@ -67,10 +72,12 @@ class KnowledgeStore:
         self._data.setdefault("resumes", []).append(identity)
 
     def _append_skills(self, skills: Iterable[str]) -> set[str]:
-        skills_list = self._data.setdefault("skills", [])
+        skills_list = self._normalise_skills(self._data.get("skills"))
+        self._data["skills"] = cast(list[Any], skills_list)
+        incoming = self._normalise_skills(skills)
         existing_keys = {skill.lower() for skill in skills_list}
         added: set[str] = set()
-        for skill in skills:
+        for skill in incoming:
             key = skill.lower()
             if key not in existing_keys:
                 existing_keys.add(key)
@@ -79,7 +86,8 @@ class KnowledgeStore:
         return added
 
     def _append_experiences(self, resume: ParsedResume) -> int:
-        stored = self._data.setdefault("experiences", [])
+        stored = self._normalise_experiences(self._data.get("experiences"))
+        self._data["experiences"] = cast(list[Any], stored)
         count = 0
         for experience in resume.experiences:
             start_date = experience.start_date or self._fallback_start_date(len(stored))
@@ -139,3 +147,51 @@ class KnowledgeStore:
         tally = Counter(values)
         most_common = tally.most_common(1)
         return most_common[0][0] if most_common else None
+
+    def _normalise_resumes(self, resumes: Any) -> list[dict[str, Any]]:
+        if isinstance(resumes, dict):
+            candidates: Iterable[Any] = [resumes]
+        elif isinstance(resumes, list):
+            candidates = resumes
+        elif isinstance(resumes, Iterable) and not isinstance(resumes, (str, bytes)):
+            candidates = list(resumes)
+        else:
+            return []
+        return [entry for entry in candidates if isinstance(entry, dict)]
+
+    def _normalise_skills(self, skills: Any) -> list[str]:
+        if skills is None:
+            return []
+        if isinstance(skills, str):
+            candidates: Iterable[Any] = [skills]
+        elif isinstance(skills, list):
+            candidates = skills
+        elif isinstance(skills, Iterable) and not isinstance(skills, (str, bytes, dict)):
+            candidates = list(skills)
+        else:
+            return []
+        normalised: list[str] = []
+        for skill in candidates:
+            if isinstance(skill, str):
+                stripped = skill.strip()
+                if stripped:
+                    normalised.append(stripped)
+        return normalised
+
+    def _normalise_experiences(self, experiences: Any) -> list[dict[str, Any]]:
+        if isinstance(experiences, dict):
+            candidates: Iterable[Any] = [experiences]
+        elif isinstance(experiences, list):
+            candidates = experiences
+        elif isinstance(experiences, Iterable) and not isinstance(experiences, (str, bytes)):
+            candidates = list(experiences)
+        else:
+            return []
+        normalised: list[dict[str, Any]] = []
+        for entry in candidates:
+            if not isinstance(entry, dict):
+                continue
+            cleaned = dict(entry)
+            cleaned["achievements"] = self._normalise_skills(cleaned.get("achievements"))
+            normalised.append(cleaned)
+        return normalised
