@@ -68,6 +68,14 @@ async def test_start_workflow(api_client):
 
 
 @pytest.mark.asyncio
+async def test_health_check(api_client):
+    client, _dummy = api_client
+    response = await client.get("/health")
+    assert response.status_code == 200
+    assert response.json() == {"status": "ok"}
+
+
+@pytest.mark.asyncio
 async def test_get_workflow_state(api_client):
     client, _dummy = api_client
     response = await client.get("/workflows/req-123")
