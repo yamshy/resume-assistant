@@ -1,3 +1,10 @@
+## [1.14.2](https://github.com/yamshy/resume-assistant/compare/v1.14.1...v1.14.2) (2025-09-24)
+
+
+### Bug Fixes
+
+* gate openai tests on workflow env ([#107](https://github.com/yamshy/resume-assistant/issues/107)) ([c3e4f3e](https://github.com/yamshy/resume-assistant/commit/c3e4f3e8616f78f6ea25845ae07d62d4f319e710))
+
 ## [1.14.1](https://github.com/yamshy/resume-assistant/compare/v1.14.0...v1.14.1) (2025-09-24)
 
 
