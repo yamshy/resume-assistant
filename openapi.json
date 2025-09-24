@@ -1,0 +1,601 @@
+{
+  "components": {
+    "schemas": {
+      "Body_ingest_knowledge_knowledge_post": {
+        "properties": {
+          "notes": {
+            "default": "",
+            "title": "Notes",
+            "type": "string"
+          },
+          "resumes": {
+            "description": "Resume files to ingest",
+            "items": {
+              "format": "binary",
+              "type": "string"
+            },
+            "title": "Resumes",
+            "type": "array"
+          }
+        },
+        "required": [
+          "resumes"
+        ],
+        "title": "Body_ingest_knowledge_knowledge_post",
+        "type": "object"
+      },
+      "ChatMessage": {
+        "properties": {
+          "content": {
+            "minLength": 1,
+            "title": "Content",
+            "type": "string"
+          },
+          "metadata": {
+            "anyOf": [
+              {
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Metadata"
+          },
+          "role": {
+            "enum": [
+              "system",
+              "user",
+              "assistant"
+            ],
+            "title": "Role",
+            "type": "string"
+          }
+        },
+        "required": [
+          "role",
+          "content"
+        ],
+        "title": "ChatMessage",
+        "type": "object"
+      },
+      "ChatRequest": {
+        "properties": {
+          "messages": {
+            "items": {
+              "$ref": "#/components/schemas/ChatMessage"
+            },
+            "minItems": 1,
+            "title": "Messages",
+            "type": "array"
+          },
+          "session": {
+            "anyOf": [
+              {
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Session"
+          }
+        },
+        "required": [
+          "messages"
+        ],
+        "title": "ChatRequest",
+        "type": "object"
+      },
+      "ChatResponse": {
+        "properties": {
+          "reply": {
+            "$ref": "#/components/schemas/ChatMessage"
+          },
+          "session": {
+            "title": "Session",
+            "type": "object"
+          }
+        },
+        "required": [
+          "reply",
+          "session"
+        ],
+        "title": "ChatResponse",
+        "type": "object"
+      },
+      "Education": {
+        "description": "Education entry for the resume.",
+        "properties": {
+          "degree": {
+            "maxLength": 150,
+            "minLength": 1,
+            "title": "Degree",
+            "type": "string"
+          },
+          "end_date": {
+            "anyOf": [
+              {
+                "format": "date",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "End Date"
+          },
+          "gpa": {
+            "anyOf": [
+              {
+                "maxLength": 10,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Gpa"
+          },
+          "highlights": {
+            "items": {
+              "type": "string"
+            },
+            "maxItems": 5,
+            "title": "Highlights",
+            "type": "array"
+          },
+          "institution": {
+            "maxLength": 150,
+            "minLength": 1,
+            "title": "Institution",
+            "type": "string"
+          },
+          "start_date": {
+            "anyOf": [
+              {
+                "format": "date",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Start Date"
+          }
+        },
+        "required": [
+          "institution",
+          "degree"
+        ],
+        "title": "Education",
+        "type": "object"
+      },
+      "Experience": {
+        "description": "Professional experience entry for a resume.",
+        "properties": {
+          "achievements": {
+            "items": {
+              "type": "string"
+            },
+            "maxItems": 8,
+            "minItems": 1,
+            "title": "Achievements",
+            "type": "array"
+          },
+          "company": {
+            "maxLength": 100,
+            "minLength": 1,
+            "title": "Company",
+            "type": "string"
+          },
+          "end_date": {
+            "anyOf": [
+              {
+                "format": "date",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "End Date"
+          },
+          "location": {
+            "anyOf": [
+              {
+                "maxLength": 100,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Location"
+          },
+          "role": {
+            "maxLength": 100,
+            "minLength": 1,
+            "title": "Role",
+            "type": "string"
+          },
+          "start_date": {
+            "format": "date",
+            "title": "Start Date",
+            "type": "string"
+          }
+        },
+        "required": [
+          "company",
+          "role",
+          "start_date",
+          "achievements"
+        ],
+        "title": "Experience",
+        "type": "object"
+      },
+      "GenerateRequest": {
+        "properties": {
+          "job_posting": {
+            "minLength": 10,
+            "title": "Job Posting",
+            "type": "string"
+          },
+          "profile": {
+            "anyOf": [
+              {
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Profile"
+          }
+        },
+        "required": [
+          "job_posting"
+        ],
+        "title": "GenerateRequest",
+        "type": "object"
+      },
+      "HTTPValidationError": {
+        "properties": {
+          "detail": {
+            "items": {
+              "$ref": "#/components/schemas/ValidationError"
+            },
+            "title": "Detail",
+            "type": "array"
+          }
+        },
+        "title": "HTTPValidationError",
+        "type": "object"
+      },
+      "Resume": {
+        "description": "Strict schema for ATS compatible resume generation.",
+        "properties": {
+          "citations": {
+            "additionalProperties": {
+              "type": "string"
+            },
+            "title": "Citations",
+            "type": "object"
+          },
+          "confidence_scores": {
+            "additionalProperties": {
+              "type": "number"
+            },
+            "title": "Confidence Scores",
+            "type": "object"
+          },
+          "education": {
+            "items": {
+              "$ref": "#/components/schemas/Education"
+            },
+            "maxItems": 5,
+            "title": "Education",
+            "type": "array"
+          },
+          "email": {
+            "format": "email",
+            "title": "Email",
+            "type": "string"
+          },
+          "experiences": {
+            "items": {
+              "$ref": "#/components/schemas/Experience"
+            },
+            "maxItems": 10,
+            "minItems": 1,
+            "title": "Experiences",
+            "type": "array"
+          },
+          "full_name": {
+            "maxLength": 120,
+            "minLength": 3,
+            "title": "Full Name",
+            "type": "string"
+          },
+          "location": {
+            "maxLength": 120,
+            "minLength": 2,
+            "title": "Location",
+            "type": "string"
+          },
+          "metadata": {
+            "title": "Metadata",
+            "type": "object"
+          },
+          "phone": {
+            "maxLength": 30,
+            "pattern": "^[\\+\\d\\s\\-\\(\\)]+$",
+            "title": "Phone",
+            "type": "string"
+          },
+          "skills": {
+            "items": {
+              "type": "string"
+            },
+            "maxItems": 20,
+            "title": "Skills",
+            "type": "array"
+          },
+          "summary": {
+            "maxLength": 500,
+            "minLength": 50,
+            "title": "Summary",
+            "type": "string"
+          }
+        },
+        "required": [
+          "full_name",
+          "email",
+          "phone",
+          "location",
+          "summary",
+          "experiences"
+        ],
+        "title": "Resume",
+        "type": "object"
+      },
+      "ValidateRequest": {
+        "properties": {
+          "resume_text": {
+            "minLength": 50,
+            "title": "Resume Text",
+            "type": "string"
+          }
+        },
+        "required": [
+          "resume_text"
+        ],
+        "title": "ValidateRequest",
+        "type": "object"
+      },
+      "ValidationError": {
+        "properties": {
+          "loc": {
+            "items": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "integer"
+                }
+              ]
+            },
+            "title": "Location",
+            "type": "array"
+          },
+          "msg": {
+            "title": "Message",
+            "type": "string"
+          },
+          "type": {
+            "title": "Error Type",
+            "type": "string"
+          }
+        },
+        "required": [
+          "loc",
+          "msg",
+          "type"
+        ],
+        "title": "ValidationError",
+        "type": "object"
+      }
+    }
+  },
+  "info": {
+    "title": "AI Resume Service",
+    "version": "0.1.0"
+  },
+  "openapi": "3.1.0",
+  "paths": {
+    "/chat": {
+      "post": {
+        "description": "Return a grounded chat response using the resume generator.",
+        "operationId": "chat_turn_chat_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ChatRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ChatResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Chat Turn"
+      }
+    },
+    "/generate": {
+      "post": {
+        "description": "Generate a resume tailored to a job posting.",
+        "operationId": "generate_resume_generate_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/GenerateRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Resume"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Generate Resume"
+      }
+    },
+    "/health": {
+      "get": {
+        "operationId": "healthcheck_health_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": {
+                    "type": "string"
+                  },
+                  "title": "Response Healthcheck Health Get",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Healthcheck"
+      }
+    },
+    "/knowledge": {
+      "post": {
+        "description": "Ingest uploaded resumes into the knowledge store and vector index.",
+        "operationId": "ingest_knowledge_knowledge_post",
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/Body_ingest_knowledge_knowledge_post"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "title": "Response Ingest Knowledge Knowledge Post",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Ingest Knowledge"
+      }
+    },
+    "/validate": {
+      "post": {
+        "description": "Return heuristic quality scores for a resume.",
+        "operationId": "validate_resume_validate_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ValidateRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": {
+                    "type": "number"
+                  },
+                  "title": "Response Validate Resume Validate Post",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Validate Resume"
+      }
+    }
+  }
+}
