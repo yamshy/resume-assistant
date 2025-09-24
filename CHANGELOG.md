@@ -1,3 +1,10 @@
+## [1.13.1](https://github.com/yamshy/resume-assistant/compare/v1.13.0...v1.13.1) (2025-09-24)
+
+
+### Bug Fixes
+
+* fallback instructor mode for openai clients ([#101](https://github.com/yamshy/resume-assistant/issues/101)) ([1db377c](https://github.com/yamshy/resume-assistant/commit/1db377c4f56efdac73146812671f98cab644f69d))
+
 # [1.13.0](https://github.com/yamshy/resume-assistant/compare/v1.12.2...v1.13.0) (2025-09-24)
 
 
