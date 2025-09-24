@@ -77,17 +77,20 @@ async def generate_resume(
         "profile_source",
         "payload" if payload.profile else "knowledge-base",
     )
-    tokens_value = resume.metadata.get("tokens", 0)
-    tokens = int(tokens_value) if isinstance(tokens_value, (int, float)) else 0
-    latency = float(resume.metadata.get("latency", 0) or 0)
-    background_tasks.add_task(
-        generator.monitor.track_generation,
-        model=resume.metadata.get("model", "unknown"),
-        tokens_used=tokens,
-        generation_time=latency,
-        confidence=resume.confidence_scores.get("overall", 0.0),
-        cache_hit=bool(resume.metadata.get("cached")),
-    )
+    metrics_tracked = bool(resume.metadata.get("metrics_tracked"))
+    if not metrics_tracked:
+        tokens_value = resume.metadata.get("tokens", 0)
+        tokens = int(tokens_value) if isinstance(tokens_value, (int, float)) else 0
+        latency = float(resume.metadata.get("latency", 0) or 0)
+        background_tasks.add_task(
+            generator.monitor.track_generation,
+            model=resume.metadata.get("model", "unknown"),
+            tokens_used=tokens,
+            generation_time=latency,
+            confidence=resume.confidence_scores.get("overall", 0.0),
+            cache_hit=bool(resume.metadata.get("cached")),
+        )
+        resume.metadata["metrics_tracked"] = True
     return resume
 
 

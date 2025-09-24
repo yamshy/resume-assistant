@@ -107,6 +107,7 @@ class ResumeGenerationAgent:
             )
 
             await monitor_hook(model, tokens, latency, overall_confidence, False)
+            resume.metadata["metrics_tracked"] = True
 
             if validation_passed:
                 resume.metadata["validation_passed"] = True
@@ -157,6 +158,7 @@ class ResumeGenerationAgent:
             overall_confidence,
             True,
         )
+        cached_resume.metadata["metrics_tracked"] = True
         return cached_resume
 
     def _estimate_tokens(self, resume: Resume, tools: ResumeGenerationTools) -> int:
