@@ -1,3 +1,11 @@
+## [1.8.2](https://github.com/yamshy/resume-assistant/compare/v1.8.1...v1.8.2) (2025-09-24)
+
+
+### Bug Fixes
+
+* clarify ingestion LLM error handling ([#75](https://github.com/yamshy/resume-assistant/issues/75)) ([594d9d1](https://github.com/yamshy/resume-assistant/commit/594d9d1e9792e395973ac08ea22b828346c39d43))
+* skip corrupt cache entries ([#74](https://github.com/yamshy/resume-assistant/issues/74)) ([0e2ed66](https://github.com/yamshy/resume-assistant/commit/0e2ed66d2b451d3e97ef6bbb70d1b5513ee4aa27))
+
 ## [1.8.1](https://github.com/yamshy/resume-assistant/compare/v1.8.0...v1.8.1) (2025-09-24)
 
 
