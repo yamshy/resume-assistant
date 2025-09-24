@@ -1,0 +1,450 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Resume Assistant API",
+    "version": "0.1.0"
+  },
+  "paths": {
+    "/workflows/resume": {
+      "post": {
+        "summary": "Start Resume Workflow",
+        "operationId": "start_resume_workflow_workflows_resume_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/StartWorkflowRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StartWorkflowResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/workflows/{workflow_id}": {
+      "get": {
+        "summary": "Get Resume State",
+        "operationId": "get_resume_state_workflows__workflow_id__get",
+        "parameters": [
+          {
+            "name": "workflow_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Workflow Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WorkflowStateResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/workflows/{workflow_id}/approval": {
+      "post": {
+        "summary": "Submit Human Approval",
+        "operationId": "submit_human_approval_workflows__workflow_id__approval_post",
+        "parameters": [
+          {
+            "name": "workflow_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Workflow Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ApprovalRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "202": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/workflows/{workflow_id}/result": {
+      "get": {
+        "summary": "Get Workflow Result",
+        "operationId": "get_workflow_result_workflows__workflow_id__result_get",
+        "parameters": [
+          {
+            "name": "workflow_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Workflow Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WorkflowResultResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "ApprovalRequest": {
+        "properties": {
+          "approved": {
+            "type": "boolean",
+            "title": "Approved"
+          },
+          "notes": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Notes"
+          }
+        },
+        "type": "object",
+        "required": [
+          "approved"
+        ],
+        "title": "ApprovalRequest"
+      },
+      "HTTPValidationError": {
+        "properties": {
+          "detail": {
+            "items": {
+              "$ref": "#/components/schemas/ValidationError"
+            },
+            "type": "array",
+            "title": "Detail"
+          }
+        },
+        "type": "object",
+        "title": "HTTPValidationError"
+      },
+      "ResumeMessage": {
+        "properties": {
+          "role": {
+            "type": "string",
+            "enum": [
+              "human",
+              "assistant",
+              "system"
+            ],
+            "title": "Role"
+          },
+          "content": {
+            "type": "string",
+            "title": "Content"
+          },
+          "model": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Model"
+          }
+        },
+        "type": "object",
+        "required": [
+          "role",
+          "content"
+        ],
+        "title": "ResumeMessage",
+        "description": "Normalized chat message stored inside the workflow state."
+      },
+      "ResumeWorkflowState": {
+        "properties": {
+          "task": {
+            "type": "string",
+            "enum": [
+              "ingest",
+              "draft",
+              "revise",
+              "resume_pipeline",
+              "compliance_only",
+              "publish"
+            ],
+            "title": "Task"
+          },
+          "stage": {
+            "type": "string",
+            "enum": [
+              "route",
+              "ingestion",
+              "drafting",
+              "critique",
+              "revision",
+              "compliance",
+              "publishing",
+              "done"
+            ],
+            "title": "Stage",
+            "default": "route"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "pending",
+              "in_progress",
+              "complete",
+              "error"
+            ],
+            "title": "Status",
+            "default": "pending"
+          },
+          "request_id": {
+            "type": "string",
+            "title": "Request Id"
+          },
+          "messages": {
+            "items": {
+              "$ref": "#/components/schemas/ResumeMessage"
+            },
+            "type": "array",
+            "title": "Messages"
+          },
+          "artifacts": {
+            "type": "object",
+            "title": "Artifacts"
+          },
+          "audit_trail": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Audit Trail"
+          },
+          "metrics": {
+            "additionalProperties": {
+              "type": "number"
+            },
+            "type": "object",
+            "title": "Metrics"
+          },
+          "flags": {
+            "type": "object",
+            "title": "Flags"
+          }
+        },
+        "type": "object",
+        "required": [
+          "task",
+          "request_id"
+        ],
+        "title": "ResumeWorkflowState",
+        "description": "Serializable workflow state tracked across Temporal executions."
+      },
+      "StartWorkflowRequest": {
+        "properties": {
+          "task": {
+            "type": "string",
+            "enum": [
+              "ingest",
+              "draft",
+              "revise",
+              "resume_pipeline",
+              "compliance_only",
+              "publish"
+            ],
+            "title": "Task",
+            "default": "resume_pipeline"
+          },
+          "artifacts": {
+            "type": "object",
+            "title": "Artifacts"
+          },
+          "flags": {
+            "type": "object",
+            "title": "Flags"
+          },
+          "request_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Request Id"
+          }
+        },
+        "type": "object",
+        "title": "StartWorkflowRequest"
+      },
+      "StartWorkflowResponse": {
+        "properties": {
+          "workflow_id": {
+            "type": "string",
+            "title": "Workflow Id"
+          },
+          "run_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Run Id"
+          }
+        },
+        "type": "object",
+        "required": [
+          "workflow_id",
+          "run_id"
+        ],
+        "title": "StartWorkflowResponse"
+      },
+      "ValidationError": {
+        "properties": {
+          "loc": {
+            "items": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "integer"
+                }
+              ]
+            },
+            "type": "array",
+            "title": "Location"
+          },
+          "msg": {
+            "type": "string",
+            "title": "Message"
+          },
+          "type": {
+            "type": "string",
+            "title": "Error Type"
+          }
+        },
+        "type": "object",
+        "required": [
+          "loc",
+          "msg",
+          "type"
+        ],
+        "title": "ValidationError"
+      },
+      "WorkflowResultResponse": {
+        "properties": {
+          "state": {
+            "$ref": "#/components/schemas/ResumeWorkflowState"
+          }
+        },
+        "type": "object",
+        "required": [
+          "state"
+        ],
+        "title": "WorkflowResultResponse"
+      },
+      "WorkflowStateResponse": {
+        "properties": {
+          "state": {
+            "$ref": "#/components/schemas/ResumeWorkflowState"
+          }
+        },
+        "type": "object",
+        "required": [
+          "state"
+        ],
+        "title": "WorkflowStateResponse"
+      }
+    }
+  }
+}

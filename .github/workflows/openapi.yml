@@ -1,0 +1,44 @@
+name: Generate OpenAPI schema
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+env:
+  UV_PYTHON_VERSION: '3.12'
+
+jobs:
+  openapi:
+    name: Build OpenAPI schema
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v5
+      - name: Set up uv
+        uses: astral-sh/setup-uv@v6
+        with:
+          python-version: ${{ env.UV_PYTHON_VERSION }}
+      - name: Cache uv dependencies
+        uses: actions/cache@v4
+        with:
+          path: |
+            .venv
+            ${{ env.HOME }}/.cache/uv
+          key: ${{ runner.os }}-uv-${{ env.UV_PYTHON_VERSION }}-${{ hashFiles('uv.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-uv-${{ env.UV_PYTHON_VERSION }}-
+      - name: Install dependencies
+        run: uv sync --locked
+      - name: Generate OpenAPI schema
+        run: uv run python scripts/generate_openapi.py --output openapi-schema.json
+      - name: Upload schema artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: openapi-schema
+          path: openapi-schema.json
+          if-no-files-found: error
