@@ -34,22 +34,6 @@ The service exposes three primary endpoints:
 
 A helper `GET /health` endpoint returns a simple status payload.
 
-### Using the Web Workspace
-
-The FastAPI app serves a chat-first workspace at `http://localhost:8000/`. Static assets ship with the repository in
-`app/frontend`, so no build step is required. The interface combines a running conversation with workflow panels that map to the
-API endpoints and stream their results back into the transcript for human-in-the-loop review.
-
-- **Chat guidance** – Ask the assistant what knowledge is available, confirm that resumes were parsed correctly, or walk through
-  the steps needed to prepare a new application. The browser client calls the `/chat` endpoint and keeps the full history on the
-  page so reviewers can audit each exchange.
-- **Ingest resumes** – Upload one or more resume exports (TXT, PDF, DOCX, etc.) and optionally add reviewer notes. The UI submits
-  a multipart request to `/knowledge`, persists a structured skills/experience database, and renders the parsed snapshot so you
-  can confirm extracted skills and achievements before proceeding.
-- **Generate resume** – Paste the job description and click *Generate tailored resume*. If you have ingested resumes the
-  generator automatically hydrates the profile from the knowledge base; you can still supply a JSON payload via the API for
-  bespoke experiments. The structured resume JSON is rendered inline so reviewers can annotate or adjust prior to delivery.
-
 ### Populating the Knowledge Base
 
 The resume generator relies on a semantic vector store to recall notable achievements, skills, and company context during
@@ -124,17 +108,16 @@ outcome of each pass through `ResumeMonitor`.
 
 ### Running in Docker
 
-The repository ships with a production-ready Dockerfile and Compose stack so you can run the full service (API, web workspace,
-Redis, and ChromaDB) with a single command. Build the image and start the containers with:
+The repository ships with a production-ready Dockerfile and Compose stack so you can run the full service (API, Redis, and
+ChromaDB) with a single command. Build the image and start the containers with:
 
 ```bash
 docker compose up --build
 ```
 
-The API will be available at `http://localhost:8000` and serves the workflow UI from the same address. Static assets come directly
-from the image, so no additional build tooling is required. Resume knowledge is persisted to `./data/knowledge` on the host via
-the `KNOWLEDGE_STORE_PATH` environment variable that the container exports. Uploading resumes through the UI or via `POST
-/knowledge` will create/update `data/knowledge/knowledge_store.json` without rebuilding the image.
+The API will be available at `http://localhost:8000`. Resume knowledge is persisted to `./data/knowledge` on the host via the
+`KNOWLEDGE_STORE_PATH` environment variable that the container exports. Uploading resumes via `POST /knowledge` will
+create/update `data/knowledge/knowledge_store.json` without rebuilding the image.
 
 Set `OPENAI_API_KEY` in your environment before running `docker compose up` if you want to invoke real LLMs. Otherwise the
 service falls back to the deterministic template generator. When you're done experimenting, run `docker compose down` to stop

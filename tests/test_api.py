@@ -235,17 +235,14 @@ def test_knowledge_endpoint_requires_openai_key_when_unconfigured():
     assert response.json()["detail"] == "OpenAI API key required for resume ingestion"
 
 
-def test_frontend_served_at_root():
+def test_root_endpoint_returns_api_metadata():
     client = build_client()
     response = client.get("/")
     assert response.status_code == 200
-    assert "text/html" in response.headers.get("content-type", "")
-    body = response.text
-    assert "chat-transcript" in body
-    assert "chat-form" in body
-    assert "resume-upload" in body
-    assert "upload-resumes" in body
-    assert "/generate" in body
+    assert response.json() == {
+        "message": "AI Resume Assistant API",
+        "documentation": "/docs",
+    }
 
 
 def test_chat_endpoint_returns_grounded_response():

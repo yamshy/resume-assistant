@@ -1,7 +1,7 @@
 # Repository Guidelines
 
 ## Project Structure & Module Organization
-Source code lives in `app/`, with domain modules such as `generator.py`, `router.py`, and integrations like `vectorstore.py`. UI assets ship from `app/frontend` and require no build step. The FastAPI entrypoint is `main.py`, while reusable fixtures and API checks reside in `tests/`. Docker assets (`Dockerfile`, `docker-compose.yml`) let you run the API, Redis, and Chroma-backed services locally.
+Source code lives in `app/`, with domain modules such as `generator.py`, `router.py`, and integrations like `vectorstore.py`. The FastAPI entrypoint is `main.py`, while reusable fixtures and API checks reside in `tests/`. Docker assets (`Dockerfile`, `docker-compose.yml`) let you run the API, Redis, and Chroma-backed services locally.
 
 ## Build, Test, and Development Commands
 Install dependencies once with:

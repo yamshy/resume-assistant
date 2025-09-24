@@ -2,12 +2,8 @@
 
 from __future__ import annotations
 
-from pathlib import Path
-
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import FileResponse
-from fastapi.staticfiles import StaticFiles
 
 from .agents import (
     IngestionAgentError,
@@ -31,13 +27,12 @@ def create_app() -> FastAPI:
         allow_headers=["*"],
     )
 
-    frontend_dir = Path(__file__).resolve().parent / "frontend"
-    if frontend_dir.exists():
-        app.mount("/static", StaticFiles(directory=frontend_dir), name="static")
-
-        @app.get("/", include_in_schema=False)
-        async def serve_frontend() -> FileResponse:
-            return FileResponse(frontend_dir / "index.html")
+    @app.get("/", include_in_schema=False)
+    async def root() -> dict[str, str]:
+        return {
+            "message": "AI Resume Assistant API",
+            "documentation": "/docs",
+        }
 
     dependencies = build_dependencies()
 
