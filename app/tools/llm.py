@@ -55,6 +55,15 @@ class DraftResponse(BaseModel):
         return value
 
 
+class IngestionResponse(BaseModel):
+    """Schema describing structured normalization emitted by the LLM."""
+
+    model_config = ConfigDict(extra="ignore")
+
+    normalized_documents: Dict[str, str] = Field(default_factory=dict)
+    metadata: Dict[str, Any] = Field(default_factory=dict)
+
+
 PLAN_SYSTEM_PROMPT = (
     "You are an expert resume strategist. "
     "Given a candidate profile and relevant knowledge snippets, respond with JSON containing "
@@ -94,6 +103,17 @@ COMPLIANCE_USER_PROMPT = (
 )
 
 
+INGEST_SYSTEM_PROMPT = (
+    "You clean and summarize uploaded resume-related documents. "
+    "Return JSON with a 'normalized_documents' mapping of document names to cleaned text "
+    "and optional 'metadata' describing insights such as detected languages or token counts."
+)
+INGEST_USER_PROMPT = (
+    "Documents JSON: {documents_json}. "
+    "Trim boilerplate, normalize whitespace, and retain the original meaning in each string."
+)
+
+
 class ResumeLLM(Protocol):
     """Interface for LLM-powered resume operations."""
 
@@ -114,6 +134,9 @@ class ResumeLLM(Protocol):
         ...
 
     def compliance_review(self, resume_text: str, policy: Dict[str, Any]) -> Dict[str, Any]:
+        ...
+
+    def ingest_documents(self, documents: Dict[str, str]) -> Dict[str, Any]:
         ...
 
 
@@ -214,6 +237,17 @@ class OpenAIResumeLLM:
             },
         ]
 
+    def _ingest_messages(self, documents: Mapping[str, Any]) -> List[Dict[str, str]]:
+        return [
+            {"role": "system", "content": INGEST_SYSTEM_PROMPT},
+            {
+                "role": "user",
+                "content": INGEST_USER_PROMPT.format(
+                    documents_json=json.dumps(documents),
+                ),
+            },
+        ]
+
     def plan_resume(
         self, profile: Dict[str, Any], knowledge_hits: Sequence[Mapping[str, Any]]
     ) -> Dict[str, Any]:
@@ -280,6 +314,22 @@ class OpenAIResumeLLM:
         except Exception as exc:  # pragma: no cover - relies on external API
             raise ToolInvocationError("LLM failed to run compliance review") from exc
         return {"status": review.status, "violations": review.violations}
+
+    def ingest_documents(self, documents: Dict[str, str]) -> Dict[str, Any]:
+        try:
+            response: IngestionResponse = self._client.chat.completions.create(
+                model=self.model,
+                temperature=self.temperature,
+                response_model=IngestionResponse,
+                messages=self._ingest_messages(documents),
+                max_retries=self.max_retries,
+            )
+        except Exception as exc:  # pragma: no cover - relies on external API
+            raise ToolInvocationError("LLM failed to normalize documents") from exc
+        return {
+            "normalized_documents": response.normalized_documents,
+            "metadata": response.metadata,
+        }
 
 
 __all__ = ["ResumeLLM", "OpenAIResumeLLM"]

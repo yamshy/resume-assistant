@@ -52,6 +52,7 @@ async def test_ingestion_flow(configure_stub_registry):
     )
     assert normalize_result.normalized_documents["resume"] == "First value"
     assert normalize_result.metrics == {"documents": 2.0}
+    assert normalize_result.metadata["resume"]["token_count"] == 2
 
     index_result = await index_documents(
         IndexDocumentsInput(
