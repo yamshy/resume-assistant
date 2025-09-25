@@ -1,3 +1,10 @@
+# [1.16.0](https://github.com/yamshy/resume-assistant/compare/v1.15.0...v1.16.0) (2025-09-25)
+
+
+### Features
+
+* drive ingestion normalization with llm ([#109](https://github.com/yamshy/resume-assistant/issues/109)) ([549ca79](https://github.com/yamshy/resume-assistant/commit/549ca79d284ae2aa8bbf6182d5babd03aa91b539))
+
 # [1.15.0](https://github.com/yamshy/resume-assistant/compare/v1.14.2...v1.15.0) (2025-09-24)
 
 
