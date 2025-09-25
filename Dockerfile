@@ -13,7 +13,7 @@ ENV PYTHONUNBUFFERED=1 \
     PYTHONDONTWRITEBYTECODE=1 \
     PIP_NO_CACHE_DIR=1
 
-WORKDIR /app
+WORKDIR /srv
 
 FROM base AS builder
 
@@ -37,18 +37,18 @@ COPY --from=frontend-builder /frontend/dist ./app/frontend/dist
 
 FROM base AS production
 
-COPY --from=builder /app/.venv /app/.venv
-COPY --from=builder /app/app ./app
-COPY --from=builder /app/main.py ./main.py
-COPY --from=builder /app/worker.py ./worker.py
-COPY --from=builder /app/scripts ./scripts
+COPY --from=builder /srv/.venv /srv/.venv
+COPY --from=builder /srv/app ./app
+COPY --from=builder /srv/main.py ./main.py
+COPY --from=builder /srv/worker.py ./worker.py
+COPY --from=builder /srv/scripts ./scripts
 
-RUN chmod +x /app/scripts/*.sh
+RUN chmod +x /srv/scripts/*.sh
 
-ENV PATH="/app/.venv/bin:$PATH" \
-    FRONTEND_DIST_DIR=/app/app/frontend/dist \
+ENV PATH="/srv/.venv/bin:$PATH" \
+    FRONTEND_DIST_DIR=/srv/app/frontend/dist \
     PORT=8124
 
 EXPOSE 8124
 
-CMD ["/app/scripts/start.sh"]
+CMD ["/srv/scripts/start.sh"]
