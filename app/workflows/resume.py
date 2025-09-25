@@ -97,6 +97,8 @@ class ResumeWorkflow:
         self._apply_audit(normalize_result.audit_event)
         self._merge_metrics(normalize_result.metrics)
         self.state.artifacts["normalized_documents"] = normalize_result.normalized_documents
+        if normalize_result.metadata:
+            self.state.artifacts["ingestion_metadata"] = normalize_result.metadata
 
         index_result = await workflow.execute_activity(
             ingestion.index_documents,

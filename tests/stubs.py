@@ -63,3 +63,11 @@ class StubResumeLLM:
         if violations:
             return {"status": "rejected", "violations": violations}
         return {"status": "approved", "violations": []}
+
+    def ingest_documents(self, documents: Dict[str, str]) -> Dict[str, Any]:
+        cleaned = {key: value.strip() for key, value in documents.items() if value and value.strip()}
+        metadata = {
+            key: {"token_count": len(cleaned_value.split())}
+            for key, cleaned_value in cleaned.items()
+        }
+        return {"normalized_documents": cleaned, "metadata": metadata}
