@@ -1,3 +1,10 @@
+## [1.18.2](https://github.com/yamshy/resume-assistant/compare/v1.18.1...v1.18.2) (2025-09-25)
+
+
+### Bug Fixes
+
+* **docker:** simplify container filesystem layout ([9770ab3](https://github.com/yamshy/resume-assistant/commit/9770ab301d72c3953a983d1c1f5b01f94801081f))
+
 ## [1.18.1](https://github.com/yamshy/resume-assistant/compare/v1.18.0...v1.18.1) (2025-09-25)
 
 
