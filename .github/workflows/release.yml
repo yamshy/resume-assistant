@@ -138,7 +138,7 @@ jobs:
         uses: docker/build-push-action@v6
         with:
           context: .
-          file: ./apps/backend/Dockerfile
+          file: ./Dockerfile
           push: true
           tags: |
             ${{ steps.names.outputs.APP }}:latest

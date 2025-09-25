@@ -53,7 +53,7 @@ The schema is written to `shared/api-types/openapi.json`; frontend types live at
 
 The release workflow builds a single image that bundles the FastAPI API, Temporal worker, and the compiled Svelte frontend:
 
-- `apps/backend/Dockerfile` compiles the Svelte app with Bun, syncs backend dependencies with `uv`, and launches both the API and
+- `Dockerfile` compiles the Svelte app with Bun, syncs backend dependencies with `uv`, and launches both the API and
   Temporal worker in one container. Static frontend assets are served from `/`, and the API remains available under `/api`.
 
 Local development containers live under `docker/docker-compose.dev.yml`, which still runs the backend, worker, and frontend with
