@@ -1,7 +1,8 @@
 FROM python:3.13-slim
 
 ENV PYTHONUNBUFFERED=1 \
-    PIP_NO_CACHE_DIR=1
+    PIP_NO_CACHE_DIR=1 \
+    PYTHONDONTWRITEBYTECODE=1
 
 WORKDIR /app
 
@@ -14,8 +15,8 @@ RUN pip install --no-cache-dir "uv>=0.4,<0.5"
 COPY pyproject.toml uv.lock ./
 RUN uv pip install --system --no-build-isolation -r pyproject.toml
 
-COPY . ./
+COPY . .
 
 EXPOSE 8124
 
-CMD ["uvicorn", "app.api:app", "--host", "0.0.0.0", "--port", "8124"]
+CMD ["uvicorn", "app.api:app", "--host", "0.0.0.0", "--port", "8124", "--reload"]

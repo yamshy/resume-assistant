@@ -1,0 +1,16 @@
+__pycache__
+*.pyc
+*.pyo
+*.pyd
+*.log
+.env
+venv
+.venv
+.tests_cache
+pytest_cache
+.mypy_cache
+.eggs
+*.egg-info
+README.md
+CHANGELOG.md
+openapi-schema.json

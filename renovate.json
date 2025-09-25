@@ -5,11 +5,14 @@
   ],
   "packageRules": [
     {
-      "matchUpdateTypes": [
-        "minor",
-        "patch"
-      ],
-      "automerge": true
+      "matchUpdateTypes": ["minor", "patch"],
+      "matchPackagePatterns": ["temporalio", "fastapi", "uvicorn", "uv"],
+      "groupName": "python-runtime",
+      "separateMinorPatch": true
+    },
+    {
+      "matchPackagePatterns": ["svelte", "vite", "bun"],
+      "groupName": "frontend-runtime"
     }
   ]
 }

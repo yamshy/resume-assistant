@@ -1,0 +1,60 @@
+version: "3.9"
+
+services:
+  temporal:
+    image: temporalio/auto-setup:1.28.1
+    environment:
+      - DB=sqlite
+    ports:
+      - "7233:7233"
+
+  backend:
+    build:
+      context: ../apps/backend
+      dockerfile: Dockerfile.dev
+    env_file:
+      - ../apps/backend/.env.example
+    environment:
+      TEMPORAL_HOST: temporal:7233
+      TEMPORAL_NAMESPACE: default
+    volumes:
+      - ../apps/backend:/app
+      - ../shared/api-types:/shared/api-types
+    ports:
+      - "8124:8124"
+    depends_on:
+      - temporal
+
+  worker:
+    build:
+      context: ../apps/backend
+      dockerfile: Dockerfile.dev
+    env_file:
+      - ../apps/backend/.env.example
+    environment:
+      TEMPORAL_HOST: temporal:7233
+      TEMPORAL_NAMESPACE: default
+    command: ["python", "worker.py"]
+    volumes:
+      - ../apps/backend:/app
+    depends_on:
+      - temporal
+
+  frontend:
+    build:
+      context: ../apps/frontend
+      dockerfile: Dockerfile.dev
+    env_file:
+      - ../apps/frontend/.env.example
+    environment:
+      PUBLIC_API_URL: http://backend:8124
+    volumes:
+      - ../apps/frontend:/app
+      - frontend_node_modules:/app/node_modules
+    ports:
+      - "5173:5173"
+    depends_on:
+      - backend
+
+volumes:
+  frontend_node_modules:

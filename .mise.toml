@@ -1,0 +1,81 @@
+[settings]
+idiomatic_version_file_enable_tools = ["python"]
+
+[tools]
+python = "3.13"
+uv = "latest"
+"bun" = "1.1.27"
+node = "22"
+
+[tasks.dev]
+description = "Start the local development stack (Temporal, backend, worker, frontend)"
+run = "docker compose -f docker/docker-compose.dev.yml up"
+
+[tasks."dev:down"]
+description = "Stop the development stack"
+run = "docker compose -f docker/docker-compose.dev.yml down"
+
+[tasks."backend.install"]
+dir = "apps/backend"
+description = "Sync backend dependencies with uv"
+run = "uv sync --frozen"
+
+[tasks."backend.dev"]
+dir = "apps/backend"
+description = "Run FastAPI with autoreload"
+run = "uv run uvicorn app.api:app --host 0.0.0.0 --port 8124 --reload"
+
+[tasks."backend.worker"]
+dir = "apps/backend"
+description = "Start the Temporal worker"
+run = "uv run python worker.py"
+
+[tasks."backend.test"]
+dir = "apps/backend"
+description = "Run backend pytest suite"
+run = "uv run pytest"
+
+[tasks."backend.lint"]
+dir = "apps/backend"
+description = "Run Ruff lint checks"
+run = "uv run --extra dev ruff check"
+
+[tasks."backend.typecheck"]
+dir = "apps/backend"
+description = "Run mypy type checks"
+run = "uv run --extra dev mypy app"
+
+[tasks."frontend.install"]
+dir = "apps/frontend"
+description = "Install frontend dependencies with Bun"
+run = "bun install"
+
+[tasks."frontend.dev"]
+dir = "apps/frontend"
+description = "Run the frontend dev server"
+run = "bun run dev"
+
+[tasks."frontend.test"]
+dir = "apps/frontend"
+description = "Run frontend Vitest suite"
+run = "bun run test"
+
+[tasks."frontend.lint"]
+dir = "apps/frontend"
+description = "Run frontend ESLint checks"
+run = "bun run lint"
+
+[tasks."frontend.build"]
+dir = "apps/frontend"
+description = "Build the Svelte frontend"
+run = "bun run build"
+
+[tasks."export-openapi"]
+dir = "apps/backend"
+description = "Regenerate the OpenAPI schema into shared/api-types/openapi.json"
+run = "uv run python scripts/generate_openapi.py"
+
+[tasks."gen-types"]
+dir = "apps/frontend"
+description = "Generate TypeScript API types from the shared OpenAPI schema"
+run = "bun run generate-types"

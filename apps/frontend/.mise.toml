@@ -1,0 +1,23 @@
+[tasks.install]
+description = "Install frontend dependencies"
+run = "bun install"
+
+[tasks.dev]
+description = "Run the Vite dev server"
+run = "bun run dev"
+
+[tasks.build]
+description = "Build the production bundle"
+run = "bun run build"
+
+[tasks.test]
+description = "Run the Vitest suite"
+run = "bun run test"
+
+[tasks.lint]
+description = "Run ESLint"
+run = "bun run lint"
+
+[tasks.generate-types]
+description = "Generate API types from shared schema"
+run = "bun run generate-types"

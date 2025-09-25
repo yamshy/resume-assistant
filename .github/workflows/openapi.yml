@@ -5,12 +5,15 @@ on:
   push:
     branches:
       - main
+    paths:
+      - 'apps/backend/**'
+      - 'shared/api-types/**'
 
 permissions:
   contents: write
 
 env:
-  UV_PYTHON_VERSION: '3.12'
+  UV_PYTHON_VERSION: '3.13'
 
 jobs:
   openapi:
@@ -18,40 +21,48 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Check out repository
-        uses: actions/checkout@v5
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0
+
       - name: Set up uv
         uses: astral-sh/setup-uv@v6
         with:
           python-version: ${{ env.UV_PYTHON_VERSION }}
+
       - name: Cache uv dependencies
         uses: actions/cache@v4
         with:
           path: |
-            .venv
+            apps/backend/.venv
             ${{ env.HOME }}/.cache/uv
-          key: ${{ runner.os }}-uv-${{ env.UV_PYTHON_VERSION }}-${{ hashFiles('uv.lock') }}
+          key: ${{ runner.os }}-uv-${{ env.UV_PYTHON_VERSION }}-${{ hashFiles('apps/backend/uv.lock') }}
           restore-keys: |
             ${{ runner.os }}-uv-${{ env.UV_PYTHON_VERSION }}-
+
       - name: Install dependencies
-        run: uv sync --locked
+        working-directory: apps/backend
+        run: uv sync --frozen
+
       - name: Generate OpenAPI schema
-        run: uv run python scripts/generate_openapi.py --output openapi-schema.json
+        working-directory: apps/backend
+        run: uv run python scripts/generate_openapi.py
+
       - name: Upload schema artifact
         uses: actions/upload-artifact@v4
         with:
           name: openapi-schema
-          path: openapi-schema.json
+          path: shared/api-types/openapi.json
           if-no-files-found: error
+
       - name: Commit and push schema changes
+        working-directory: .
         run: |
-          if git status --porcelain openapi-schema.json | grep -q .; then
-            git config user.name "github-actions[bot]"
-            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-            git add openapi-schema.json
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          if git status --porcelain shared/api-types/openapi.json | grep -q .; then
+            git add shared/api-types/openapi.json
             git commit -m "chore: update OpenAPI schema"
             git push
           else
             echo "No schema changes to commit"
-          fi

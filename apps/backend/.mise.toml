@@ -1,0 +1,31 @@
+[tasks.install]
+description = "Sync backend dependencies with uv"
+run = "uv sync --frozen"
+
+[tasks.dev]
+description = "Run FastAPI with autoreload"
+run = "uv run uvicorn app.api:app --host 0.0.0.0 --port 8124 --reload"
+
+[tasks.worker]
+description = "Start the Temporal worker"
+run = "uv run python worker.py"
+
+[tasks.test]
+description = "Execute pytest suite"
+run = "uv run pytest"
+
+[tasks.lint]
+description = "Run Ruff lint"
+run = "uv run --extra dev ruff check"
+
+[tasks.typecheck]
+description = "Run mypy type checking"
+run = "uv run --extra dev mypy app"
+
+[tasks.format]
+description = "Format code via Ruff"
+run = "uv run --extra dev ruff format"
+
+[tasks.export-openapi]
+description = "Regenerate the shared OpenAPI schema"
+run = "uv run python scripts/generate_openapi.py"

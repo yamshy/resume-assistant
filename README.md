@@ -1,58 +1,82 @@
-# Resume Assistant
+# Resume Assistant Monorepo
 
-The Resume Assistant now runs on a Temporal + FastAPI backend, coordinating durable workflow execution with human-in-the-loop approvals while preserving the original resume generation logic. Instructor continues to power schema-validated LLM interactions, and the deterministic tool suite (vector search, renderer, cache, notifications) remains unchanged.
+This repository hosts the full Resume Assistant stack:
 
-## Architecture Overview
-- **Temporal Workflow (`app/workflows/resume.py`)** orchestrates ingestion → drafting → critique → compliance → publishing with automatic retries and persistent state. Human approval gates rely on Temporal signals and `workflow.wait_condition`.
-- **Activities (`app/activities/`)** encapsulate all side-effecting work—LLM calls, vector indexing, cache writes, and notifications. Each activity exposes a Pydantic input/output schema and reuses the existing `ToolRegistry` implementation.
-- **FastAPI (`app/api/`)** exposes REST endpoints to start workflows, query state, submit approvals, and fetch results using the Temporal client.
-- **Worker (`worker.py`)** registers workflows and activities with Temporal and executes the business logic in a separate process.
+- **apps/backend** – FastAPI + Temporal orchestration layer implemented in Python and managed with [`uv`](https://github.com/astral-sh/uv).
+- **apps/frontend** – Svelte + Vite user interface, built and tested with [Bun](https://bun.sh/).
+- **shared/api-types** – Generated OpenAPI schema and TypeScript bindings shared across services.
+- **docker/** – Docker Compose definitions used for local development and future production variants.
 
-## Requirements
-- Python 3.12+
-- Running Temporal service (local development uses the Docker Compose stack below)
-- `OPENAI_API_KEY` available for production LLM runs.
+The layout keeps each app self-contained (native manifests, lockfiles, Dockerfiles) while providing thin coordination at the root
+level via `.mise.toml` tasks for common workflows.
 
-## Quick Start
-1. Install dependencies:
+## Getting Started
+
+1. **Install prerequisites**
+   - Docker & Docker Compose
+   - Python 3.13 (or install via `mise`)
+   - Bun `1.1.27`
+   - uv (installed automatically by `mise` or via `pip install uv`)
+   - Trust the task definitions once per machine: `mise trust .mise.toml`
+
+2. **Sync dependencies**
    ```bash
-   uv sync
+   mise run backend.install
+   mise run frontend.install
    ```
-2. Run the CLI demo against Temporal's time-skipping test environment:
+
+3. **Start the full stack**
    ```bash
-   uv run python main.py
+   mise run dev
    ```
-   The script prints audit events, the published resume preview, cache contents, and notifications from a full workflow execution.
+   This launches Temporal, the FastAPI API, the Temporal worker, and the Bun/Vite dev server. The backend listens on
+   `http://localhost:8124`, the frontend on `http://localhost:5173`.
 
-## Testing & Tooling
-Deterministic unit and integration tests leverage the Temporal test environment and the stub LLM:
+4. **Run tests**
+   ```bash
+   mise run backend.test
+   mise run frontend.test
+   ```
+
+## API Schema & Shared Types
+
+Regenerate the FastAPI OpenAPI schema and TypeScript client types whenever backend endpoints change:
+
 ```bash
-uv run pytest
-```
-Optional quality gates remain available:
-```bash
-uv run --extra dev ruff check
-uv run --extra dev mypy app
+mise run export-openapi
+mise run gen-types
 ```
 
-## Configuration
-- Adjust `AgentConfig` (`app/state.py`) to tweak revision budgets, default model identifiers, or compliance blocklists.
-- Override tooling by constructing a custom `ToolRegistry` and passing it to `configure_registry` before starting the worker.
-- Set `TEMPORAL_HOST` / `TEMPORAL_NAMESPACE` to target a remote Temporal cluster.
+The schema is written to `shared/api-types/openapi.json`; frontend types live at `apps/frontend/src/lib/api/types.ts`.
 
-## Docker Support
-Two build targets share the same codebase and dependencies:
-```bash
-docker compose up --build
-```
-- `temporal` boots a self-contained Temporal server (SQLite-backed) on port `7233`.
-- `api` serves the FastAPI application on port `8080`.
-- `worker` registers workflows/activities and executes jobs pulled from Temporal.
+## Container Images
 
-## Development Notes
-- Instructor response models continue to guarantee structured LLM outputs for planning, drafting, critique, and compliance.
-- `tests/stubs.StubResumeLLM` powers deterministic tests; production environments rely on `OpenAIResumeLLM`.
-- Audit trails, metrics, and artifact management remain identical to the LangGraph implementation, now persisted through Temporal workflow history.
+Each app ships with its own Dockerfile:
+
+- `apps/backend/Dockerfile` uses a multi-stage build with `uv` to install locked dependencies into a copied virtual environment.
+- `apps/frontend/Dockerfile` builds the Svelte bundle with Bun and serves it through Caddy.
+
+Local development containers live under `docker/docker-compose.dev.yml`. Production-ready images are built and published to
+GitHub Container Registry by `.github/workflows/release.yml` using semantic-release tagging.
+
+## Continuous Integration
+
+`.github/workflows/ci.yml` runs targeted pipelines:
+
+- Backend lint, type-check, and pytest when `apps/backend` or shared contracts change.
+- Frontend lint, type-check, test, and build when `apps/frontend` or shared contracts change.
+
+`.github/workflows/openapi.yml` regenerates and commits the shared OpenAPI schema on demand or after backend changes. Releases on
+`main` invoke `.github/workflows/release.yml` which runs all quality gates, performs semantic-release, and publishes backend +
+frontend container images to GHCR with semantic and SHA tags.
+
+## Developer Tooling
+
+- `.mise.toml` aggregates task shortcuts and tool versions (Python, uv, Bun, Node) so you can opt into runtime management without
+  manual setup.
+- Per-app `.mise.toml` files provide focused tasks (`mise run frontend.dev`, `mise run backend.worker`, etc.).
 
 ## Contributing
-Follow Conventional Commits (e.g., `feat: integrate temporal workflow`) and include updated tests when behaviour changes. Surface evidence of lint, type-check, and test runs in pull requests to keep CI green.
+
+Follow Conventional Commits. Ensure tests and linters pass (`mise run backend.test frontend.test backend.lint frontend.lint`) before
+opening a PR. Changes to backend endpoints should regenerate the OpenAPI schema and TypeScript bindings.

@@ -5,7 +5,6 @@ on:
     branches: [main]
   pull_request:
 
-
 permissions:
   contents: read
 
@@ -14,84 +13,97 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  lint:
-    name: Ruff lint
+  changes:
+    runs-on: ubuntu-latest
+    outputs:
+      backend: ${{ steps.filter.outputs.backend }}
+      frontend: ${{ steps.filter.outputs.frontend }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dorny/paths-filter@v3
+        id: filter
+        with:
+          filters: |
+            backend:
+              - 'apps/backend/**'
+              - 'shared/api-types/**'
+              - '.github/workflows/**'
+              - '.mise.toml'
+              - 'docker/**'
+            frontend:
+              - 'apps/frontend/**'
+              - 'shared/api-types/**'
+              - '.github/workflows/**'
+              - '.mise.toml'
+              - 'docker/**'
+
+  backend:
+    needs: changes
+    if: needs.changes.outputs.backend == 'true'
     runs-on: ubuntu-latest
     env:
-      UV_PYTHON_VERSION: '3.12'
+      UV_PYTHON_VERSION: '3.13'
+    defaults:
+      run:
+        working-directory: apps/backend
     steps:
       - name: Check out repository
-        uses: actions/checkout@v5
+        uses: actions/checkout@v4
+
       - name: Set up uv
         uses: astral-sh/setup-uv@v6
         with:
-          python-version: '3.12'
+          python-version: ${{ env.UV_PYTHON_VERSION }}
+
       - name: Cache uv dependencies
         uses: actions/cache@v4
         with:
           path: |
-            .venv
+            apps/backend/.venv
             ${{ env.HOME }}/.cache/uv
-          key: ${{ runner.os }}-uv-${{ env.UV_PYTHON_VERSION }}-${{ hashFiles('uv.lock') }}
+          key: ${{ runner.os }}-uv-${{ env.UV_PYTHON_VERSION }}-${{ hashFiles('apps/backend/uv.lock') }}
           restore-keys: |
             ${{ runner.os }}-uv-${{ env.UV_PYTHON_VERSION }}-
-      - name: Install dependencies
-        run: uv sync --extra dev --locked
-      - name: Run Ruff
+
+      - name: Sync dependencies
+        run: uv sync --extra dev --frozen
+
+      - name: Ruff lint
         run: uv run --extra dev ruff check
 
-  type-check:
-    name: Mypy type check
-    runs-on: ubuntu-latest
-    env:
-      UV_PYTHON_VERSION: '3.12'
-    steps:
-      - name: Check out repository
-        uses: actions/checkout@v5
-      - name: Set up uv
-        uses: astral-sh/setup-uv@v6
-        with:
-          python-version: '3.12'
-      - name: Cache uv dependencies
-        uses: actions/cache@v4
-        with:
-          path: |
-            .venv
-            ${{ env.HOME }}/.cache/uv
-          key: ${{ runner.os }}-uv-${{ env.UV_PYTHON_VERSION }}-${{ hashFiles('uv.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-uv-${{ env.UV_PYTHON_VERSION }}-
-      - name: Install dependencies
-        run: uv sync --extra dev --locked
-      - name: Run mypy
+      - name: mypy type check
         run: uv run --extra dev mypy app
 
-  tests:
-    name: Pytest
-    runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        python-version: ['3.12', '3.13']
-    env:
-      UV_PYTHON_VERSION: ${{ matrix.python-version }}
-    steps:
-      - name: Check out repository
-        uses: actions/checkout@v5
-      - name: Set up uv
-        uses: astral-sh/setup-uv@v6
-        with:
-          python-version: ${{ matrix.python-version }}
-      - name: Cache uv dependencies
-        uses: actions/cache@v4
-        with:
-          path: |
-            .venv
-            ${{ env.HOME }}/.cache/uv
-          key: ${{ runner.os }}-uv-${{ env.UV_PYTHON_VERSION }}-${{ hashFiles('uv.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-uv-${{ env.UV_PYTHON_VERSION }}-
-      - name: Install dependencies
-        run: uv sync --extra dev --locked
-      - name: Run pytest
+      - name: Pytest
         run: uv run pytest
 
+  frontend:
+    needs: changes
+    if: needs.changes.outputs.frontend == 'true'
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: apps/frontend
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Bun
+        uses: oven-sh/setup-bun@v1
+        with:
+          bun-version: '1.1.27'
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Lint
+        run: bun run lint
+
+      - name: Type check
+        run: bun run check
+
+      - name: Test
+        run: bun run test
+
+      - name: Build
+        run: bun run build

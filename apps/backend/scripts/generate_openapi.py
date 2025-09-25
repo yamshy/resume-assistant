@@ -9,6 +9,8 @@ from pathlib import Path
 from fastapi.encoders import jsonable_encoder
 
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
+MONOREPO_ROOT = PROJECT_ROOT.parent.parent
+
 if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
 
@@ -25,12 +27,13 @@ def export_openapi_schema(output_path: Path) -> None:
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Generate the OpenAPI schema file")
+    default_output = MONOREPO_ROOT / "shared" / "api-types" / "openapi.json"
     parser.add_argument(
         "--output",
         "-o",
         type=Path,
-        default=Path("openapi-schema.json"),
-        help="Path to write the generated schema to",
+        default=default_output,
+        help=f"Path to write the generated schema to (default: {default_output})",
     )
     return parser.parse_args()
 

@@ -47,22 +47,26 @@ class ResumeWorkflow:
 
         if self.state.stage == "ingestion":
             await self._run_ingestion()
-            if self.state.stage == "done":
+            stage_after_ingestion: PipelineStage = self.state.stage
+            if stage_after_ingestion == "done":
                 return self.state
 
         if self.state.stage in {"drafting", "critique"}:
             await self._run_drafting_with_critiques()
-            if self.state.stage == "done":
+            stage_after_drafting: PipelineStage = self.state.stage
+            if stage_after_drafting == "done":
                 return self.state
 
         if self.state.stage == "compliance":
             await self._run_compliance()
-            if self.state.stage == "done":
+            stage_after_compliance: PipelineStage = self.state.stage
+            if stage_after_compliance == "done":
                 return self.state
 
         if self.state.stage == "publishing":
             await self._await_human_approval()
-            if self.state.stage == "done":
+            stage_after_approval: PipelineStage = self.state.stage
+            if stage_after_approval == "done":
                 return self.state
             await self._run_publishing()
 

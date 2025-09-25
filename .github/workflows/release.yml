@@ -13,38 +13,67 @@ jobs:
     name: Release quality gate
     runs-on: ubuntu-latest
     env:
-      UV_PYTHON_VERSION: '3.12'
+      UV_PYTHON_VERSION: '3.13'
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
       - name: Set up uv
         uses: astral-sh/setup-uv@v6
         with:
-          python-version: '3.12'
+          python-version: ${{ env.UV_PYTHON_VERSION }}
 
       - name: Cache uv dependencies
         uses: actions/cache@v4
         with:
           path: |
-            .venv
+            apps/backend/.venv
             ${{ env.HOME }}/.cache/uv
-          key: ${{ runner.os }}-uv-${{ env.UV_PYTHON_VERSION }}-${{ hashFiles('uv.lock') }}
+          key: ${{ runner.os }}-uv-${{ env.UV_PYTHON_VERSION }}-${{ hashFiles('apps/backend/uv.lock') }}
           restore-keys: |
             ${{ runner.os }}-uv-${{ env.UV_PYTHON_VERSION }}-
 
-      - name: Install dependencies
-        run: uv sync --extra dev --locked
+      - name: Backend dependency sync
+        working-directory: apps/backend
+        run: uv sync --extra dev --frozen
 
-      - name: Run Ruff
+      - name: Backend lint
+        working-directory: apps/backend
         run: uv run --extra dev ruff check
 
-      - name: Run mypy
+      - name: Backend type check
+        working-directory: apps/backend
         run: uv run --extra dev mypy app
 
-      - name: Run pytest
+      - name: Backend tests
+        working-directory: apps/backend
         run: uv run pytest
+
+      - name: Set up Bun
+        uses: oven-sh/setup-bun@v1
+        with:
+          bun-version: '1.1.27'
+
+      - name: Frontend install
+        working-directory: apps/frontend
+        run: bun install --frozen-lockfile
+
+      - name: Frontend lint
+        working-directory: apps/frontend
+        run: bun run lint
+
+      - name: Frontend type check
+        working-directory: apps/frontend
+        run: bun run check
+
+      - name: Frontend tests
+        working-directory: apps/frontend
+        run: bun run test
+
+      - name: Frontend build
+        working-directory: apps/frontend
+        run: bun run build
 
   release:
     runs-on: ubuntu-latest
@@ -54,9 +83,17 @@ jobs:
       contents: write
       packages: write
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v4
         with:
           fetch-depth: 0
+
+      - name: Set image names
+        id: names
+        run: |
+          owner=$(echo "${GITHUB_REPOSITORY_OWNER}" | tr '[:upper:]' '[:lower:]')
+          repo=$(echo "${GITHUB_REPOSITORY#*/}" | tr '[:upper:]' '[:lower:]')
+          echo "BACKEND=ghcr.io/${owner}/${repo}-backend" >> $GITHUB_OUTPUT
+          echo "FRONTEND=ghcr.io/${owner}/${repo}-frontend" >> $GITHUB_OUTPUT
 
       - name: Set up Node.js
         uses: actions/setup-node@v5
@@ -74,57 +111,56 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Set image name
-        id: img
-        run: |
-          owner=$(echo "${GITHUB_REPOSITORY_OWNER}" | tr '[:upper:]' '[:lower:]')
-          repo=$(echo "${GITHUB_REPOSITORY#*/}" | tr '[:upper:]' '[:lower:]')
-          echo "IMAGE=ghcr.io/${owner}/${repo}" >> "$GITHUB_OUTPUT"
-
-      - name: Build metadata
+      - name: Prepare tag metadata
+        if: steps.sr.outputs.new_release_published == 'true'
         id: meta
-        run: echo "NOW=$(date -u +'%Y-%m-%dT%H:%M:%SZ')" >> $GITHUB_OUTPUT
-
-      - name: Derive short SHA
-        id: sha
-        run: echo "SHORT=${GITHUB_SHA::7}" >> $GITHUB_OUTPUT
+        run: |
+          ver="${{ steps.sr.outputs.new_release_version }}"
+          echo "VERSION=${ver}" >> $GITHUB_OUTPUT
+          echo "MAJOR=${ver%%.*}" >> $GITHUB_OUTPUT
+          echo "MINOR=${ver%.*}" >> $GITHUB_OUTPUT
+          echo "SHA=${GITHUB_SHA::7}" >> $GITHUB_OUTPUT
 
       - name: Set up Docker Buildx
+        if: steps.sr.outputs.new_release_published == 'true'
         uses: docker/setup-buildx-action@v3
 
       - name: Log in to GitHub Container Registry
+        if: steps.sr.outputs.new_release_published == 'true'
         uses: docker/login-action@v3
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Compute semver tags
+      - name: Build & push backend image
         if: steps.sr.outputs.new_release_published == 'true'
-        id: sv
-        run: |
-          VER="${{ steps.sr.outputs.new_release_version }}"
-          echo "MAJOR=${VER%%.*}" >> $GITHUB_OUTPUT
-          echo "MINOR=${VER%.*}" >> $GITHUB_OUTPUT
-
-      - name: Build & push image
-        if: steps.sr.outputs.new_release_published == 'true' && steps.sr.outputs.new_release_channel == ''
         uses: docker/build-push-action@v6
         with:
-          context: .
+          context: ./apps/backend
+          file: ./apps/backend/Dockerfile
           push: true
           tags: |
-            ${{ steps.img.outputs.IMAGE }}:${{ steps.sr.outputs.new_release_version }}
-            ${{ steps.img.outputs.IMAGE }}:${{ steps.sv.outputs.MINOR }}
-            ${{ steps.img.outputs.IMAGE }}:${{ steps.sv.outputs.MAJOR }}
-            ${{ steps.img.outputs.IMAGE }}:latest
-            ${{ steps.img.outputs.IMAGE }}:sha-${{ steps.sha.outputs.SHORT }}
-          labels: |
-            org.opencontainers.image.source=${{ github.repository }}
-            org.opencontainers.image.revision=${{ github.sha }}
-            org.opencontainers.image.created=${{ steps.meta.outputs.NOW }}
-            org.opencontainers.image.version=${{ steps.sr.outputs.new_release_version }}
-            org.opencontainers.image.title=resume-assistant
-            org.opencontainers.image.description=AI Resume Assistant powered by LangGraph
-            org.opencontainers.image.url=https://github.com/${{ github.repository }}
-            org.opencontainers.image.documentation=https://github.com/${{ github.repository }}#readme
+            ${{ steps.names.outputs.BACKEND }}:latest
+            ${{ steps.names.outputs.BACKEND }}:${{ steps.meta.outputs.VERSION }}
+            ${{ steps.names.outputs.BACKEND }}:${{ steps.meta.outputs.MINOR }}
+            ${{ steps.names.outputs.BACKEND }}:${{ steps.meta.outputs.MAJOR }}
+            ${{ steps.names.outputs.BACKEND }}:sha-${{ steps.meta.outputs.SHA }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Build & push frontend image
+        if: steps.sr.outputs.new_release_published == 'true'
+        uses: docker/build-push-action@v6
+        with:
+          context: ./apps/frontend
+          file: ./apps/frontend/Dockerfile
+          push: true
+          tags: |
+            ${{ steps.names.outputs.FRONTEND }}:latest
+            ${{ steps.names.outputs.FRONTEND }}:${{ steps.meta.outputs.VERSION }}
+            ${{ steps.names.outputs.FRONTEND }}:${{ steps.meta.outputs.MINOR }}
+            ${{ steps.names.outputs.FRONTEND }}:${{ steps.meta.outputs.MAJOR }}
+            ${{ steps.names.outputs.FRONTEND }}:sha-${{ steps.meta.outputs.SHA }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
