@@ -52,8 +52,11 @@
   <ol>
     {#each steps as step (step.id)}
       <li class={getStepStatus(step.id)}>
-        <span class="label">{step.label}</span>
-        <span class="state">{getStepStatus(step.id)}</span>
+        <span class="marker" aria-hidden="true"></span>
+        <div class="copy">
+          <span class="label">{step.label}</span>
+          <span class="state">{getStepStatus(step.id)}</span>
+        </div>
       </li>
     {/each}
   </ol>
@@ -61,13 +64,13 @@
 
 <style>
   .workflow-status {
-    background: linear-gradient(150deg, var(--surface-secondary), var(--surface-muted));
-    border: 1px solid var(--border-soft);
-    border-radius: 1.1rem;
+    background: var(--surface-primary);
+    border: 1px solid var(--border-strong);
+    border-radius: 1.2rem;
     padding: clamp(1rem, 3vw, 1.4rem);
-    box-shadow: inset 0 0 0 1px var(--border-subtle), var(--shadow-sm);
+    box-shadow: var(--shadow-sm);
     display: grid;
-    gap: 0.75rem;
+    gap: 0.9rem;
     color: var(--text-primary);
   }
 
@@ -75,6 +78,7 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
+    gap: 0.75rem;
   }
 
   h2 {
@@ -83,24 +87,23 @@
   }
 
   .badge {
-    font-size: 0.85rem;
+    font-size: 0.75rem;
     font-weight: 600;
-    padding: 0.25rem 0.65rem;
+    padding: 0.3rem 0.65rem;
     border-radius: 9999px;
-    background: var(--surface-primary);
-    border: 1px solid var(--border-subtle);
-    text-transform: capitalize;
+    background: var(--accent-soft);
+    color: var(--accent-strong);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
   }
 
   .badge.complete {
     background: var(--success-soft);
-    border-color: var(--success);
     color: var(--success);
   }
 
   .badge.failed {
     background: var(--danger-soft);
-    border-color: var(--danger);
     color: var(--danger);
   }
 
@@ -109,16 +112,18 @@
     margin: 0;
     padding: 0;
     display: grid;
-    gap: 0.6rem;
+    gap: 0.75rem;
   }
 
   li {
-    display: flex;
-    justify-content: space-between;
+    position: relative;
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 0.8rem;
     align-items: center;
-    padding: 0.5rem 0.75rem;
-    border-radius: 0.75rem;
-    background: var(--surface-primary);
+    padding: 0.6rem 0.75rem;
+    border-radius: 0.9rem;
+    background: var(--surface-secondary);
     border: 1px solid var(--border-subtle);
     text-transform: capitalize;
     font-size: 0.95rem;
@@ -126,6 +131,7 @@
 
   li.running {
     border-color: var(--accent-strong);
+    box-shadow: 0 12px 24px rgba(99, 102, 241, 0.15);
   }
 
   li.complete {
@@ -138,8 +144,36 @@
     color: var(--danger);
   }
 
+  .marker {
+    width: 0.75rem;
+    height: 0.75rem;
+    border-radius: 50%;
+    background: var(--border-subtle);
+    box-shadow: 0 0 0 6px rgba(148, 163, 184, 0.16);
+  }
+
+  li.running .marker {
+    background: var(--accent-strong);
+    box-shadow: 0 0 0 6px rgba(99, 102, 241, 0.16);
+  }
+
+  li.complete .marker {
+    background: var(--success);
+    box-shadow: 0 0 0 6px rgba(14, 197, 126, 0.18);
+  }
+
+  li.error .marker {
+    background: var(--danger);
+    box-shadow: 0 0 0 6px rgba(239, 68, 68, 0.2);
+  }
+
+  .copy {
+    display: grid;
+    gap: 0.25rem;
+  }
+
   .state {
-    font-size: 0.82rem;
+    font-size: 0.78rem;
     color: var(--text-subtle);
     text-transform: none;
   }

@@ -58,73 +58,113 @@
       : "Checking backend health...";
 </script>
 
-<section class="chat-interface" aria-live="polite">
-  <header class="chat-header">
-    <div>
-      <h1>Resume Assistant</h1>
-      <p class="subtitle">
-        <span class="connection-group">
-          <span
-            class={`connection-status connection-${connectionStatus}`}
-            role="status"
-            aria-live="polite"
-          >
-            <span class="status-dot" aria-hidden="true"></span>
-            {connectionLabel}
-          </span>
-          {#if connectionStatus === "error"}
-            <button type="button" class="retry-connection" on:click={handleRetryConnection}>
-              Retry connection
-            </button>
-          {/if}
-        </span>
-        <span class="separator" aria-hidden="true">·</span>
-        Endpoint <code>{API_URL}</code>
-        {#if state.workflowId}
-          <span class="separator" aria-hidden="true">·</span>
-          Workflow <span class="workflow-id">{state.workflowId}</span>
-        {/if}
+<section class="workspace" aria-live="polite">
+  <aside class="overview" aria-label="Product introduction">
+    <div class="overview-card">
+      <span class="badge">Career Copilot</span>
+      <h1>Reimagine your resume with guided AI support.</h1>
+      <p>
+        Describe the role you want, drop in past experience, and let the assistant orchestrate every step from
+        draft to approval.
       </p>
     </div>
-    <div class="header-actions">
-      <button type="button" on:click={handleReset} disabled={isBusy}>
-        New resume request
-      </button>
-    </div>
-  </header>
 
-  {#if state.error}
-    <div class="error-banner" role="alert">
-      <div class="error-content">
-        <span class="error-message">{state.error}</span>
+    <div class="pill-group">
+      <div class="pill">
+        <span>Targeted rewrites</span>
+        <p>Share the role, industry, or job post and receive tailored copy instantly.</p>
       </div>
-      <button type="button" on:click={handleDismissError} aria-label="Dismiss error">×</button>
+      <div class="pill">
+        <span>Interview prep</span>
+        <p>Surface quantified wins and suggested talking points from your draft.</p>
+      </div>
+      <div class="pill">
+        <span>Human sign-off</span>
+        <p>Review compliance, approve changes, and ship polished resumes in minutes.</p>
+      </div>
     </div>
-  {/if}
 
-  <MessageList messages={state.messages} isBusy={isBusy || state.isSubmitting || state.isPolling} progress={state.progress} />
+    <div class="meta">
+      <h2>Connection</h2>
+      <div class={`status-tile connection-${connectionStatus}`}>
+        <span class="dot" aria-hidden="true"></span>
+        <div>
+          <strong>{connectionLabel}</strong>
+          <small>Endpoint <code>{API_URL}</code></small>
+        </div>
+      </div>
+      {#if state.workflowId}
+        <div class="status-tile workflow">
+          <span class="dot" aria-hidden="true"></span>
+          <div>
+            <strong>Workflow active</strong>
+            <small>ID <span>{state.workflowId}</span></small>
+          </div>
+        </div>
+      {/if}
+    </div>
+  </aside>
 
-  {#if state.awaitingApproval}
-    <ApprovalPanel
-      draft={state.draftPreview}
-      busy={state.isPolling}
-      error={state.approvalError}
-      on:approve={handleApprove}
-      on:reject={handleReject}
-    />
-  {/if}
+  <div class="conversation">
+    <header class="chat-header">
+      <div class="title-block">
+        <h2>Live resume workspace</h2>
+        <p>
+          Keep the thread going to iterate on tone, achievements, and interview follow ups without leaving the chat.
+        </p>
+      </div>
+      <div class="header-actions">
+        {#if connectionStatus === "error"}
+          <button type="button" class="ghost" on:click={handleRetryConnection}>Retry connection</button>
+        {/if}
+        <button type="button" on:click={handleReset} disabled={isBusy}>
+          Start a new request
+        </button>
+      </div>
+    </header>
 
-  <footer class="chat-footer">
-    <MessageInput
-      on:submit={handleSubmit}
-      disabled={isBusy || state.isSubmitting || !isBackendConnected}
-      pending={state.isSubmitting}
-      placeholder={inputPlaceholder}
-    />
-    {#if progressList.length > 0}
-      <WorkflowStatus status={state.workflowStatus} progress={state.progress} awaitingApproval={state.awaitingApproval} />
+    {#if state.error}
+      <div class="error-banner" role="alert">
+        <div class="error-content">
+          <strong>Something went wrong.</strong>
+          <span>{state.error}</span>
+        </div>
+        <button type="button" on:click={handleDismissError} aria-label="Dismiss error">Dismiss</button>
+      </div>
     {/if}
-  </footer>
+
+    <MessageList
+      messages={state.messages}
+      isBusy={isBusy || state.isSubmitting || state.isPolling}
+      progress={state.progress}
+    />
+
+    {#if state.awaitingApproval}
+      <ApprovalPanel
+        draft={state.draftPreview}
+        busy={state.isPolling}
+        error={state.approvalError}
+        on:approve={handleApprove}
+        on:reject={handleReject}
+      />
+    {/if}
+
+    <footer class="chat-footer">
+      <MessageInput
+        on:submit={handleSubmit}
+        disabled={isBusy || state.isSubmitting || !isBackendConnected}
+        pending={state.isSubmitting}
+        placeholder={inputPlaceholder}
+      />
+      {#if progressList.length > 0}
+        <WorkflowStatus
+          status={state.workflowStatus}
+          progress={state.progress}
+          awaitingApproval={state.awaitingApproval}
+        />
+      {/if}
+    </footer>
+  </div>
 </section>
 
 <style>
@@ -135,183 +175,254 @@
     transition: background 400ms ease;
   }
 
-  .chat-interface {
+  .workspace {
     display: grid;
-    grid-template-rows: auto auto 1fr auto;
-    gap: clamp(1rem, 2vw, 1.5rem);
-    min-height: min(60rem, max(28rem, calc(100vh - 3rem)));
-    width: min(64rem, calc(100% - 2.5rem));
-    margin: clamp(1.5rem, 6vw, 3.5rem) auto;
-    padding: clamp(1.5rem, 4vw, 3rem);
+    gap: clamp(1.5rem, 3vw, 2.5rem);
+    grid-template-columns: minmax(0, 1fr);
+    max-width: 1200px;
+    margin: clamp(1.5rem, 6vw, 4rem) auto;
+    padding: clamp(1.25rem, 4vw, 2rem);
     box-sizing: border-box;
-    border-radius: 1.75rem;
-    border: 1px solid var(--border-strong);
-    background: linear-gradient(155deg, var(--surface-primary), var(--surface-secondary));
-    backdrop-filter: blur(26px);
-    box-shadow: var(--shadow-lg);
+  }
+
+  .overview {
+    display: grid;
+    gap: clamp(1rem, 2vw, 1.4rem);
+    background: var(--panel-gradient);
+    border-radius: clamp(1.5rem, 2vw, 2rem);
+    padding: clamp(1.5rem, 3vw, 2.2rem);
+    border: 1px solid var(--panel-border);
+    box-shadow: var(--panel-shadow);
+    color: var(--panel-text);
+  }
+
+  .overview-card {
+    display: grid;
+    gap: 0.85rem;
+  }
+
+  .overview-card h1 {
+    margin: 0;
+    font-size: clamp(1.8rem, 3vw, 2.5rem);
+    font-weight: 650;
+    line-height: 1.2;
+  }
+
+  .overview-card p {
+    margin: 0;
+    color: var(--panel-text-muted);
+    font-size: 1.05rem;
+  }
+
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    padding: 0.35rem 0.85rem;
+    border-radius: 9999px;
+    background: rgba(255, 255, 255, 0.12);
     color: inherit;
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    font-weight: 600;
+  }
+
+  .pill-group {
+    display: grid;
+    gap: 0.75rem;
+  }
+
+  .pill {
+    display: grid;
+    gap: 0.3rem;
+    padding: 0.95rem 1.1rem;
+    border-radius: 1rem;
+    background: rgba(15, 23, 42, 0.25);
+    border: 1px solid rgba(148, 163, 184, 0.2);
+    color: inherit;
+  }
+
+  .pill span {
+    font-weight: 600;
+    font-size: 0.95rem;
+  }
+
+  .pill p {
+    margin: 0;
+    color: var(--panel-text-muted);
+    font-size: 0.92rem;
+    line-height: 1.4;
+  }
+
+  .meta {
+    display: grid;
+    gap: 0.75rem;
+  }
+
+  .meta h2 {
+    margin: 0;
+    font-size: 1rem;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+  }
+
+  .status-tile {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 0.75rem;
+    align-items: center;
+    padding: 0.75rem 1rem;
+    border-radius: 1rem;
+    border: 1px solid rgba(148, 163, 184, 0.25);
+    background: rgba(15, 23, 42, 0.2);
+    color: inherit;
+  }
+
+  .status-tile .dot {
+    width: 0.75rem;
+    height: 0.75rem;
+    border-radius: 999px;
+    background: var(--panel-indicator);
+    box-shadow: 0 0 0 6px rgba(148, 163, 184, 0.16);
+  }
+
+  .status-tile strong {
+    display: block;
+    font-weight: 600;
+    font-size: 0.95rem;
+  }
+
+  .status-tile small {
+    color: var(--panel-text-subtle);
+    font-size: 0.8rem;
+    display: block;
+  }
+
+  .status-tile code {
+    font-size: 0.8rem;
+    padding: 0.1rem 0.3rem;
+    border-radius: 0.4rem;
+    background: rgba(15, 23, 42, 0.4);
+  }
+
+  .status-tile.workflow .dot {
+    background: var(--accent);
+    box-shadow: 0 0 0 6px rgba(99, 102, 241, 0.2);
+  }
+
+  .status-tile.connection-connected .dot {
+    background: var(--success);
+    box-shadow: 0 0 0 6px rgba(14, 197, 126, 0.2);
+  }
+
+  .status-tile.connection-error .dot {
+    background: var(--danger);
+    box-shadow: 0 0 0 6px rgba(239, 68, 68, 0.2);
+  }
+
+  .status-tile.connection-idle .dot {
+    background: var(--warning);
+    box-shadow: 0 0 0 6px rgba(250, 204, 21, 0.2);
+  }
+
+  .conversation {
+    display: grid;
+    gap: clamp(1rem, 2vw, 1.5rem);
+    background: var(--surface-shell);
+    border-radius: clamp(1.5rem, 2vw, 2rem);
+    padding: clamp(1.3rem, 3vw, 2.2rem);
+    border: 1px solid var(--border-strong);
+    box-shadow: var(--shadow-lg);
   }
 
   .chat-header {
     display: flex;
-    justify-content: space-between;
+    flex-direction: column;
+    gap: 0.75rem;
     align-items: flex-start;
-    gap: 1rem;
   }
 
-  .chat-header h1 {
+  .title-block h2 {
     margin: 0;
-    font-size: clamp(1.7rem, 3.4vw, 2.4rem);
+    font-size: clamp(1.4rem, 2.4vw, 1.9rem);
     font-weight: 600;
-    font-family: var(--heading-font);
-    letter-spacing: 0.01em;
-    color: var(--text-primary);
-    text-shadow: 0 24px 50px rgba(0, 0, 0, 0.12);
+    letter-spacing: -0.01em;
   }
 
-  .subtitle {
-    margin: 0.35rem 0 0;
-    font-size: 0.95rem;
+  .title-block p {
+    margin: 0;
     color: var(--text-subtle);
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.35rem;
-    align-items: baseline;
-  }
-
-  .subtitle .separator {
-    color: var(--text-subtle);
-  }
-
-  .subtitle code {
-    font-family: "JetBrains Mono", monospace;
-    font-size: 0.9rem;
-    padding: 0.1rem 0.35rem;
-    border-radius: 0.4rem;
-    background: var(--surface-muted);
-    border: 1px solid var(--border-subtle);
-  }
-
-  .connection-group {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.5rem;
-  }
-
-  .retry-connection {
-    border: none;
-    background: transparent;
-    color: var(--accent-strong);
-    font-size: 0.82rem;
-    font-weight: 600;
-    cursor: pointer;
-    text-decoration: underline;
-    text-decoration-thickness: 0.08em;
-    text-underline-offset: 0.25rem;
-    padding: 0.1rem 0.2rem;
-  }
-
-  .retry-connection:hover {
-    color: var(--accent);
-  }
-
-  .retry-connection:focus-visible {
-    outline: 2px solid var(--focus-ring);
-    outline-offset: 2px;
-    border-radius: 0.4rem;
-  }
-
-  .connection-status {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.35rem;
-    padding: 0.15rem 0.65rem;
-    border-radius: 9999px;
-    border: 1px solid var(--border-subtle);
-    background: var(--surface-pill);
-    font-size: 0.85rem;
-    font-weight: 600;
-    letter-spacing: 0.01em;
-  }
-
-  .connection-status .status-dot {
-    width: 0.55rem;
-    height: 0.55rem;
-    border-radius: 9999px;
-    background: var(--text-subtle);
-    box-shadow: 0 0 0 4px rgba(0, 0, 0, 0.04);
-  }
-
-  .connection-status.connection-connected {
-    color: var(--success);
-    border-color: rgba(60, 127, 101, 0.35);
-  }
-
-  .connection-status.connection-connected .status-dot {
-    background: var(--success);
-  }
-
-  .connection-status.connection-error {
-    color: var(--danger);
-    border-color: rgba(200, 102, 87, 0.4);
-  }
-
-  .connection-status.connection-error .status-dot {
-    background: var(--danger);
-  }
-
-  .connection-status.connection-idle {
-    color: var(--warning);
-    border-color: rgba(217, 145, 60, 0.35);
-  }
-
-  .connection-status.connection-idle .status-dot {
-    background: var(--warning);
-  }
-
-  .workflow-id {
-    font-family: "JetBrains Mono", monospace;
-    background: var(--surface-muted);
-    padding: 0.15rem 0.35rem;
-    border-radius: 0.4rem;
-    border: 1px solid var(--border-subtle);
+    max-width: 38ch;
   }
 
   .header-actions {
     display: flex;
-    gap: 0.5rem;
+    gap: 0.75rem;
     align-items: center;
+    flex-wrap: wrap;
   }
 
   .header-actions button {
     border-radius: 9999px;
-    padding: 0.6rem 1.3rem;
+    padding: 0.55rem 1.3rem;
     font-weight: 600;
+    border: none;
+    cursor: pointer;
+    transition: transform 150ms ease, box-shadow 200ms ease, background 150ms ease;
+  }
+
+  .header-actions button:not(.ghost) {
+    background: linear-gradient(135deg, var(--accent), var(--accent-strong));
+    color: var(--text-inverse);
+    box-shadow: 0 16px 35px rgba(79, 70, 229, 0.28);
+  }
+
+  .header-actions button:not(.ghost):hover:not(:disabled) {
+    transform: translateY(-1px);
+  }
+
+  .header-actions button:not(.ghost):disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    box-shadow: none;
+  }
+
+  .header-actions .ghost {
+    background: transparent;
+    border: 1px solid var(--border-subtle);
+    color: var(--text-muted);
   }
 
   .error-banner {
     display: flex;
     justify-content: space-between;
-    align-items: center;
     gap: 1rem;
-    padding: 0.75rem 1rem;
-    border-radius: 1rem;
+    align-items: center;
     background: var(--danger-soft);
     border: 1px solid var(--danger);
-    color: var(--danger);
+    color: var(--danger-strong);
+    border-radius: 1rem;
+    padding: 0.85rem 1.1rem;
   }
 
   .error-content {
     display: grid;
-    gap: 0.35rem;
+    gap: 0.15rem;
+  }
+
+  .error-content strong {
+    font-size: 0.95rem;
   }
 
   .error-banner button {
     border: none;
     background: transparent;
     color: inherit;
-    font-size: 1.2rem;
+    font-weight: 600;
     cursor: pointer;
+    text-decoration: underline;
+    text-underline-offset: 0.25rem;
   }
 
   .chat-footer {
@@ -320,8 +431,23 @@
   }
 
   @media (min-width: 960px) {
+    .workspace {
+      grid-template-columns: minmax(18rem, 23rem) minmax(0, 1fr);
+      align-items: start;
+    }
+
+    .chat-header {
+      flex-direction: row;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .title-block p {
+      max-width: 32ch;
+    }
+
     .chat-footer {
-      grid-template-columns: minmax(0, 1fr) minmax(16rem, 20rem);
+      grid-template-columns: minmax(0, 1fr) minmax(18rem, 22rem);
       align-items: start;
     }
   }

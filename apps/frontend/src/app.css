@@ -1,4 +1,4 @@
-@import url("https://fonts.googleapis.com/css2?family=Fraunces:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap");
 
 :root {
   font-family: "Inter", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
@@ -9,92 +9,106 @@
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  --heading-font: "Fraunces", "Inter", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-  --bg-gradient: radial-gradient(circle at 10% -10%, rgba(255, 202, 138, 0.38), transparent 55%),
-    radial-gradient(circle at 90% 0%, rgba(173, 210, 201, 0.35), transparent 45%),
-    linear-gradient(145deg, #f6ede4 0%, #f0f4ef 45%, #f3e8f2 100%);
-  --text-primary: #2f2118;
-  --text-muted: #6f5a4f;
-  --text-subtle: #8d776b;
-  --text-inverse: #fff9f3;
-  --surface-primary: rgba(255, 255, 255, 0.78);
-  --surface-secondary: rgba(255, 255, 255, 0.66);
-  --surface-muted: rgba(255, 255, 255, 0.55);
-  --surface-elevated: rgba(255, 255, 255, 0.85);
-  --surface-code: rgba(255, 249, 242, 0.86);
-  --surface-pill: rgba(255, 255, 255, 0.72);
-  --border-strong: rgba(202, 178, 158, 0.6);
-  --border-soft: rgba(202, 178, 158, 0.35);
-  --border-subtle: rgba(202, 178, 158, 0.25);
-  --shadow-lg: 0 48px 96px rgba(122, 93, 67, 0.22);
-  --shadow-md: 0 30px 60px rgba(122, 93, 67, 0.18);
-  --shadow-sm: 0 16px 32px rgba(122, 93, 67, 0.12);
-  --accent: #b87b45;
-  --accent-strong: #9c5f30;
-  --accent-soft: rgba(184, 123, 69, 0.18);
-  --accent-pill-text: #74492a;
-  --focus-ring: rgba(184, 123, 69, 0.5);
-  --success: #3c7f65;
-  --success-soft: rgba(60, 127, 101, 0.16);
-  --warning: #d9913c;
-  --warning-soft: rgba(217, 145, 60, 0.18);
-  --danger: #c86657;
-  --danger-soft: rgba(200, 102, 87, 0.18);
-  --message-user-bg: rgba(233, 245, 240, 0.86);
-  --message-user-border: rgba(144, 188, 168, 0.45);
-  --message-assistant-bg: rgba(250, 239, 230, 0.88);
-  --message-assistant-border: rgba(214, 176, 138, 0.5);
-  --message-system-bg: rgba(243, 236, 231, 0.85);
-  --message-system-border: var(--border-soft);
-  --attachment-bg: rgba(255, 255, 255, 0.72);
+  --heading-font: "Instrument Sans", "Inter", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --bg-gradient: radial-gradient(circle at 10% -20%, rgba(79, 70, 229, 0.16), transparent 55%),
+    radial-gradient(circle at 90% 0%, rgba(14, 165, 233, 0.22), transparent 50%),
+    linear-gradient(180deg, #f8fafc 0%, #eef2ff 60%, #f9fafb 100%);
+  --text-primary: #0f172a;
+  --text-muted: #1e293b;
+  --text-subtle: #475569;
+  --text-inverse: #f8fafc;
+  --surface-primary: rgba(255, 255, 255, 0.95);
+  --surface-secondary: rgba(248, 250, 252, 0.88);
+  --surface-muted: rgba(226, 232, 240, 0.6);
+  --surface-elevated: rgba(255, 255, 255, 0.9);
+  --surface-code: rgba(226, 232, 240, 0.72);
+  --surface-shell: rgba(255, 255, 255, 0.82);
+  --panel-gradient: linear-gradient(150deg, #111827 0%, #1e293b 55%, #0f172a 100%);
+  --panel-border: rgba(148, 163, 184, 0.28);
+  --panel-shadow: 0 40px 70px rgba(15, 23, 42, 0.3);
+  --panel-text: #f8fafc;
+  --panel-text-muted: rgba(226, 232, 240, 0.85);
+  --panel-text-subtle: rgba(203, 213, 225, 0.75);
+  --panel-indicator: rgba(255, 255, 255, 0.9);
+  --border-strong: rgba(148, 163, 184, 0.35);
+  --border-soft: rgba(148, 163, 184, 0.28);
+  --border-subtle: rgba(148, 163, 184, 0.2);
+  --shadow-lg: 0 35px 90px rgba(15, 23, 42, 0.18);
+  --shadow-md: 0 22px 48px rgba(15, 23, 42, 0.12);
+  --shadow-sm: 0 15px 30px rgba(15, 23, 42, 0.1);
+  --accent: #6366f1;
+  --accent-strong: #4f46e5;
+  --accent-soft: rgba(99, 102, 241, 0.14);
+  --focus-ring: rgba(99, 102, 241, 0.4);
+  --success: #0ec57e;
+  --success-soft: rgba(14, 197, 126, 0.15);
+  --warning: #facc15;
+  --warning-soft: rgba(250, 204, 21, 0.16);
+  --danger: #ef4444;
+  --danger-soft: rgba(239, 68, 68, 0.16);
+  --danger-strong: #b91c1c;
+  --message-user-bg: rgba(222, 247, 250, 0.95);
+  --message-user-border: rgba(14, 165, 233, 0.35);
+  --message-assistant-bg: rgba(240, 236, 255, 0.92);
+  --message-assistant-border: rgba(99, 102, 241, 0.32);
+  --message-system-bg: rgba(241, 245, 249, 0.88);
+  --message-system-border: rgba(148, 163, 184, 0.35);
+  --attachment-bg: rgba(248, 250, 252, 0.85);
   --attachment-meta: var(--text-subtle);
   color: var(--text-primary);
-  background-color: #f6ede4;
+  background-color: #eef2ff;
   background-image: var(--bg-gradient);
   transition: background-color 200ms ease, background-image 400ms ease;
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --bg-gradient: radial-gradient(circle at 15% -10%, rgba(255, 170, 92, 0.3), transparent 55%),
-      radial-gradient(circle at 90% 0%, rgba(88, 112, 104, 0.32), transparent 45%),
-      linear-gradient(160deg, #0d0502 0%, #130805 50%, #1a0f0b 100%);
-    background-color: #0d0502;
-    --text-primary: #f6ede4;
-    --text-muted: #d5c4b8;
-    --text-subtle: #c0a899;
-    --text-inverse: #1a0f0b;
-    --surface-primary: rgba(26, 16, 12, 0.82);
-    --surface-secondary: rgba(32, 20, 16, 0.72);
-    --surface-muted: rgba(24, 14, 11, 0.68);
-    --surface-elevated: rgba(34, 22, 17, 0.86);
-    --surface-code: rgba(36, 21, 17, 0.9);
-    --surface-pill: rgba(45, 30, 24, 0.72);
-    --border-strong: rgba(173, 118, 78, 0.6);
-    --border-soft: rgba(173, 118, 78, 0.32);
-    --border-subtle: rgba(173, 118, 78, 0.22);
-    --shadow-lg: 0 52px 110px rgba(4, 1, 0, 0.72);
-    --shadow-md: 0 30px 70px rgba(4, 1, 0, 0.6);
-    --shadow-sm: 0 20px 40px rgba(4, 1, 0, 0.45);
-    --accent: #f2b873;
-    --accent-strong: #d38d3c;
-    --accent-soft: rgba(242, 184, 115, 0.22);
-    --accent-pill-text: #fcebd3;
-    --focus-ring: rgba(242, 184, 115, 0.45);
-    --success: #70d0a8;
-    --success-soft: rgba(112, 208, 168, 0.18);
-    --warning: #f1ae5b;
-    --warning-soft: rgba(241, 174, 91, 0.2);
-    --danger: #f08a7c;
-    --danger-soft: rgba(240, 138, 124, 0.22);
-    --message-user-bg: rgba(28, 44, 40, 0.78);
-    --message-user-border: rgba(112, 208, 168, 0.45);
-    --message-assistant-bg: rgba(52, 34, 24, 0.82);
-    --message-assistant-border: rgba(242, 184, 115, 0.38);
-    --message-system-bg: rgba(40, 26, 20, 0.82);
-    --message-system-border: var(--border-soft);
-    --attachment-bg: rgba(40, 26, 20, 0.78);
-    --attachment-meta: #e7d9ce;
+    --bg-gradient: radial-gradient(circle at 15% -10%, rgba(79, 70, 229, 0.2), transparent 55%),
+      radial-gradient(circle at 90% 0%, rgba(14, 165, 233, 0.2), transparent 45%),
+      linear-gradient(160deg, #020617 0%, #0f172a 45%, #0b1120 100%);
+    background-color: #020617;
+    --text-primary: #e2e8f0;
+    --text-muted: #cbd5f5;
+    --text-subtle: #94a3b8;
+    --text-inverse: #020617;
+    --surface-primary: rgba(15, 23, 42, 0.85);
+    --surface-secondary: rgba(15, 23, 42, 0.78);
+    --surface-muted: rgba(30, 41, 59, 0.65);
+    --surface-elevated: rgba(15, 23, 42, 0.92);
+    --surface-code: rgba(30, 41, 59, 0.9);
+    --surface-shell: rgba(15, 23, 42, 0.86);
+    --panel-gradient: linear-gradient(160deg, #020617 0%, #111827 50%, #0b1120 100%);
+    --panel-border: rgba(99, 102, 241, 0.3);
+    --panel-shadow: 0 40px 80px rgba(2, 6, 23, 0.6);
+    --panel-text: #f8fafc;
+    --panel-text-muted: rgba(226, 232, 240, 0.85);
+    --panel-text-subtle: rgba(148, 163, 184, 0.7);
+    --panel-indicator: rgba(99, 102, 241, 0.8);
+    --border-strong: rgba(99, 102, 241, 0.3);
+    --border-soft: rgba(51, 65, 85, 0.6);
+    --border-subtle: rgba(51, 65, 85, 0.45);
+    --shadow-lg: 0 35px 90px rgba(2, 6, 23, 0.6);
+    --shadow-md: 0 24px 55px rgba(2, 6, 23, 0.45);
+    --shadow-sm: 0 20px 40px rgba(2, 6, 23, 0.35);
+    --accent: #818cf8;
+    --accent-strong: #6366f1;
+    --accent-soft: rgba(129, 140, 248, 0.18);
+    --focus-ring: rgba(129, 140, 248, 0.55);
+    --success: #22d3ee;
+    --success-soft: rgba(34, 211, 238, 0.22);
+    --warning: #facc15;
+    --warning-soft: rgba(250, 204, 21, 0.25);
+    --danger: #f87171;
+    --danger-soft: rgba(248, 113, 113, 0.25);
+    --danger-strong: #fca5a5;
+    --message-user-bg: rgba(22, 78, 99, 0.6);
+    --message-user-border: rgba(45, 212, 191, 0.45);
+    --message-assistant-bg: rgba(54, 47, 120, 0.6);
+    --message-assistant-border: rgba(129, 140, 248, 0.5);
+    --message-system-bg: rgba(30, 41, 59, 0.6);
+    --message-system-border: rgba(71, 85, 105, 0.55);
+    --attachment-bg: rgba(30, 41, 59, 0.75);
+    --attachment-meta: rgba(148, 163, 184, 0.85);
   }
 }
 
