@@ -15,5 +15,8 @@ Use `pytest` with the provided LLM stubs in `tests/`. Name tests after the behav
 ## Commit & Pull Request Guidelines
 Adopt Conventional Commits (e.g., `feat: wire supervisor graph`). Group related changes and update tests when behavior shifts. PRs should link relevant issues, summarize functional impact, and list the lint/type/test evidence run locally.
 
+## Agent Output Requirements
+Agents must always generate a preview when presenting changes or results to users.
+
 ## Environment & Configuration Tips
 Export `OPENAI_API_KEY` (or load it via your secret manager) before launching the services. Configure Temporal connectivity with `TEMPORAL_HOST` / `TEMPORAL_NAMESPACE`, and swap stub tools for production integrations by constructing a custom `ToolRegistry`. Temporal handles workflow persistence and replay, so no external checkpointer is required.
