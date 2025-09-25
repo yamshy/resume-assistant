@@ -105,9 +105,9 @@ async def test_workflow_import_does_not_trigger_restricted_modules():
     running the full workflow.
     """
     # These imports should not trigger any restricted module access
-    from app.workflows.resume import ResumeWorkflow
     from app.state import AgentConfig
     from app.tools.llm import OpenAIResumeLLM
+    from app.workflows.resume import ResumeWorkflow
     
     # Creating instances should also be safe
     workflow = ResumeWorkflow()
