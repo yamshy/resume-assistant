@@ -1,3 +1,10 @@
+# [1.17.0](https://github.com/yamshy/resume-assistant/compare/v1.16.0...v1.17.0) (2025-09-25)
+
+
+### Features
+
+* refine chat workspace presentation ([#110](https://github.com/yamshy/resume-assistant/issues/110)) ([68bc626](https://github.com/yamshy/resume-assistant/commit/68bc62601b150313ae5b34a5fa8d5badc1e95aa8))
+
 # [1.16.0](https://github.com/yamshy/resume-assistant/compare/v1.15.0...v1.16.0) (2025-09-25)
 
 
