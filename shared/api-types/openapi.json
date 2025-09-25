@@ -5,10 +5,10 @@
     "version": "0.1.0"
   },
   "paths": {
-    "/workflows/resume": {
+    "/api/workflows/resume": {
       "post": {
         "summary": "Start Resume Workflow",
-        "operationId": "start_resume_workflow_workflows_resume_post",
+        "operationId": "start_resume_workflow_api_workflows_resume_post",
         "requestBody": {
           "content": {
             "application/json": {
@@ -43,10 +43,10 @@
         }
       }
     },
-    "/health": {
+    "/api/health": {
       "get": {
         "summary": "Health Check",
-        "operationId": "health_check_health_get",
+        "operationId": "health_check_api_health_get",
         "responses": {
           "200": {
             "description": "Successful Response",
@@ -61,10 +61,10 @@
         }
       }
     },
-    "/workflows/{workflow_id}": {
+    "/api/workflows/{workflow_id}": {
       "get": {
         "summary": "Get Resume State",
-        "operationId": "get_resume_state_workflows__workflow_id__get",
+        "operationId": "get_resume_state_api_workflows__workflow_id__get",
         "parameters": [
           {
             "name": "workflow_id",
@@ -100,10 +100,10 @@
         }
       }
     },
-    "/workflows/{workflow_id}/approval": {
+    "/api/workflows/{workflow_id}/approval": {
       "post": {
         "summary": "Submit Human Approval",
-        "operationId": "submit_human_approval_workflows__workflow_id__approval_post",
+        "operationId": "submit_human_approval_api_workflows__workflow_id__approval_post",
         "parameters": [
           {
             "name": "workflow_id",
@@ -147,10 +147,10 @@
         }
       }
     },
-    "/workflows/{workflow_id}/result": {
+    "/api/workflows/{workflow_id}/result": {
       "get": {
         "summary": "Get Workflow Result",
-        "operationId": "get_workflow_result_workflows__workflow_id__result_get",
+        "operationId": "get_workflow_result_api_workflows__workflow_id__result_get",
         "parameters": [
           {
             "name": "workflow_id",

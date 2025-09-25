@@ -12,6 +12,7 @@
 - Backend quality gate: `mise run backend.test backend.lint backend.typecheck`.
 - Frontend quality gate: `mise run frontend.test frontend.lint`.
 - Regenerate OpenAPI schema + types: `mise run export-openapi && mise run gen-types`.
+- Production releases publish a single container (`ghcr.io/<owner>/<repo>`) that serves the SPA from `/` and the API under `/api`.
 
 ## Coding Style & Tooling
 - Target Python 3.13 with strict type hints; lint & format via Ruff.

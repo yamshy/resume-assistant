@@ -2,9 +2,12 @@ from __future__ import annotations
 
 import asyncio
 import os
+from functools import lru_cache
+from pathlib import Path
 from typing import Any, Dict, Optional
 
-from fastapi import Depends, FastAPI, HTTPException, status
+from fastapi import APIRouter, Depends, FastAPI, HTTPException, status
+from fastapi.responses import FileResponse
 from pydantic import BaseModel, ConfigDict, Field
 from temporalio.client import Client, WorkflowHandle
 from temporalio.common import WorkflowIDReusePolicy
@@ -20,6 +23,12 @@ from ..state import TaskType
 
 TEMPORAL_HOST = os.getenv("TEMPORAL_HOST", "127.0.0.1:7233")
 TEMPORAL_NAMESPACE = os.getenv("TEMPORAL_NAMESPACE", "default")
+FRONTEND_DIST_DIR = Path(
+    os.getenv(
+        "FRONTEND_DIST_DIR",
+        Path(__file__).resolve().parent.parent / "frontend" / "dist",
+    )
+)
 
 
 class StartWorkflowRequest(BaseModel):
@@ -79,10 +88,16 @@ async def get_workflow_handle(workflow_id: str, client: Client) -> WorkflowHandl
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(exc)) from exc
 
 
-app = FastAPI(title="Resume Assistant API")
+app = FastAPI(
+    title="Resume Assistant API",
+    docs_url="/api/docs",
+    redoc_url="/api/redoc",
+    openapi_url="/api/openapi.json",
+)
+router = APIRouter(prefix="/api")
 
 
-@app.post("/workflows/resume", response_model=StartWorkflowResponse)
+@router.post("/workflows/resume", response_model=StartWorkflowResponse)
 async def start_resume_workflow(
     payload: StartWorkflowRequest,
     client: Client = Depends(get_temporal_client),
@@ -100,19 +115,19 @@ async def start_resume_workflow(
     return StartWorkflowResponse(workflow_id=handle.id, run_id=handle.run_id)
 
 
-@app.get("/health", response_model=HealthResponse)
+@router.get("/health", response_model=HealthResponse)
 async def health_check() -> HealthResponse:
     return HealthResponse()
 
 
-@app.get("/workflows/{workflow_id}", response_model=WorkflowStateResponse)
+@router.get("/workflows/{workflow_id}", response_model=WorkflowStateResponse)
 async def get_resume_state(workflow_id: str, client: Client = Depends(get_temporal_client)) -> WorkflowStateResponse:
     handle = await get_workflow_handle(workflow_id, client)
     state = await handle.query(ResumeWorkflow.current_state)
     return WorkflowStateResponse(state=state)
 
 
-@app.post("/workflows/{workflow_id}/approval", status_code=status.HTTP_202_ACCEPTED)
+@router.post("/workflows/{workflow_id}/approval", status_code=status.HTTP_202_ACCEPTED)
 async def submit_human_approval(
     workflow_id: str,
     payload: ApprovalRequest,
@@ -125,7 +140,7 @@ async def submit_human_approval(
     )
 
 
-@app.get("/workflows/{workflow_id}/result", response_model=WorkflowResultResponse)
+@router.get("/workflows/{workflow_id}/result", response_model=WorkflowResultResponse)
 async def get_workflow_result(workflow_id: str, client: Client = Depends(get_temporal_client)) -> WorkflowResultResponse:
     handle = await get_workflow_handle(workflow_id, client)
     try:
@@ -133,6 +148,43 @@ async def get_workflow_result(workflow_id: str, client: Client = Depends(get_tem
     except Exception as exc:  # pragma: no cover - propagate failure reason
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(exc)) from exc
     return WorkflowResultResponse(state=state)
+
+
+@lru_cache(maxsize=1)
+def _index_path() -> Path | None:
+    index = FRONTEND_DIST_DIR / "index.html"
+    return index if index.exists() else None
+
+
+def _is_safe_static_path(candidate: Path) -> bool:
+    try:
+        candidate.resolve().relative_to(FRONTEND_DIST_DIR.resolve())
+    except (ValueError, FileNotFoundError):
+        return False
+    return candidate.is_file()
+
+
+app.include_router(router)
+
+
+@app.get("/", include_in_schema=False)
+async def serve_frontend_root() -> FileResponse:
+    index = _index_path()
+    if index is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Frontend bundle not available")
+    return FileResponse(index)
+
+
+@app.get("/{resource_path:path}", include_in_schema=False)
+async def serve_frontend_spa(resource_path: str) -> FileResponse:
+    index = _index_path()
+    if index is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Frontend bundle not available")
+
+    candidate = FRONTEND_DIST_DIR / resource_path if resource_path else index
+    if resource_path and _is_safe_static_path(candidate):
+        return FileResponse(candidate)
+    return FileResponse(index)
 
 
 __all__ = ["app", "get_temporal_client"]

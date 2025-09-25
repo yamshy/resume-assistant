@@ -30,7 +30,7 @@ level via `.mise.toml` tasks for common workflows.
    mise run dev
    ```
    This launches Temporal, the FastAPI API, the Temporal worker, and the Bun/Vite dev server. The backend listens on
-   `http://localhost:8124`, the frontend on `http://localhost:5173`.
+   `http://localhost:8124/api`, the frontend on `http://localhost:5173`.
 
 4. **Run tests**
    ```bash
@@ -51,13 +51,20 @@ The schema is written to `shared/api-types/openapi.json`; frontend types live at
 
 ## Container Images
 
-Each app ships with its own Dockerfile:
+The release workflow builds a single image that bundles the FastAPI API, Temporal worker, and the compiled Svelte frontend:
 
-- `apps/backend/Dockerfile` uses a multi-stage build with `uv` to install locked dependencies into a copied virtual environment.
-- `apps/frontend/Dockerfile` builds the Svelte bundle with Bun and serves it through Caddy.
+- `apps/backend/Dockerfile` compiles the Svelte app with Bun, syncs backend dependencies with `uv`, and launches both the API and
+  Temporal worker in one container. Static frontend assets are served from `/`, and the API remains available under `/api`.
 
-Local development containers live under `docker/docker-compose.dev.yml`. Production-ready images are built and published to
-GitHub Container Registry by `.github/workflows/release.yml` using semantic-release tagging.
+Local development containers live under `docker/docker-compose.dev.yml`, which still runs the backend, worker, and frontend with
+hot reload. Production-ready images are published to GitHub Container Registry by `.github/workflows/release.yml` with semantic
+version and SHA tags.
+
+## Deployment
+
+Releases publish `ghcr.io/<owner>/<repo>` containing the entire stack. Provide Temporal connectivity (e.g.,
+`TEMPORAL_HOST=temporal-frontend.temporal.svc.cluster.local:7233`) and any secrets such as `OPENAI_API_KEY`. The container exposes
+port `8124`; the frontend is available at `/`, while API consumers should target `http://<host>:8124/api`.
 
 ## Continuous Integration
 

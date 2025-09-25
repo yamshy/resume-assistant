@@ -60,7 +60,7 @@ async def api_client():
 @pytest.mark.asyncio
 async def test_start_workflow(api_client):
     client, dummy = api_client
-    response = await client.post("/workflows/resume", json={"task": "resume_pipeline", "request_id": "req-123"})
+    response = await client.post("/api/workflows/resume", json={"task": "resume_pipeline", "request_id": "req-123"})
     assert response.status_code == 200
     payload = response.json()
     assert payload["workflow_id"] == "req-123"
@@ -70,7 +70,7 @@ async def test_start_workflow(api_client):
 @pytest.mark.asyncio
 async def test_health_check(api_client):
     client, _dummy = api_client
-    response = await client.get("/health")
+    response = await client.get("/api/health")
     assert response.status_code == 200
     assert response.json() == {"status": "ok"}
 
@@ -78,7 +78,7 @@ async def test_health_check(api_client):
 @pytest.mark.asyncio
 async def test_get_workflow_state(api_client):
     client, _dummy = api_client
-    response = await client.get("/workflows/req-123")
+    response = await client.get("/api/workflows/req-123")
     assert response.status_code == 200
     state = response.json()["state"]
     assert state["request_id"] == "req-123"
@@ -87,7 +87,7 @@ async def test_get_workflow_state(api_client):
 @pytest.mark.asyncio
 async def test_submit_approval(api_client):
     client, dummy = api_client
-    response = await client.post("/workflows/req-123/approval", json={"approved": True, "notes": "ok"})
+    response = await client.post("/api/workflows/req-123/approval", json={"approved": True, "notes": "ok"})
     assert response.status_code == 202
     assert dummy.handle.signals == [(True, "ok")]
 
@@ -95,6 +95,6 @@ async def test_submit_approval(api_client):
 @pytest.mark.asyncio
 async def test_get_result(api_client):
     client, _dummy = api_client
-    response = await client.get("/workflows/req-123/result")
+    response = await client.get("/api/workflows/req-123/result")
     assert response.status_code == 200
     assert response.json()["state"]["status"] == "pending"

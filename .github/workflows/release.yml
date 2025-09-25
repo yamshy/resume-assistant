@@ -87,13 +87,12 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Set image names
+      - name: Set image name
         id: names
         run: |
           owner=$(echo "${GITHUB_REPOSITORY_OWNER}" | tr '[:upper:]' '[:lower:]')
           repo=$(echo "${GITHUB_REPOSITORY#*/}" | tr '[:upper:]' '[:lower:]')
-          echo "BACKEND=ghcr.io/${owner}/${repo}-backend" >> $GITHUB_OUTPUT
-          echo "FRONTEND=ghcr.io/${owner}/${repo}-frontend" >> $GITHUB_OUTPUT
+          echo "APP=ghcr.io/${owner}/${repo}" >> $GITHUB_OUTPUT
 
       - name: Set up Node.js
         uses: actions/setup-node@v5
@@ -133,34 +132,18 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Build & push backend image
+      - name: Build & push stack image
         if: steps.sr.outputs.new_release_published == 'true'
         uses: docker/build-push-action@v6
         with:
-          context: ./apps/backend
+          context: .
           file: ./apps/backend/Dockerfile
           push: true
           tags: |
-            ${{ steps.names.outputs.BACKEND }}:latest
-            ${{ steps.names.outputs.BACKEND }}:${{ steps.meta.outputs.VERSION }}
-            ${{ steps.names.outputs.BACKEND }}:${{ steps.meta.outputs.MINOR }}
-            ${{ steps.names.outputs.BACKEND }}:${{ steps.meta.outputs.MAJOR }}
-            ${{ steps.names.outputs.BACKEND }}:sha-${{ steps.meta.outputs.SHA }}
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
-
-      - name: Build & push frontend image
-        if: steps.sr.outputs.new_release_published == 'true'
-        uses: docker/build-push-action@v6
-        with:
-          context: ./apps/frontend
-          file: ./apps/frontend/Dockerfile
-          push: true
-          tags: |
-            ${{ steps.names.outputs.FRONTEND }}:latest
-            ${{ steps.names.outputs.FRONTEND }}:${{ steps.meta.outputs.VERSION }}
-            ${{ steps.names.outputs.FRONTEND }}:${{ steps.meta.outputs.MINOR }}
-            ${{ steps.names.outputs.FRONTEND }}:${{ steps.meta.outputs.MAJOR }}
-            ${{ steps.names.outputs.FRONTEND }}:sha-${{ steps.meta.outputs.SHA }}
+            ${{ steps.names.outputs.APP }}:latest
+            ${{ steps.names.outputs.APP }}:${{ steps.meta.outputs.VERSION }}
+            ${{ steps.names.outputs.APP }}:${{ steps.meta.outputs.MINOR }}
+            ${{ steps.names.outputs.APP }}:${{ steps.meta.outputs.MAJOR }}
+            ${{ steps.names.outputs.APP }}:sha-${{ steps.meta.outputs.SHA }}
           cache-from: type=gha
           cache-to: type=gha,mode=max

@@ -4,7 +4,7 @@
  */
 
 export interface paths {
-    "/workflows/resume": {
+    "/api/workflows/resume": {
         parameters: {
             query?: never;
             header?: never;
@@ -14,14 +14,14 @@ export interface paths {
         get?: never;
         put?: never;
         /** Start Resume Workflow */
-        post: operations["start_resume_workflow_workflows_resume_post"];
+        post: operations["start_resume_workflow_api_workflows_resume_post"];
         delete?: never;
         options?: never;
         head?: never;
         patch?: never;
         trace?: never;
     };
-    "/health": {
+    "/api/health": {
         parameters: {
             query?: never;
             header?: never;
@@ -29,7 +29,7 @@ export interface paths {
             cookie?: never;
         };
         /** Health Check */
-        get: operations["health_check_health_get"];
+        get: operations["health_check_api_health_get"];
         put?: never;
         post?: never;
         delete?: never;
@@ -38,7 +38,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/workflows/{workflow_id}": {
+    "/api/workflows/{workflow_id}": {
         parameters: {
             query?: never;
             header?: never;
@@ -46,7 +46,7 @@ export interface paths {
             cookie?: never;
         };
         /** Get Resume State */
-        get: operations["get_resume_state_workflows__workflow_id__get"];
+        get: operations["get_resume_state_api_workflows__workflow_id__get"];
         put?: never;
         post?: never;
         delete?: never;
@@ -55,7 +55,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/workflows/{workflow_id}/approval": {
+    "/api/workflows/{workflow_id}/approval": {
         parameters: {
             query?: never;
             header?: never;
@@ -65,14 +65,14 @@ export interface paths {
         get?: never;
         put?: never;
         /** Submit Human Approval */
-        post: operations["submit_human_approval_workflows__workflow_id__approval_post"];
+        post: operations["submit_human_approval_api_workflows__workflow_id__approval_post"];
         delete?: never;
         options?: never;
         head?: never;
         patch?: never;
         trace?: never;
     };
-    "/workflows/{workflow_id}/result": {
+    "/api/workflows/{workflow_id}/result": {
         parameters: {
             query?: never;
             header?: never;
@@ -80,7 +80,7 @@ export interface paths {
             cookie?: never;
         };
         /** Get Workflow Result */
-        get: operations["get_workflow_result_workflows__workflow_id__result_get"];
+        get: operations["get_workflow_result_api_workflows__workflow_id__result_get"];
         put?: never;
         post?: never;
         delete?: never;
@@ -213,7 +213,7 @@ export interface components {
 }
 export type $defs = Record<string, never>;
 export interface operations {
-    start_resume_workflow_workflows_resume_post: {
+    start_resume_workflow_api_workflows_resume_post: {
         parameters: {
             query?: never;
             header?: never;
@@ -246,7 +246,7 @@ export interface operations {
             };
         };
     };
-    health_check_health_get: {
+    health_check_api_health_get: {
         parameters: {
             query?: never;
             header?: never;
@@ -266,7 +266,7 @@ export interface operations {
             };
         };
     };
-    get_resume_state_workflows__workflow_id__get: {
+    get_resume_state_api_workflows__workflow_id__get: {
         parameters: {
             query?: never;
             header?: never;
@@ -297,7 +297,7 @@ export interface operations {
             };
         };
     };
-    submit_human_approval_workflows__workflow_id__approval_post: {
+    submit_human_approval_api_workflows__workflow_id__approval_post: {
         parameters: {
             query?: never;
             header?: never;
@@ -332,7 +332,7 @@ export interface operations {
             };
         };
     };
-    get_workflow_result_workflows__workflow_id__result_get: {
+    get_workflow_result_api_workflows__workflow_id__result_get: {
         parameters: {
             query?: never;
             header?: never;
