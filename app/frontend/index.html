@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="api-base-url" content="" />
+    <title>Resume Assistant · Workspace</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div class="background" aria-hidden="true"></div>
+    <main class="shell" aria-label="Resume assistant workspace">
+      <header class="shell__header">
+        <div class="shell__header-top">
+          <div class="brand-block">
+            <span class="brand-block__icon" aria-hidden="true"></span>
+            <div>
+              <p class="brand-block__title">Resume Assistant</p>
+              <p class="brand-block__subtitle">Temporal workflow console</p>
+            </div>
+          </div>
+          <div class="shell__header-actions">
+            <span class="status-chip" role="status">API ready</span>
+            <button type="button" class="ghost-button" id="reset-workspace">Start over</button>
+          </div>
+        </div>
+        <div class="shell__headline">
+          <p class="eyebrow">Workflow overview</p>
+          <h1>Run a resume workflow from a single chat console.</h1>
+          <p class="lede">
+            Share context, pick a Temporal task, and watch the workflow respond. The interface
+            only surfaces data returned by the public API.
+          </p>
+        </div>
+      </header>
+
+      <section class="capsule shell__summary" aria-label="Workflow status and metrics">
+        <div class="snapshot">
+          <dl class="status-grid">
+            <div>
+              <dt>Workflow</dt>
+              <dd id="workflow-id">Not started</dd>
+            </div>
+            <div>
+              <dt>Task</dt>
+              <dd id="workflow-task">—</dd>
+            </div>
+            <div>
+              <dt>Stage</dt>
+              <dd id="workflow-stage">Waiting</dd>
+            </div>
+            <div>
+              <dt>Status</dt>
+              <dd id="workflow-status">Idle</dd>
+            </div>
+          </dl>
+          <ul class="metrics" aria-label="Session metrics">
+            <li>
+              <span class="metrics__icon" aria-hidden="true"></span>
+              <span class="metrics__value" id="metric-workflows">0</span>
+              <span class="metrics__label">Workflows started</span>
+            </li>
+            <li>
+              <span class="metrics__icon" aria-hidden="true"></span>
+              <span class="metrics__value" id="metric-messages">0</span>
+              <span class="metrics__label">Messages exchanged</span>
+            </li>
+            <li>
+              <span class="metrics__icon" aria-hidden="true"></span>
+              <span class="metrics__value" id="metric-artifacts">0</span>
+              <span class="metrics__label">Artifacts delivered</span>
+            </li>
+            <li>
+              <span class="metrics__icon metrics__icon--accent" aria-hidden="true"></span>
+              <span class="metrics__value metrics__value--accent" id="metric-approvals">Not requested</span>
+              <span class="metrics__label">Human approval</span>
+            </li>
+          </ul>
+        </div>
+        <div class="progress" aria-live="polite">
+          <p class="progress__label">Workflow progress</p>
+          <ol class="progress__list" id="stage-progress" aria-label="Workflow stages">
+            <li data-stage="route">
+              <span class="progress__step">Route</span>
+              <span class="progress__hint">Workflow queued</span>
+            </li>
+            <li data-stage="ingestion">
+              <span class="progress__step">Ingestion</span>
+              <span class="progress__hint">Processing context</span>
+            </li>
+            <li data-stage="drafting">
+              <span class="progress__step">Drafting</span>
+              <span class="progress__hint">Producing a draft</span>
+            </li>
+            <li data-stage="critique">
+              <span class="progress__step">Critique</span>
+              <span class="progress__hint">Reviewing quality</span>
+            </li>
+            <li data-stage="revision">
+              <span class="progress__step">Revision</span>
+              <span class="progress__hint">Applying updates</span>
+            </li>
+            <li data-stage="compliance">
+              <span class="progress__step">Compliance</span>
+              <span class="progress__hint">Running checks</span>
+            </li>
+            <li data-stage="publishing">
+              <span class="progress__step">Publishing</span>
+              <span class="progress__hint">Preparing outputs</span>
+            </li>
+            <li data-stage="done">
+              <span class="progress__step">Complete</span>
+              <span class="progress__hint">Workflow finished</span>
+            </li>
+          </ol>
+        </div>
+      </section>
+
+      <section class="conversation" id="chat-transcript" aria-live="polite" aria-label="Conversation history" data-empty-label="Share context to start a workflow."></section>
+
+      <form id="chat-form" class="composer" autocomplete="off" novalidate>
+        <label class="field" for="task-select">
+          <span class="field__label">Workflow task</span>
+          <select id="task-select" name="task">
+            <option value="ingest">Ingest career materials</option>
+            <option value="draft">Draft resume</option>
+            <option value="revise">Revise existing draft</option>
+            <option value="resume_pipeline">Full resume pipeline</option>
+            <option value="compliance_only">Compliance review only</option>
+            <option value="publish">Publish artifacts</option>
+          </select>
+        </label>
+
+        <label class="field" for="text-input">
+          <span class="field__label">Message to the workflow</span>
+          <textarea
+            id="text-input"
+            class="field__input"
+            name="message"
+            rows="3"
+            placeholder="Describe what the workflow should do with your resume data..."
+          ></textarea>
+          <p class="field__hint">The text is forwarded as part of the workflow request payload.</p>
+        </label>
+
+        <div class="composer__actions">
+          <button type="submit" class="primary-button">
+            <span>Start workflow</span>
+            <svg viewBox="0 0 16 16" aria-hidden="true" focusable="false">
+              <path d="M3 8h7.586l-2.293-2.293 1.414-1.414L14.414 9l-4.707 4.707-1.414-1.414L10.586 9H3z" />
+            </svg>
+          </button>
+        </div>
+      </form>
+
+      <p id="status-message" class="status-banner" role="status" aria-live="polite"></p>
+    </main>
+
+    <script src="workspace.js" type="module"></script>
+  </body>
+</html>
