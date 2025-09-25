@@ -60,7 +60,7 @@ async def test_resume_workflow_completes():
             workflows=[ResumeWorkflow],
             activities=activities,
             workflow_runner=SandboxedWorkflowRunner(
-                restrictions=SandboxRestrictions.default.with_passthrough_all_modules()
+                restrictions=SandboxRestrictions.default
             ),
         ):
             handle = await env.client.start_workflow(

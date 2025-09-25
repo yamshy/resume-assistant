@@ -4,8 +4,6 @@ import json
 from dataclasses import dataclass, field
 from typing import Any, Dict, List, Literal, Mapping, Protocol, Sequence
 
-import instructor
-from openai import OpenAI
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 from .errors import ToolInvocationError
@@ -148,9 +146,17 @@ class OpenAIResumeLLM:
     temperature: float = 0.2
     max_retries: int = 3
 
-    _client: Any = field(init=False)
+    _client: Any = field(init=False, default=None)
 
-    def __post_init__(self) -> None:
+    def _ensure_client(self) -> None:
+        """Lazy initialization of the OpenAI client to avoid importing http.client at module load time."""
+        if self._client is not None:
+            return
+
+        # Import OpenAI and instructor only when needed to avoid sandbox violations
+        import instructor
+        from openai import OpenAI
+
         base_client = OpenAI()
         preferred_modes = [
             getattr(instructor.Mode, "JSON_SCHEMA", None),
@@ -251,6 +257,7 @@ class OpenAIResumeLLM:
     def plan_resume(
         self, profile: Dict[str, Any], knowledge_hits: Sequence[Mapping[str, Any]]
     ) -> Dict[str, Any]:
+        self._ensure_client()
         try:
             plan: PlanResponse = self._client.chat.completions.create(
                 model=self.model,
@@ -273,6 +280,7 @@ class OpenAIResumeLLM:
         profile: Dict[str, Any],
         knowledge_hits: Sequence[Mapping[str, Any]],
     ) -> str:
+        self._ensure_client()
         try:
             draft: DraftResponse = self._client.chat.completions.create(
                 model=self.model,
@@ -288,6 +296,7 @@ class OpenAIResumeLLM:
     def critique_resume(
         self, resume_text: str, profile: Dict[str, Any]
     ) -> Dict[str, Any]:
+        self._ensure_client()
         try:
             critique: CritiqueResponse = self._client.chat.completions.create(
                 model=self.model,
@@ -303,6 +312,7 @@ class OpenAIResumeLLM:
     def compliance_review(
         self, resume_text: str, policy: Dict[str, Any]
     ) -> Dict[str, Any]:
+        self._ensure_client()
         try:
             review: ComplianceResponse = self._client.chat.completions.create(
                 model=self.model,
@@ -316,6 +326,7 @@ class OpenAIResumeLLM:
         return {"status": review.status, "violations": review.violations}
 
     def ingest_documents(self, documents: Dict[str, str]) -> Dict[str, Any]:
+        self._ensure_client()
         try:
             response: IngestionResponse = self._client.chat.completions.create(
                 model=self.model,

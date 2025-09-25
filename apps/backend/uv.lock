@@ -694,7 +694,7 @@ wheels = [
 
 [[package]]
 name = "resume-assistant"
-version = "0.1.0"
+version = "1.18.3"
 source = { virtual = "." }
 dependencies = [
     { name = "fastapi" },

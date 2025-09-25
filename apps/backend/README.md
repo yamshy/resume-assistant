@@ -33,6 +33,14 @@ Deterministic unit and integration tests leverage the Temporal test environment 
 ```bash
 uv run pytest
 ```
+
+### Sandbox Compatibility
+The workflow code is designed to run safely within Temporal's sandbox restrictions, which prevent access to network modules like `http.client` during workflow execution and replay. Key design decisions:
+
+- **Lazy Loading**: The `OpenAIResumeLLM` class uses lazy initialization to avoid importing OpenAI dependencies at module load time
+- **Activity Isolation**: All network calls and external dependencies are isolated within activities, not workflows
+- **Sandbox Tests**: `tests/test_sandbox.py` includes specific tests that verify workflow compatibility with strict sandbox restrictions
+
 Optional quality gates remain available:
 ```bash
 uv run --extra dev ruff check
