@@ -1,3 +1,10 @@
+## [1.18.4](https://github.com/yamshy/resume-assistant/compare/v1.18.3...v1.18.4) (2025-09-25)
+
+
+### Bug Fixes
+
+* implement lazy loading in OpenAIResumeLLM to resolve Temporal sandbox violations ([98b9a5e](https://github.com/yamshy/resume-assistant/commit/98b9a5e4e3c6f79a3d0c860146e9567c71aa7102))
+
 ## [1.18.3](https://github.com/yamshy/resume-assistant/compare/v1.18.2...v1.18.3) (2025-09-25)
 
 
