@@ -10,13 +10,21 @@
       }
     ],
     [
+      "@semantic-release/exec",
+      {
+        "prepareCmd": "echo ${nextRelease.version} > VERSION && perl -0pi -e 's/version = \"[^\"]+\"/version = \"${nextRelease.version}\"/' apps/backend/pyproject.toml && tmp=$(mktemp) && jq '.version = \"${nextRelease.version}\"' apps/frontend/package.json > \"$tmp\" && mv \"$tmp\" apps/frontend/package.json"
+      }
+    ],
+    [
       "@semantic-release/git",
       {
         "assets": [
           "CHANGELOG.md",
           "apps/backend/CHANGELOG.md",
           "apps/frontend/package.json",
-          "apps/frontend/CHANGELOG.md"
+          "apps/frontend/CHANGELOG.md",
+          "apps/backend/pyproject.toml",
+          "VERSION"
         ]
       }
     ],
