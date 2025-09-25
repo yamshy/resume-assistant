@@ -1,22 +1,28 @@
 from __future__ import annotations
 
-from typing import Iterable, List, Optional
+from typing import TYPE_CHECKING, Iterable, List, Optional
 
-from ..tools import ToolRegistry, build_default_registry
+if TYPE_CHECKING:  # pragma: no cover - typing-only import
+    from ..tools import ToolRegistry
 
-_REGISTRY: ToolRegistry | None = None
+_REGISTRY: "ToolRegistry | None" = None
 
 
-def configure_registry(registry: Optional[ToolRegistry] = None) -> ToolRegistry:
+def configure_registry(registry: Optional["ToolRegistry"] = None) -> "ToolRegistry":
     """Set the registry used by activities and return it for convenience."""
 
     global _REGISTRY
-    resolved = registry or build_default_registry()
+    if registry is None:
+        from ..tools import build_default_registry
+
+        resolved = build_default_registry()
+    else:
+        resolved = registry
     _REGISTRY = resolved
     return resolved
 
 
-def get_registry() -> ToolRegistry:
+def get_registry() -> "ToolRegistry":
     if _REGISTRY is None:  # pragma: no cover - defensive guard
         raise RuntimeError("Activity registry has not been configured")
     return _REGISTRY
