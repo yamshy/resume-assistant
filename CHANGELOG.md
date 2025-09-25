@@ -1,3 +1,10 @@
+## [1.18.3](https://github.com/yamshy/resume-assistant/compare/v1.18.2...v1.18.3) (2025-09-25)
+
+
+### Bug Fixes
+
+* lazy load tool registry for workflows ([#114](https://github.com/yamshy/resume-assistant/issues/114)) ([93a2a03](https://github.com/yamshy/resume-assistant/commit/93a2a03a1945533ab8bac3cb4003aaff374926bc))
+
 ## [1.18.2](https://github.com/yamshy/resume-assistant/compare/v1.18.1...v1.18.2) (2025-09-25)
 
 
