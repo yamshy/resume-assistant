@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Iterable, List, Optional, TYPE_CHECKING
+from typing import TYPE_CHECKING, Iterable, List, Optional
 
 if TYPE_CHECKING:  # pragma: no cover - typing-only import
     from ..tools import ToolRegistry
