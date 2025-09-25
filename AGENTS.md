@@ -7,6 +7,7 @@
 - Docker-related configuration lives in `docker/`.
 
 ## Build, Test, and Development Commands
+- Always invoke project tasks through `mise run` so the correct toolchains and env vars load automatically.
 - Sync dependencies: `mise run backend.install` / `mise run frontend.install`.
 - Start the full stack (Temporal, backend API, worker, frontend): `mise run dev`.
 - Backend quality gate: `mise run backend.test backend.lint backend.typecheck`.
