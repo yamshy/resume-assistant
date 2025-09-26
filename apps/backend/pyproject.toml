@@ -1,6 +1,6 @@
 [project]
 name = "resume-assistant"
-version = "1.18.4"
+version = "1.19.0"
 description = "Production-ready AI resume tailoring service"
 readme = "README.md"
 requires-python = ">=3.13"

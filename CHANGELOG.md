@@ -1,3 +1,10 @@
+# [1.19.0](https://github.com/yamshy/resume-assistant/compare/v1.18.4...v1.19.0) (2025-09-26)
+
+
+### Features
+
+* **frontend:** refresh chat workspace design ([#117](https://github.com/yamshy/resume-assistant/issues/117)) ([e70a513](https://github.com/yamshy/resume-assistant/commit/e70a513f30eb2f313b6024fb00011edd7c95c5ab))
+
 ## [1.18.4](https://github.com/yamshy/resume-assistant/compare/v1.18.3...v1.18.4) (2025-09-25)
 
 
