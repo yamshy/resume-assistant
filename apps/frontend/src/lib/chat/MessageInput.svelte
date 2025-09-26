@@ -7,7 +7,7 @@
 
   export let disabled = false;
   export let pending = false;
-  export let placeholder = "Ask the resume assistant...";
+  export let placeholder = "Share the role, bullet points, or questions...";
   export let allowFileUpload = true;
 
   let content = "";
@@ -92,7 +92,7 @@
         <span class="spinner" aria-hidden="true"></span>
         Sending
       {:else}
-        Send
+        Send message
       {/if}
     </button>
   </div>
@@ -102,25 +102,25 @@
   .message-input {
     display: grid;
     gap: 0.85rem;
-    background: linear-gradient(155deg, var(--surface-elevated), var(--surface-secondary));
-    border: 1px solid var(--border-soft);
+    background: var(--surface-primary);
+    border: 1px solid var(--border-strong);
     border-radius: 1.25rem;
     padding: clamp(1rem, 3vw, 1.35rem);
-    box-shadow: inset 0 0 0 1px var(--border-subtle), var(--shadow-md);
+    box-shadow: var(--shadow-md);
   }
 
   textarea {
     width: 100%;
     resize: vertical;
     min-height: 5rem;
-    border-radius: 0.9rem;
-    border: 1px solid var(--border-soft);
-    background: var(--surface-primary);
+    border-radius: 1rem;
+    border: 1px solid var(--border-subtle);
+    background: var(--surface-secondary);
     color: var(--text-primary);
     padding: 0.85rem 1.1rem;
     font-size: 1rem;
     line-height: 1.55;
-    box-shadow: inset 0 0 0 1px var(--border-subtle);
+    box-shadow: inset 0 0 0 1px rgba(148, 163, 184, 0.15);
     box-sizing: border-box;
     transition: border-color 150ms ease, box-shadow 150ms ease;
   }
@@ -138,25 +138,28 @@
 
   .file-upload {
     display: grid;
-    gap: 0.55rem;
+    gap: 0.6rem;
   }
 
   .upload-button {
+    position: relative;
     display: inline-flex;
     align-items: center;
-    gap: 0.55rem;
-    border-radius: 9999px;
-    background: var(--accent-soft);
+    gap: 0.5rem;
+    border-radius: 0.85rem;
+    padding: 0.45rem 0.9rem;
+    border: 1px dashed rgba(99, 102, 241, 0.35);
+    background: rgba(99, 102, 241, 0.08);
     color: var(--accent-strong);
-    padding: 0.4rem 0.95rem;
-    cursor: pointer;
-    font-size: 0.92rem;
+    font-size: 0.9rem;
     font-weight: 600;
-    box-shadow: var(--shadow-sm);
+    cursor: pointer;
+    transition: border-color 150ms ease, background 150ms ease;
   }
 
   .upload-button:hover {
-    filter: brightness(1.05);
+    border-color: var(--accent-strong);
+    background: rgba(99, 102, 241, 0.12);
   }
 
   .upload-button input {
@@ -177,8 +180,8 @@
     align-items: center;
     gap: 0.75rem;
     padding: 0.45rem 0.6rem;
-    border-radius: 0.65rem;
-    background: var(--surface-primary);
+    border-radius: 0.75rem;
+    background: var(--surface-secondary);
     font-size: 0.88rem;
     border: 1px solid var(--border-subtle);
     color: var(--text-primary);
@@ -205,9 +208,9 @@
     display: inline-flex;
     align-items: center;
     gap: 0.55rem;
-    border-radius: 9999px;
+    border-radius: 0.9rem;
     border: none;
-    padding: 0.55rem 1.35rem;
+    padding: 0.6rem 1.4rem;
     background: linear-gradient(135deg, var(--accent), var(--accent-strong));
     color: var(--text-inverse);
     font-weight: 700;

@@ -40,7 +40,8 @@
   <div class="messages" bind:this={container} on:scroll={onScroll}>
     {#if messages.length === 0}
       <div class="empty-state">
-        <p>Ask the assistant for help refining your resume or preparing for your next interview.</p>
+        <h3>Your AI workspace is ready</h3>
+        <p>Share the role, paste bullet points, or upload supporting files to get a focused rewrite.</p>
       </div>
     {:else}
       <ul>
@@ -60,7 +61,7 @@
 
   {#if progressItems.length > 0}
     <details class="progress-log">
-      <summary>Detailed workflow updates</summary>
+      <summary>Workflow activity log</summary>
       <ul>
         {#each progressItems as item (item.node + item.timestamp)}
           <li class={item.status}>
@@ -87,13 +88,22 @@
   }
 
   .messages {
-    background: linear-gradient(150deg, var(--surface-secondary), var(--surface-muted));
-    border: 1px solid var(--border-soft);
+    position: relative;
+    background: var(--surface-primary);
+    border: 1px solid var(--border-strong);
     border-radius: 1.25rem;
     padding: clamp(1rem, 2vw, 1.25rem);
     overflow-y: auto;
-    backdrop-filter: blur(18px);
-    box-shadow: inset 0 0 0 1px var(--border-subtle), var(--shadow-md);
+    box-shadow: var(--shadow-md);
+  }
+
+  .messages::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    background: linear-gradient(135deg, rgba(99, 102, 241, 0.08), transparent 70%);
+    pointer-events: none;
   }
 
   .messages ul {
@@ -101,42 +111,62 @@
     margin: 0;
     padding: 0;
     display: grid;
-    gap: 0.9rem;
+    gap: 1rem;
+    position: relative;
+    z-index: 1;
   }
 
   .empty-state {
+    position: relative;
+    z-index: 1;
     display: grid;
+    gap: 0.5rem;
     place-items: center;
     min-height: 8rem;
-    color: var(--text-muted);
     text-align: center;
-    padding: 1rem;
+    padding: 1.5rem;
+    color: var(--text-muted);
+  }
+
+  .empty-state h3 {
+    margin: 0;
+    font-size: 1.15rem;
+    font-weight: 600;
+  }
+
+  .empty-state p {
+    margin: 0;
+    max-width: 32ch;
+    color: var(--text-subtle);
   }
 
   .typing-indicator {
+    position: relative;
+    z-index: 1;
     display: inline-flex;
-    gap: 0.4rem;
-    padding: 0.55rem 0.85rem;
+    align-items: center;
+    gap: 0.45rem;
+    padding: 0.55rem 0.95rem;
     border-radius: 9999px;
     background: var(--accent-soft);
-    margin-top: 0.6rem;
+    margin-top: 0.75rem;
     box-shadow: var(--shadow-sm);
   }
 
   .typing-indicator .dot {
-    width: 0.45rem;
-    height: 0.45rem;
+    width: 0.4rem;
+    height: 0.4rem;
     border-radius: 50%;
     background: var(--accent-strong);
     animation: pulse 1.2s infinite ease-in-out;
   }
 
   .typing-indicator .dot:nth-child(2) {
-    animation-delay: 0.2s;
+    animation-delay: 0.18s;
   }
 
   .typing-indicator .dot:nth-child(3) {
-    animation-delay: 0.4s;
+    animation-delay: 0.36s;
   }
 
   @keyframes pulse {
@@ -144,21 +174,49 @@
     80%,
     100% {
       transform: scale(0.85);
-      opacity: 0.45;
+      opacity: 0.4;
     }
     40% {
-      transform: scale(1.05);
+      transform: scale(1);
       opacity: 1;
     }
   }
 
   .progress-log {
-    background: linear-gradient(155deg, var(--surface-elevated), var(--surface-secondary));
-    border: 1px solid var(--border-soft);
+    background: var(--surface-secondary);
+    border: 1px solid var(--border-strong);
     border-radius: 1rem;
     padding: 0.85rem 1rem;
-    box-shadow: inset 0 0 0 1px var(--border-subtle);
+    box-shadow: var(--shadow-sm);
     color: var(--text-primary);
+  }
+
+  .progress-log summary {
+    cursor: pointer;
+    font-weight: 600;
+    color: var(--text-muted);
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    position: relative;
+  }
+
+  .progress-log summary::after {
+    content: "";
+    width: 0.6rem;
+    height: 0.6rem;
+    border-right: 2px solid currentColor;
+    border-bottom: 2px solid currentColor;
+    transform: rotate(-45deg);
+    transition: transform 150ms ease;
+  }
+
+  .progress-log[open] summary::after {
+    transform: rotate(45deg);
+  }
+
+  .progress-log summary::-webkit-details-marker {
+    display: none;
   }
 
   .progress-log ul {
@@ -173,13 +231,15 @@
     display: grid;
     gap: 0.35rem;
     padding: 0.6rem 0.75rem;
-    border-radius: 0.75rem;
+    border-radius: 0.85rem;
     background: var(--surface-primary);
     border: 1px solid var(--border-subtle);
+    transition: border-color 150ms ease, box-shadow 150ms ease;
   }
 
   .progress-log li.running {
     border-color: var(--accent-strong);
+    box-shadow: 0 10px 20px rgba(99, 102, 241, 0.12);
   }
 
   .progress-log li.complete {
@@ -202,7 +262,7 @@
 
   .progress-log pre {
     background: var(--surface-muted);
-    border-radius: 0.5rem;
+    border-radius: 0.6rem;
     padding: 0.5rem 0.75rem;
     margin: 0;
     font-size: 0.85rem;

@@ -30,8 +30,11 @@
 
 <section class="approval" aria-live="polite">
   <header>
-    <h2>Awaiting your approval</h2>
-    <p>Review the draft below. Approve it or request changes with optional feedback.</p>
+    <div>
+      <h2>Awaiting your approval</h2>
+      <p>Review the generated draft, leave feedback, and choose whether to move forward.</p>
+    </div>
+    <span class="badge">Step 3 · Approval</span>
   </header>
 
   {#if previewText}
@@ -54,7 +57,7 @@
   {/if}
 
   <div class="actions">
-    <button type="button" class="secondary" on:click={handleReject} disabled={busy}>
+    <button type="button" class="ghost" on:click={handleReject} disabled={busy}>
       Request changes
     </button>
     <button type="button" on:click={handleApprove} disabled={busy}>
@@ -67,17 +70,19 @@
   .approval {
     display: grid;
     gap: 0.85rem;
-    background: linear-gradient(160deg, var(--surface-primary), var(--surface-secondary));
-    border: 1px solid var(--border-soft);
+    background: var(--surface-primary);
+    border: 1px solid var(--border-strong);
     border-radius: 1.25rem;
     padding: clamp(1rem, 3vw, 1.5rem);
-    box-shadow: inset 0 0 0 1px var(--border-subtle), var(--shadow-md);
+    box-shadow: var(--shadow-md);
     color: var(--text-primary);
   }
 
   header {
-    display: grid;
-    gap: 0.35rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    align-items: flex-start;
   }
 
   header h2 {
@@ -91,12 +96,27 @@
     font-size: 0.95rem;
   }
 
+  header .badge {
+    align-self: flex-end;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    padding: 0.35rem 0.8rem;
+    border-radius: 999px;
+    background: var(--accent-soft);
+    color: var(--accent-strong);
+    font-weight: 600;
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+  }
+
   article {
     max-height: 18rem;
     overflow: auto;
     border-radius: 0.85rem;
     border: 1px solid var(--border-subtle);
-    background: var(--surface-muted);
+    background: var(--surface-secondary);
     padding: 0.75rem 1rem;
   }
 
@@ -110,8 +130,8 @@
   textarea {
     width: 100%;
     border-radius: 0.75rem;
-    border: 1px solid var(--border-soft);
-    background: var(--surface-primary);
+    border: 1px solid var(--border-subtle);
+    background: var(--surface-secondary);
     padding: 0.75rem 1rem;
     color: inherit;
     font-size: 1rem;
@@ -144,26 +164,33 @@
   }
 
   button {
-    border-radius: 9999px;
+    border-radius: 0.9rem;
     padding: 0.6rem 1.4rem;
     font-weight: 600;
     cursor: pointer;
+    border: none;
+    transition: transform 150ms ease, box-shadow 150ms ease;
   }
 
-  button.secondary {
+  button.ghost {
     background: transparent;
     border: 1px solid var(--border-subtle);
-    color: var(--text-primary);
+    color: var(--text-muted);
   }
 
-  button:not(.secondary) {
-    background: var(--accent-strong);
-    color: white;
-    border: none;
+  button:not(.ghost) {
+    background: linear-gradient(135deg, var(--accent), var(--accent-strong));
+    color: var(--text-inverse);
+    box-shadow: 0 18px 36px rgba(99, 102, 241, 0.24);
+  }
+
+  button:not(.ghost):hover:not(:disabled) {
+    transform: translateY(-1px);
   }
 
   button:disabled {
     opacity: 0.6;
     cursor: not-allowed;
+    box-shadow: none;
   }
 </style>
