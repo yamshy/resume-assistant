@@ -56,8 +56,13 @@ def test_publishing_cache_store_and_fetch():
     registry = build_registry()
     saved = registry.cache.store("req-1", resume="resume text", checksum="abc123")
     assert saved == {"resume": "resume text", "checksum": "abc123"}
+    saved["resume"] = "mutated"
+    assert registry.cache.fetch("req-1") == {"resume": "resume text", "checksum": "abc123"}
     fetched = registry.cache.fetch("req-1")
-    assert fetched == saved
+    assert fetched == {"resume": "resume text", "checksum": "abc123"}
+    assert fetched is not saved
+    fetched["resume"] = "changed"
+    assert registry.cache.fetch("req-1") == {"resume": "resume text", "checksum": "abc123"}
 
 
 def test_notification_tool_collects_events():

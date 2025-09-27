@@ -13,11 +13,15 @@ class PublishingCacheTool:
     _cache: Dict[str, Dict[str, str]] = field(default_factory=dict)
 
     def store(self, request_id: str, *, resume: str, checksum: str) -> Dict[str, str]:
-        self._cache[request_id] = {"resume": resume, "checksum": checksum}
-        return self._cache[request_id]
+        payload = {"resume": resume, "checksum": checksum}
+        self._cache[request_id] = payload
+        return payload.copy()
 
     def fetch(self, request_id: str) -> Optional[Dict[str, str]]:
-        return self._cache.get(request_id)
+        cached = self._cache.get(request_id)
+        if cached is None:
+            return None
+        return cached.copy()
 
     def clear(self) -> None:
         self._cache.clear()
