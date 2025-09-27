@@ -1,3 +1,10 @@
+## [1.19.3](https://github.com/yamshy/resume-assistant/compare/v1.19.2...v1.19.3) (2025-09-27)
+
+
+### Bug Fixes
+
+* return copies from publishing cache ([#122](https://github.com/yamshy/resume-assistant/issues/122)) ([bd08cfe](https://github.com/yamshy/resume-assistant/commit/bd08cfeba95153b56e8278bfb4c389887a027793))
+
 ## [1.19.2](https://github.com/yamshy/resume-assistant/compare/v1.19.1...v1.19.2) (2025-09-27)
 
 
