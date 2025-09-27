@@ -8,7 +8,11 @@ import type {
   WorkflowStateResponse,
 } from "../chat/types";
 
-async function handleResponse<T>(response: Response): Promise<T> {
+interface HandleResponseOptions {
+  allowEmpty?: boolean;
+}
+
+async function handleResponse<T>(response: Response, options: HandleResponseOptions = {}): Promise<T> {
   if (!response.ok) {
     const text = await response.text().catch(() => "");
     const message = text ? `${response.status} ${response.statusText} - ${text}` : `${response.status} ${response.statusText}`;
@@ -16,7 +20,15 @@ async function handleResponse<T>(response: Response): Promise<T> {
   }
   const text = await response.text().catch(() => "");
   if (!text.trim()) {
-    return undefined as T;
+    if (options.allowEmpty) {
+      return undefined as T;
+    }
+
+    const statusSummary = `${response.status} ${response.statusText}`.trim();
+    const errorMessage = statusSummary
+      ? `${statusSummary} - Expected response body but received empty response.`
+      : "Expected response body but received empty response.";
+    throw new Error(errorMessage);
   }
 
   try {
@@ -56,7 +68,7 @@ export async function submitApproval(
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(payload),
   });
-  await handleResponse<unknown>(response);
+  await handleResponse<void>(response, { allowEmpty: true });
 }
 
 export async function getResult(workflowId: string): Promise<WorkflowResultResponse> {
