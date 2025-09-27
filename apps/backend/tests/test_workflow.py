@@ -52,6 +52,7 @@ async def test_resume_workflow_completes():
     )
 
     env = await WorkflowEnvironment.start_time_skipping()
+    result = None
     try:
         activities = list_all_activities()
         async with worker.Worker(
@@ -73,6 +74,9 @@ async def test_resume_workflow_completes():
             result = await handle.result()
     finally:
         await env.shutdown()
+
+    if result is None:
+        pytest.fail("Workflow did not return a result")
 
     assert result.status == "complete"
     assert "published_resume" in result.artifacts
