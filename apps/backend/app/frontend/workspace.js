@@ -66,6 +66,7 @@ let activeWorkflow = {
 };
 
 const initialGreeting = {
+  id: "initial-greeting",
   role: "assistant",
   content:
     "Share resume context or requests and choose a workflow task. I'll relay it to the Temporal workflow and surface each update the API returns.",
@@ -112,6 +113,7 @@ async function handleSubmit(event) {
   const task = taskSelect?.value ?? "resume_pipeline";
 
   const userMessage = {
+    id: crypto.randomUUID?.() ?? `user-${Date.now()}`,
     role: "human",
     content: message,
     timestamp: new Date(),
@@ -141,6 +143,7 @@ async function handleSubmit(event) {
     const detail = error instanceof Error ? error.message : String(error);
     setStatus(detail || "Failed to start workflow", "error");
     addMessage({
+      id: `workflow-start-error-${requestId}`,
       role: "system",
       content: "The request did not reach the workflow service. Double-check the API and try again.",
       timestamp: new Date(),
@@ -168,7 +171,22 @@ function addMessage(entry) {
 }
 
 function createMessageKey(entry) {
-  return `${entry.role}|${entry.content}`;
+  if (entry.id) {
+    return String(entry.id);
+  }
+  if (entry.message_id) {
+    return String(entry.message_id);
+  }
+  if (entry.uuid) {
+    return String(entry.uuid);
+  }
+  const timestamp =
+    entry.timestamp instanceof Date
+      ? entry.timestamp.getTime()
+      : typeof entry.timestamp === "number"
+        ? entry.timestamp
+        : Date.now();
+  return `${entry.role}|${entry.content}|${timestamp}`;
 }
 
 function renderTranscript() {
@@ -286,6 +304,7 @@ async function pollWorkflowState({ workflowId, signal }) {
         "error",
       );
       addMessage({
+        id: `polling-network-error-${workflowId}`,
         role: "system",
         content: "Polling stopped due to a network error.",
         timestamp: new Date(),
@@ -356,20 +375,24 @@ function applyWorkflowState(state) {
 
 function syncMessagesFromState(state) {
   const messages = Array.isArray(state.messages) ? state.messages : [];
-  for (const entry of messages) {
+  const workflowKey = state.request_id ?? activeWorkflow.id ?? "workflow";
+  messages.forEach((entry, index) => {
     if (!entry || typeof entry.content !== "string") {
-      continue;
+      return;
     }
     const normalizedRole = entry.role === "human" ? "human" : entry.role === "system" ? "system" : "assistant";
+    const messageId = entry.id ?? entry.message_id ?? entry.uuid ?? `${workflowKey}-message-${index}`;
     addMessage({
+      id: messageId,
       role: normalizedRole,
       content: entry.content,
       timestamp: new Date(),
     });
-  }
+  });
 
   if (state.status === "error" && state.flags?.human_notes) {
     addMessage({
+      id: `${workflowKey}-error-detail`,
       role: "system",
       content: "Workflow reported an error.",
       detail: state.flags.human_notes,
@@ -381,6 +404,7 @@ function syncMessagesFromState(state) {
     const artifacts = state.artifacts ?? {};
     if (typeof artifacts.draft_resume === "string" && artifacts.draft_resume.trim()) {
       addMessage({
+        id: `${workflowKey}-artifact-draft-${state.metrics?.revisions ?? 0}`,
         role: "assistant",
         content: artifacts.draft_resume.trim(),
         timestamp: new Date(),
@@ -388,6 +412,7 @@ function syncMessagesFromState(state) {
       });
     } else if (typeof artifacts.published_resume === "string") {
       addMessage({
+        id: `${workflowKey}-artifact-published`,
         role: "assistant",
         content: artifacts.published_resume.trim(),
         timestamp: new Date(),
@@ -405,6 +430,7 @@ function handleStageTransition(stage) {
   renderStageProgress(stage);
   const label = STAGE_LABELS[stage] ?? stage;
   addMessage({
+    id: `${activeWorkflow.id ?? activeWorkflow.requestId ?? "workflow"}-stage-${stage}`,
     role: "system",
     content: `Stage updated: ${label}`,
     timestamp: new Date(),
