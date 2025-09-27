@@ -1,3 +1,10 @@
+## [1.19.1](https://github.com/yamshy/resume-assistant/compare/v1.19.0...v1.19.1) (2025-09-27)
+
+
+### Bug Fixes
+
+* **frontend:** ensure workspace message keys are unique ([#118](https://github.com/yamshy/resume-assistant/issues/118)) ([4c131e7](https://github.com/yamshy/resume-assistant/commit/4c131e743031e43e2a88a1d1cb5b77224f0e12f0))
+
 # [1.19.0](https://github.com/yamshy/resume-assistant/compare/v1.18.4...v1.19.0) (2025-09-26)
 
 
