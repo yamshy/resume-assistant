@@ -1,3 +1,10 @@
+## [1.19.2](https://github.com/yamshy/resume-assistant/compare/v1.19.1...v1.19.2) (2025-09-27)
+
+
+### Bug Fixes
+
+* **frontend:** handle unexpected empty API responses ([#121](https://github.com/yamshy/resume-assistant/issues/121)) ([0dcf6ce](https://github.com/yamshy/resume-assistant/commit/0dcf6ceb8dda6a8be65feddde0c815752c41577e))
+
 ## [1.19.1](https://github.com/yamshy/resume-assistant/compare/v1.19.0...v1.19.1) (2025-09-27)
 
 
