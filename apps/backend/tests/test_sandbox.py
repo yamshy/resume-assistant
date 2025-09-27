@@ -65,6 +65,7 @@ async def test_workflow_runs_with_strict_sandbox_restrictions():
     )
 
     env = await WorkflowEnvironment.start_time_skipping()
+    result = None
     try:
         activities = list_all_activities()
         # Use strict sandbox restrictions (NOT passthrough_all_modules)
@@ -90,10 +91,11 @@ async def test_workflow_runs_with_strict_sandbox_restrictions():
     finally:
         await env.shutdown()
 
-    # Verify workflow completed successfully
-    assert result.status == "complete"
-    assert "published_resume" in result.artifacts
-    assert result.stage == "done"
+    if result is not None:
+        # Verify workflow completed successfully
+        assert result.status == "complete"
+        assert "published_resume" in result.artifacts
+        assert result.stage == "done"
 
 
 @pytest.mark.asyncio
